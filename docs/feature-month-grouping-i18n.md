@@ -18,7 +18,7 @@ Le statut de sortie reste visible au niveau de chaque card :
 
 ### Ordre de la timeline active
 
-La partie toujours visible de la timeline est centrée autour de la période courante :
+La partie active de la timeline est centrée autour de la période courante :
 
 1. mois courant ;
 2. éventuel groupe `année courante · mois non précisé` ;
@@ -29,10 +29,25 @@ Les dates précises sont triées chronologiquement dans leur groupe. Une date co
 
 La logique de tri temporel vit dans `groupBooksByTimelinePeriod` (`lib/books.ts`) et est couverte par Vitest.
 
+### Mois de l'année courante collapsables
+
+Les groupes mensuels appartenant à l'année courante restent **ouverts par défaut**, mais leur en-tête devient un contrôle d'accordéon accessible. L'utilisateur peut donc replier ponctuellement un mois sans modifier l'organisation générale de la timeline.
+
+Chaque mois affiche :
+
+- son libellé localisé ;
+- le nombre de livres du groupe ;
+- un chevron indiquant son état ouvert/fermé.
+
+L'état des mois repliés est local à `BookList` et n'est pas persisté dans IndexedDB. Les groupes des années futures ne sont pas rendus collapsables à ce stade : la demande concerne uniquement l'année courante.
+
+Lorsqu'une recherche texte ou un filtre éditeur est actif, les mois de l'année courante sont temporairement forcés ouverts afin qu'aucun résultat ne soit masqué. Lorsque le filtre disparaît, l'état manuel précédent est restauré.
+
 ### Archives annuelles collapsables
 
 Les années strictement antérieures à l'année courante ne sont plus déroulées intégralement dans la timeline par défaut. `buildBookTimeline` sépare désormais :
 
+- `currentYear` : année de référence utilisée par l'interface pour reconnaître les mois collapsables ;
 - `activeGroups` : année courante et années futures ;
 - `archives` : années passées regroupées de la plus récente à la plus ancienne.
 
@@ -76,7 +91,7 @@ L'internationalisation utilise `next-intl`. Les catalogues sont séparés dans :
 - `messages/fr.json`
 - `messages/en.json`
 
-Les textes visibles, libellés d'accessibilité, confirmations, validations, états Drive, mois, dates et contrôles d'archives sont localisés.
+Les textes visibles, libellés d'accessibilité, confirmations, validations, états Drive, mois, dates et contrôles d'accordéon sont localisés.
 
 ### Persistance de la langue
 
