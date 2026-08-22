@@ -18,6 +18,8 @@ type StatusChoice = "auto" | BookStatus;
 interface FormState {
   title: string;
   author: string;
+  series: string;
+  volume: string;
   publisher: string;
   releaseDate: string;
   note: string;
@@ -28,6 +30,8 @@ interface FormState {
 const EMPTY_FORM: FormState = {
   title: "",
   author: "",
+  series: "",
+  volume: "",
   publisher: "",
   releaseDate: "",
   note: "",
@@ -49,6 +53,8 @@ export function BookForm({ bookId }: BookFormProps) {
     ? {
         title: book.title,
         author: book.author,
+        series: book.series ?? "",
+        volume: book.volume ?? "",
         publisher: book.publisher,
         releaseDate: book.releaseDate,
         note: book.note ?? "",
@@ -58,7 +64,14 @@ export function BookForm({ bookId }: BookFormProps) {
     : EMPTY_FORM;
   const form: FormState = { ...baseForm, ...formChanges };
 
-  const publishers = useMemo(() => [...new Set(books.map((item) => item.publisher))].sort((a, b) => a.localeCompare(b, "fr")), [books]);
+  const publishers = useMemo(
+    () => [...new Set(books.map((item) => item.publisher))].sort((a, b) => a.localeCompare(b, "fr")),
+    [books],
+  );
+  const seriesOptions = useMemo(
+    () => [...new Set(books.map((item) => item.series).filter((series): series is string => Boolean(series)))].sort((a, b) => a.localeCompare(b, "fr")),
+    [books],
+  );
 
   const updateField = <K extends keyof FormState>(key: K, value: FormState[K]) => {
     setFormChanges((current) => ({ ...current, [key]: value }));
@@ -83,6 +96,8 @@ export function BookForm({ bookId }: BookFormProps) {
       const draft: BookDraft = {
         title: form.title,
         author: form.author,
+        series: form.series,
+        volume: form.volume,
         publisher: form.publisher,
         releaseDate: form.releaseDate,
         note: form.note,
@@ -118,6 +133,7 @@ export function BookForm({ bookId }: BookFormProps) {
 
   const fieldClass = "w-full border-0 border-b border-line bg-transparent py-2 text-[0.9375rem] text-ink outline-none transition-[border-color,border-width] focus:border-b-2 focus:border-brass motion-reduce:transition-none";
   const labelClass = "block text-xs font-medium uppercase tracking-[0.08em] text-ink-muted";
+  const optionalLabel = <span className="normal-case tracking-normal">(optionnel)</span>;
 
   return (
     <>
@@ -131,6 +147,13 @@ export function BookForm({ bookId }: BookFormProps) {
           <label className={labelClass}>Auteur
             <input value={form.author} onChange={(event) => updateField("author", event.target.value)} className={fieldClass} aria-invalid={Boolean(errors.author)} />
             {errors.author ? <span className="mt-1 block text-xs text-ink-muted">{errors.author}</span> : null}
+          </label>
+          <label className={labelClass}>Série {optionalLabel}
+            <input list="series-options" value={form.series} onChange={(event) => updateField("series", event.target.value)} className={fieldClass} autoComplete="off" />
+            <datalist id="series-options">{seriesOptions.map((series) => <option key={series} value={series} />)}</datalist>
+          </label>
+          <label className={labelClass}>Tome {optionalLabel}
+            <input value={form.volume} onChange={(event) => updateField("volume", event.target.value)} className={`${fieldClass} font-mono text-[0.8125rem]`} inputMode="text" />
           </label>
           <label className={labelClass}>Éditeur
             <input list="publisher-options" value={form.publisher} onChange={(event) => updateField("publisher", event.target.value)} className={fieldClass} aria-invalid={Boolean(errors.publisher)} autoComplete="off" />
@@ -148,7 +171,7 @@ export function BookForm({ bookId }: BookFormProps) {
               <option value="available">Forcer « Disponible »</option>
             </select>
           </label>
-          <label className={labelClass}>Note <span className="normal-case tracking-normal">(optionnel)</span>
+          <label className={labelClass}>Note {optionalLabel}
             <textarea value={form.note} onChange={(event) => updateField("note", event.target.value)} rows={4} className={`${fieldClass} resize-y leading-6`} />
           </label>
 
