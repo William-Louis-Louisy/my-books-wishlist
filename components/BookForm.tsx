@@ -180,7 +180,7 @@ export function BookForm({ bookId }: BookFormProps) {
   }
 
   const fieldClass =
-    "w-full border-0 border-b border-line bg-transparent py-2 text-base text-ink outline-none transition-[border-color,border-width] focus:border-b-2 focus:border-brass motion-reduce:transition-none";
+    "book-form-control w-full border-0 border-b border-line bg-transparent py-2 text-ink outline-none transition-[border-color,border-width] focus:border-b-2 focus:border-brass motion-reduce:transition-none";
   const labelClass =
     "block text-xs font-medium uppercase tracking-[0.08em] text-ink-muted";
   const optionalLabel = (
@@ -355,7 +355,7 @@ export function BookForm({ bookId }: BookFormProps) {
               value={form.note}
               onChange={(event) => updateField("note", event.target.value)}
               rows={4}
-              className={`${fieldClass} resize-y leading-6`}
+              className={`${fieldClass} resize-y`}
             />
           </label>
 
