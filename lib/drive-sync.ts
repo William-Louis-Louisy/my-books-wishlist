@@ -7,15 +7,15 @@ import {
   applyBookImport,
   type BookImportMode,
 } from "@/lib/book-import";
-import { writeSyncSnapshot } from "@/lib/sync-status";
 
 const GOOGLE_SCRIPT_ID = "google-identity-services";
 const DRIVE_SCOPE = "https://www.googleapis.com/auth/drive.file";
 const DRIVE_FILE_NAME = "book-wishlist-export.json";
-const DRIVE_CONNECTED_KEY = "book-wishlist:drive-connected";
-const DRIVE_EMAIL_KEY = "book-wishlist:drive-email";
 const DRIVE_FILE_ID_KEY = "book-wishlist:drive-file-id";
-const DEBOUNCE_MS = 5_000;
+const DRIVE_LAST_BACKUP_KEY = "book-wishlist:drive-last-backup";
+const LEGACY_DRIVE_CONNECTED_KEY = "book-wishlist:drive-connected";
+const LEGACY_DRIVE_EMAIL_KEY = "book-wishlist:drive-email";
+const LEGACY_SYNC_STATUS_KEY = "book-wishlist:sync-status";
 
 interface GoogleTokenResponse {
   access_token?: string;
@@ -35,7 +35,6 @@ interface GoogleOauth2 {
     callback: (response: GoogleTokenResponse) => void;
     error_callback?: (error: unknown) => void;
   }) => GoogleTokenClient;
-  revoke?: (token: string, callback?: () => void) => void;
 }
 
 declare global {
@@ -49,8 +48,7 @@ declare global {
 }
 
 let accessToken: string | null = null;
-let debounceTimer: ReturnType<typeof setTimeout> | null = null;
-let exportInFlight: Promise<void> | null = null;
+let exportInFlight: Promise<string> | null = null;
 
 function getClientId(): string | undefined {
   return process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
@@ -92,7 +90,7 @@ async function loadGoogleIdentityServices(): Promise<void> {
   });
 }
 
-async function requestAccessToken(interactive: boolean): Promise<string> {
+async function requestAccessToken(): Promise<string> {
   const clientId = getClientId();
   if (!clientId) {
     throw new Error("La connexion Google Drive n'est pas configurée.");
@@ -129,16 +127,15 @@ async function requestAccessToken(interactive: boolean): Promise<string> {
         reject(new Error("Connexion Google interrompue.")),
     });
 
-    client.requestAccessToken({ prompt: interactive ? "consent" : "" });
+    client.requestAccessToken();
   });
 }
 
 async function driveFetch(
   path: string,
   init: RequestInit = {},
-  interactive = false,
 ): Promise<Response> {
-  const token = await requestAccessToken(interactive);
+  const token = await requestAccessToken();
   const headers = new Headers(init.headers);
   headers.set("Authorization", `Bearer ${token}`);
 
@@ -146,21 +143,10 @@ async function driveFetch(
   if (response.status !== 401) return response;
 
   accessToken = null;
-  const refreshed = await requestAccessToken(false);
+  const refreshed = await requestAccessToken();
   headers.set("Authorization", `Bearer ${refreshed}`);
   response = await fetch(path, { ...init, headers });
   return response;
-}
-
-async function getDriveAccountEmail(): Promise<string | undefined> {
-  const response = await driveFetch(
-    "https://www.googleapis.com/drive/v3/about?fields=user(emailAddress)",
-  );
-  if (!response.ok) return undefined;
-  const data = (await response.json()) as {
-    user?: { emailAddress?: string };
-  };
-  return data.user?.emailAddress;
 }
 
 async function findDriveFileId(): Promise<string | null> {
@@ -233,122 +219,81 @@ async function updateDriveFile(
   if (!response.ok) throw new Error("La sauvegarde Drive a échoué.");
 }
 
+function migrateLegacyDriveMetadata(): string | undefined {
+  ensureBrowser();
+  const current = window.localStorage.getItem(DRIVE_LAST_BACKUP_KEY) ?? undefined;
+  if (current) return current;
+
+  const legacyRaw = window.localStorage.getItem(LEGACY_SYNC_STATUS_KEY);
+  let legacyLastBackup: string | undefined;
+  if (legacyRaw) {
+    try {
+      const legacy = JSON.parse(legacyRaw) as { lastExportAt?: unknown };
+      if (typeof legacy.lastExportAt === "string") {
+        legacyLastBackup = legacy.lastExportAt;
+        window.localStorage.setItem(DRIVE_LAST_BACKUP_KEY, legacyLastBackup);
+      }
+    } catch {
+      // Legacy metadata is optional; invalid data can simply be discarded.
+    }
+  }
+
+  window.localStorage.removeItem(LEGACY_DRIVE_CONNECTED_KEY);
+  window.localStorage.removeItem(LEGACY_DRIVE_EMAIL_KEY);
+  window.localStorage.removeItem(LEGACY_SYNC_STATUS_KEY);
+  return legacyLastBackup;
+}
+
 export function isDriveConfigured(): boolean {
   return Boolean(getClientId());
 }
 
-export function isDriveConnected(): boolean {
-  if (typeof window === "undefined") return false;
-  return window.localStorage.getItem(DRIVE_CONNECTED_KEY) === "true";
-}
-
-export function getDriveEmail(): string | undefined {
+export function getDriveLastBackupAt(): string | undefined {
   if (typeof window === "undefined") return undefined;
-  return window.localStorage.getItem(DRIVE_EMAIL_KEY) ?? undefined;
+  return migrateLegacyDriveMetadata();
 }
 
-export async function connectGoogleDrive(): Promise<void> {
+export async function exportBooksToDrive(): Promise<string> {
   ensureBrowser();
-  await requestAccessToken(true);
-  window.localStorage.setItem(DRIVE_CONNECTED_KEY, "true");
-  const email = await getDriveAccountEmail();
-  if (email) window.localStorage.setItem(DRIVE_EMAIL_KEY, email);
-  writeSyncSnapshot({
-    state: "pending",
-    message: "Sauvegarde en attente.",
-  });
-  await exportBooksToDrive({ interactive: false }).catch(() => undefined);
-}
-
-export async function disconnectGoogleDrive(): Promise<void> {
-  ensureBrowser();
-  if (accessToken && window.google?.accounts.oauth2.revoke) {
-    window.google.accounts.oauth2.revoke(accessToken);
+  if (!isDriveConfigured()) {
+    throw new Error("La connexion Google Drive n'est pas configurée.");
   }
-  accessToken = null;
-  window.localStorage.removeItem(DRIVE_CONNECTED_KEY);
-  window.localStorage.removeItem(DRIVE_EMAIL_KEY);
-  window.localStorage.removeItem(DRIVE_FILE_ID_KEY);
-  writeSyncSnapshot({ state: "disconnected" });
-}
-
-export async function exportBooksToDrive(
-  options: { interactive?: boolean } = {},
-): Promise<void> {
-  ensureBrowser();
-  if (!isDriveConfigured() || !isDriveConnected()) return;
   if (exportInFlight) return exportInFlight;
 
   exportInFlight = (async () => {
-    writeSyncSnapshot({
-      state: "pending",
-      message: "Sauvegarde en cours.",
-    });
-    try {
-      if (options.interactive) await requestAccessToken(true);
-      const books = await db.books.toArray();
-      const content = serializeBookBackup(books);
-      const fileId = await findDriveFileId();
-      if (fileId) await updateDriveFile(fileId, content);
-      else await createDriveFile(content);
-      const lastExportAt = new Date().toISOString();
-      writeSyncSnapshot({ state: "synced", lastExportAt });
-    } catch (error) {
-      accessToken = null;
-      writeSyncSnapshot({
-        state: "error",
-        message:
-          "Dernière sauvegarde impossible. Nouvel essai à la prochaine ouverture.",
-      });
-      throw error;
-    } finally {
-      exportInFlight = null;
-    }
+    await requestAccessToken();
+    const books = await db.books.toArray();
+    const content = serializeBookBackup(books);
+    const fileId = await findDriveFileId();
+    if (fileId) await updateDriveFile(fileId, content);
+    else await createDriveFile(content);
+
+    const lastExportAt = new Date().toISOString();
+    window.localStorage.setItem(DRIVE_LAST_BACKUP_KEY, lastExportAt);
+    return lastExportAt;
   })();
 
-  return exportInFlight;
-}
-
-export function queueDriveExport(): void {
-  if (
-    typeof window === "undefined" ||
-    !isDriveConnected() ||
-    !isDriveConfigured()
-  ) {
-    return;
+  try {
+    return await exportInFlight;
+  } finally {
+    exportInFlight = null;
   }
-  writeSyncSnapshot({
-    state: "pending",
-    message: "Modifications à sauvegarder.",
-  });
-  if (debounceTimer) clearTimeout(debounceTimer);
-  debounceTimer = setTimeout(() => {
-    void exportBooksToDrive().catch(() => undefined);
-  }, DEBOUNCE_MS);
-}
-
-export async function retryDriveExportWhenVisible(): Promise<void> {
-  if (
-    typeof document === "undefined" ||
-    document.visibilityState !== "visible"
-  ) {
-    return;
-  }
-  if (!isDriveConnected() || !isDriveConfigured()) return;
-  await exportBooksToDrive().catch(() => undefined);
 }
 
 export async function importBooksFromDrive(
   mode: BookImportMode,
 ): Promise<number> {
   ensureBrowser();
+  if (!isDriveConfigured()) {
+    throw new Error("La connexion Google Drive n'est pas configurée.");
+  }
+
+  await requestAccessToken();
   const fileId = await findDriveFileId();
   if (!fileId) throw new Error("Aucune sauvegarde Drive trouvée.");
 
   const response = await driveFetch(
     `https://www.googleapis.com/drive/v3/files/${encodeURIComponent(fileId)}?alt=media`,
-    {},
-    true,
   );
   if (!response.ok) {
     throw new Error("Impossible de lire la sauvegarde Drive.");
@@ -356,8 +301,5 @@ export async function importBooksFromDrive(
 
   const payload = (await response.json()) as unknown;
   const incoming = parseBookBackup(payload);
-  const importedCount = await applyBookImport(incoming, mode);
-
-  queueDriveExport();
-  return importedCount;
+  return applyBookImport(incoming, mode);
 }
