@@ -6,6 +6,8 @@ const baseBook: Book = {
   id: "1",
   title: "Le livre",
   author: "Une autrice",
+  series: "Les Archives de Brume",
+  volume: "2",
   publisher: "Maison",
   releaseDate: "2027-03-12",
   status: "upcoming",
@@ -37,10 +39,12 @@ describe("book business rules", () => {
     expect(groups.purchased.map((book) => book.id)).toEqual(["c"]);
   });
 
-  it("filters by publisher and title or author", () => {
-    const books = [baseBook, { ...baseBook, id: "2", title: "Autre", author: "Quelqu'un", publisher: "Deuxième" }];
+  it("filters by publisher, title, author, series or volume", () => {
+    const books = [baseBook, { ...baseBook, id: "2", title: "Autre", author: "Quelqu'un", series: undefined, volume: undefined, publisher: "Deuxième" }];
     expect(filterBooks(books, "autrice", "Maison")).toHaveLength(1);
     expect(filterBooks(books, "autre", "")).toHaveLength(1);
+    expect(filterBooks(books, "brume", "")).toHaveLength(1);
+    expect(filterBooks(books, "2", "Maison")).toHaveLength(1);
   });
 
   it("merges Drive imports without replacing duplicate local ids", () => {
