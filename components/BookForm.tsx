@@ -14,6 +14,7 @@ import {
   hasValidBookIdentity,
 } from "@/lib/books";
 import {
+  getReleaseDateInputValue,
   getReleaseDatePrecision,
   isValidReleaseDate,
 } from "@/lib/date";
@@ -190,10 +191,10 @@ export function BookForm({ bookId }: BookFormProps) {
   const bookDisplayTitle = book
     ? getBookDisplayTitle(book, (volume) => `${t("volume")} ${volume}`)
     : "";
-  const releaseInputValue =
-    getReleaseDatePrecision(form.releaseDate) === form.releasePrecision
-      ? form.releaseDate
-      : "";
+  const releaseInputValue = getReleaseDateInputValue(
+    form.releaseDate,
+    form.releasePrecision,
+  );
 
   return (
     <>

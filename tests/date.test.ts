@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   formatReleaseDate,
+  getReleaseDateInputValue,
   getReleaseDatePrecision,
   isValidReleaseDate,
 } from "@/lib/date";
@@ -10,6 +11,15 @@ describe("release date helpers", () => {
     expect(getReleaseDatePrecision("2027")).toBe("year");
     expect(getReleaseDatePrecision("2027-11")).toBe("month");
     expect(getReleaseDatePrecision("2027-11-18")).toBe("day");
+  });
+
+  it("keeps partial year input visible while typing", () => {
+    expect(getReleaseDateInputValue("", "year")).toBe("");
+    expect(getReleaseDateInputValue("2", "year")).toBe("2");
+    expect(getReleaseDateInputValue("20", "year")).toBe("20");
+    expect(getReleaseDateInputValue("202", "year")).toBe("202");
+    expect(getReleaseDateInputValue("2027", "year")).toBe("2027");
+    expect(getReleaseDateInputValue("2027-11", "year")).toBe("");
   });
 
   it("rejects malformed or impossible release dates", () => {
