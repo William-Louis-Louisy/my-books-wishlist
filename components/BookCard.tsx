@@ -9,11 +9,14 @@ import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { deleteBook, togglePurchased } from "@/lib/book-repository";
 import { formatReleaseDate } from "@/lib/date";
 import { resolveBookStatus } from "@/lib/books";
+import { resolveBookCardSwipeAction } from "@/lib/swipe";
 import type { Book } from "@/types/book";
 
 interface BookCardProps {
   book: Book;
 }
+
+const POST_SWIPE_CLICK_BLOCK_MS = 250;
 
 export function BookCard({ book }: BookCardProps) {
   const t = useTranslations("BookCard");
@@ -23,23 +26,33 @@ export function BookCard({ book }: BookCardProps) {
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [busy, setBusy] = useState(false);
   const [visualPurchased, setVisualPurchased] = useState(book.purchased);
-  const dragged = useRef(false);
+  const suppressClickUntil = useRef(0);
   const status = resolveBookStatus(book);
   const seriesMeta = [book.series, book.volume ? t("volume", { volume: book.volume }) : undefined]
     .filter((value): value is string => Boolean(value))
     .join(" · ");
 
   const editBook = () => {
-    if (!dragged.current) router.push(`/book/${book.id}/edit`);
+    if (performance.now() < suppressClickUntil.current) return;
+    router.push(`/book/${book.id}/edit`);
+  };
+
+  const onDragStart = () => {
+    suppressClickUntil.current = performance.now() + POST_SWIPE_CLICK_BLOCK_MS;
   };
 
   const onDragEnd = (_: PointerEvent | MouseEvent | TouchEvent, info: PanInfo) => {
-    dragged.current = Math.abs(info.offset.x) > 8;
-    if (info.offset.x <= -90) setConfirmDelete(true);
-    if (info.offset.x >= 90) router.push(`/book/${book.id}/edit`);
-    window.setTimeout(() => {
-      dragged.current = false;
-    }, 80);
+    suppressClickUntil.current = performance.now() + POST_SWIPE_CLICK_BLOCK_MS;
+    const action = resolveBookCardSwipeAction(info.offset.x);
+
+    if (action === "delete") {
+      setConfirmDelete(true);
+      return;
+    }
+
+    if (action === "edit") {
+      router.push(`/book/${book.id}/edit`);
+    }
   };
 
   const handleToggle = async () => {
@@ -74,7 +87,8 @@ export function BookCard({ book }: BookCardProps) {
         <motion.article
           drag="x"
           dragConstraints={{ left: 0, right: 0 }}
-          dragElastic={0.18}
+          dragElastic={0.16}
+          onDragStart={onDragStart}
           onDragEnd={onDragEnd}
           whileTap={reduceMotion ? undefined : { scale: 0.995 }}
           className={`relative border border-line px-4 py-4 pr-14 transition-[background-color] duration-200 ease-out motion-reduce:transition-none ${
