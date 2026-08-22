@@ -1,13 +1,16 @@
 import type { Book, BookStatus } from "@/types/book";
-import { getTodayIso } from "@/lib/date";
+import { getReleaseDatePrecision, getTodayIso } from "@/lib/date";
 
 export interface BookGroups {
   upcoming: Book[];
   available: Book[];
+  unknown: Book[];
 }
 
-export interface BookMonthGroup {
-  month: string;
+export interface BookReleaseGroup {
+  key: string;
+  year: string;
+  month?: string;
   books: Book[];
 }
 
@@ -17,7 +20,7 @@ export type BookAutocompleteField = "author" | "series" | "publisher";
 type BookDisplayIdentity = Pick<Book, "title" | "series" | "volume">;
 
 export function hasValidBookIdentity(book: BookDisplayIdentity): boolean {
-  const hasTitle = Boolean(book.title.trim());
+  const hasTitle = Boolean(book.title?.trim());
   const hasSeriesAndVolume = Boolean(book.series?.trim() && book.volume?.trim());
   return hasTitle || hasSeriesAndVolume;
 }
@@ -26,7 +29,7 @@ export function getBookDisplayTitle(
   book: BookDisplayIdentity,
   formatVolume: (volume: string) => string = (volume) => volume,
 ): string {
-  const title = book.title.trim();
+  const title = book.title?.trim();
   if (title) return title;
 
   const series = book.series?.trim();
@@ -36,91 +39,147 @@ export function getBookDisplayTitle(
   return series || volume || "";
 }
 
-export function deriveStatus(releaseDate: string, today = getTodayIso()): BookStatus {
-  return releaseDate <= today ? "available" : "upcoming";
+export function deriveStatus(
+  releaseDate: string,
+  today = getTodayIso(),
+): BookStatus {
+  const precision = getReleaseDatePrecision(releaseDate);
+  if (!precision) return "unknown";
+
+  if (precision === "day") {
+    return releaseDate <= today ? "available" : "upcoming";
+  }
+
+  if (precision === "month") {
+    const currentMonth = today.slice(0, 7);
+    if (releaseDate < currentMonth) return "available";
+    if (releaseDate > currentMonth) return "upcoming";
+    return "unknown";
+  }
+
+  const currentYear = today.slice(0, 4);
+  if (releaseDate < currentYear) return "available";
+  if (releaseDate > currentYear) return "upcoming";
+  return "unknown";
 }
 
 export function resolveBookStatus(book: Book, today = getTodayIso()): BookStatus {
-  return book.statusOverride ?? deriveStatus(book.releaseDate, today);
+  return deriveStatus(book.releaseDate, today);
+}
+
+function getBookSortTitle(book: Book): string {
+  return getBookDisplayTitle(book).toLocaleLowerCase();
+}
+
+function compareBooksByReleaseDate(
+  a: Book,
+  b: Book,
+  direction: 1 | -1,
+): number {
+  const aPrecision = getReleaseDatePrecision(a.releaseDate);
+  const bPrecision = getReleaseDatePrecision(b.releaseDate);
+
+  if (aPrecision === "day" && bPrecision !== "day") return -1;
+  if (aPrecision !== "day" && bPrecision === "day") return 1;
+
+  const byDate = a.releaseDate.localeCompare(b.releaseDate) * direction;
+  return byDate || getBookSortTitle(a).localeCompare(getBookSortTitle(b));
 }
 
 export function groupBooks(books: Book[], today = getTodayIso()): BookGroups {
-  const byReleaseDate = (a: Book, b: Book) =>
-    a.releaseDate.localeCompare(b.releaseDate) || a.title.localeCompare(b.title);
-
-  const groups: BookGroups = { upcoming: [], available: [] };
+  const groups: BookGroups = { upcoming: [], available: [], unknown: [] };
 
   for (const book of books) {
     groups[resolveBookStatus(book, today)].push(book);
   }
 
-  groups.upcoming.sort(byReleaseDate);
-  groups.available.sort(byReleaseDate);
+  groups.upcoming.sort((a, b) => compareBooksByReleaseDate(a, b, 1));
+  groups.available.sort((a, b) => compareBooksByReleaseDate(a, b, 1));
+  groups.unknown.sort((a, b) => compareBooksByReleaseDate(a, b, 1));
   return groups;
 }
 
-export function groupBooksByReleaseMonth(
+function toReleaseGroup(book: Book): Omit<BookReleaseGroup, "books"> {
+  const precision = getReleaseDatePrecision(book.releaseDate);
+  const year = book.releaseDate.slice(0, 4);
+  const month = precision === "month" || precision === "day"
+    ? book.releaseDate.slice(5, 7)
+    : undefined;
+
+  return {
+    key: month ? `${year}-${month}` : year,
+    year,
+    month,
+  };
+}
+
+function compareReleaseGroups(
+  a: BookReleaseGroup,
+  b: BookReleaseGroup,
+  direction: 1 | -1,
+): number {
+  const byYear = a.year.localeCompare(b.year) * direction;
+  if (byYear) return byYear;
+
+  if (a.month && !b.month) return -1;
+  if (!a.month && b.month) return 1;
+  if (!a.month || !b.month) return 0;
+
+  return a.month.localeCompare(b.month) * direction;
+}
+
+export function groupBooksByReleasePeriod(
   books: Book[],
   order: "asc" | "desc" = "asc",
-): BookMonthGroup[] {
-  const grouped = new Map<string, Book[]>();
+): BookReleaseGroup[] {
+  const grouped = new Map<string, BookReleaseGroup>();
 
   for (const book of books) {
-    const month = book.releaseDate.slice(0, 7);
-    const existing = grouped.get(month);
-    if (existing) existing.push(book);
-    else grouped.set(month, [book]);
+    const period = toReleaseGroup(book);
+    const existing = grouped.get(period.key);
+    if (existing) existing.books.push(book);
+    else grouped.set(period.key, { ...period, books: [book] });
   }
 
-  const direction = order === "asc" ? 1 : -1;
-  return [...grouped.entries()]
-    .sort(([monthA], [monthB]) => monthA.localeCompare(monthB) * direction)
-    .map(([month, monthBooks]) => ({
-      month,
-      books: [...monthBooks].sort((a, b) => {
-        const byDate = a.releaseDate.localeCompare(b.releaseDate) * direction;
-        return byDate || a.title.localeCompare(b.title);
-      }),
+  const direction: 1 | -1 = order === "asc" ? 1 : -1;
+  return [...grouped.values()]
+    .sort((a, b) => compareReleaseGroups(a, b, direction))
+    .map((group) => ({
+      ...group,
+      books: [...group.books].sort((a, b) =>
+        compareBooksByReleaseDate(a, b, direction),
+      ),
     }));
 }
 
-export function groupBooksByTimelineMonth(
+export function groupBooksByTimelinePeriod(
   books: Book[],
   today = getTodayIso(),
-): BookMonthGroup[] {
+): BookReleaseGroup[] {
+  const currentYear = today.slice(0, 4);
   const currentMonth = today.slice(0, 7);
-  const grouped = new Map<string, Book[]>();
+  const groups = groupBooksByReleasePeriod(books, "asc");
 
-  for (const book of books) {
-    const month = book.releaseDate.slice(0, 7);
-    const existing = grouped.get(month);
-    if (existing) existing.push(book);
-    else grouped.set(month, [book]);
-  }
+  const category = (group: BookReleaseGroup): 0 | 1 | 2 | 3 => {
+    if (group.key === currentMonth) return 0;
+    if (!group.month && group.year === currentYear) return 1;
 
-  return [...grouped.entries()]
-    .sort(([monthA], [monthB]) => {
-      const aIsCurrentOrFuture = monthA >= currentMonth;
-      const bIsCurrentOrFuture = monthB >= currentMonth;
+    const isFuture =
+      group.year > currentYear ||
+      (group.year === currentYear && Boolean(group.month) && group.key > currentMonth);
 
-      if (aIsCurrentOrFuture !== bIsCurrentOrFuture) {
-        return aIsCurrentOrFuture ? -1 : 1;
-      }
+    return isFuture ? 2 : 3;
+  };
 
-      return aIsCurrentOrFuture
-        ? monthA.localeCompare(monthB)
-        : monthB.localeCompare(monthA);
-    })
-    .map(([month, monthBooks]) => {
-      const direction = month >= currentMonth ? 1 : -1;
-      return {
-        month,
-        books: [...monthBooks].sort((a, b) => {
-          const byDate = a.releaseDate.localeCompare(b.releaseDate) * direction;
-          return byDate || a.title.localeCompare(b.title);
-        }),
-      };
-    });
+  return [...groups].sort((a, b) => {
+    const categoryA = category(a);
+    const categoryB = category(b);
+    if (categoryA !== categoryB) return categoryA - categoryB;
+
+    if (categoryA === 2) return compareReleaseGroups(a, b, 1);
+    if (categoryA === 3) return compareReleaseGroups(a, b, -1);
+    return 0;
+  });
 }
 
 export function getBookAutocompleteOptions(
