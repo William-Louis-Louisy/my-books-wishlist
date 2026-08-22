@@ -27,15 +27,7 @@ Quand `title` est absent, `getBookDisplayTitle` produit uniquement pour l'interf
 
 Le formulaire propose explicitement trois modes de saisie : **Date précise**, **Mois**, **Année**. Changer de précision ne complète jamais automatiquement une partie inconnue.
 
-### Saisie native date/mois
-
-Les contrôles `type="date"` et `type="month"` conservent les sélecteurs natifs du navigateur, mais ils ne sont pas pilotés par React pendant la saisie intermédiaire. Ils utilisent une valeur initiale (`defaultValue`) puis remontent la valeur métier via `onChange`.
-
-Ce choix est volontaire : sur desktop, un contrôle natif segmenté ne fournit pas toujours une valeur ISO complète pendant que l'utilisateur saisit successivement jour, mois et année. Le rendre strictement contrôlé avec `value` pouvait réinjecter une chaîne vide et interrompre la saisie, notamment sur le segment année.
-
-Chaque changement de précision remonte un contrôle distinct grâce à une `key`, afin que la valeur initiale correspondant au mode sélectionné soit correctement réappliquée.
-
-Le mode **Année** reste un input texte contrôlé : il conserve les valeurs numériques partielles (`2`, `20`, `202`, `2027`) pendant la frappe, mais seule une année complète à quatre chiffres passe la validation finale.
+Les contrôles natifs `type="date"` et `type="month"` utilisent `defaultValue` afin de laisser le navigateur conserver correctement une saisie clavier segmentée incomplète sur desktop. La valeur métier n'est synchronisée via `onChange` que lorsque le navigateur produit une valeur exploitable. Le mode `Année`, basé sur un input texte, reste contrôlé et conserve les saisies partielles `2`, `20`, `202`, puis `2027` jusqu'à validation finale.
 
 ## Statut entièrement dérivé
 
@@ -72,6 +64,8 @@ Dans la timeline par défaut :
 2. éventuel groupe `année courante · mois non précisé` ;
 3. périodes futures dans l'ordre croissant ;
 4. périodes passées du plus récent au plus ancien.
+
+Tous les groupes mensuels `YYYY-MM` de l'organisation `Par mois` sont ouverts par défaut et peuvent être repliés individuellement. Cela inclut les mois futurs et les mois d'années passées lorsqu'une archive annuelle est ouverte. Les groupes annuels `YYYY · Mois non précisé` ne sont pas collapsables.
 
 Le mode optionnel **Par statut** possède désormais trois sections :
 
