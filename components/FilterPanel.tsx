@@ -3,6 +3,7 @@
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { useTranslations } from "next-intl";
 import { FilterIcon, SearchIcon } from "@/components/Icons";
+import type { BookOrganizationMode } from "@/lib/books";
 
 interface FilterPanelProps {
   open: boolean;
@@ -12,18 +13,31 @@ interface FilterPanelProps {
   publisher: string;
   onPublisherChange: (value: string) => void;
   publishers: string[];
+  organization: BookOrganizationMode;
+  onOrganizationChange: (value: BookOrganizationMode) => void;
 }
 
-export function FilterPanel({ open, onToggle, query, onQueryChange, publisher, onPublisherChange, publishers }: FilterPanelProps) {
+export function FilterPanel({
+  open,
+  onToggle,
+  query,
+  onQueryChange,
+  publisher,
+  onPublisherChange,
+  publishers,
+  organization,
+  onOrganizationChange,
+}: FilterPanelProps) {
   const t = useTranslations("Filters");
   const reduceMotion = useReducedMotion();
+  const hasActiveOptions = Boolean(query || publisher || organization !== "month");
 
   return (
     <div className="border-b border-line/80">
       <button type="button" onClick={onToggle} aria-expanded={open} className="flex w-full items-center gap-2 py-3 text-sm text-ink-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brass">
         <FilterIcon className="size-4" />
         {t("toggle")}
-        {(query || publisher) ? <span className="ml-auto size-1.5 rounded-full bg-brass" aria-label={t("active")} /> : null}
+        {hasActiveOptions ? <span className="ml-auto size-1.5 rounded-full bg-brass" aria-label={t("active")} /> : null}
       </button>
       <AnimatePresence initial={false}>
         {open ? (
@@ -47,6 +61,17 @@ export function FilterPanel({ open, onToggle, query, onQueryChange, publisher, o
                 <select value={publisher} onChange={(event) => onPublisherChange(event.target.value)} className="w-full border-0 border-b border-line bg-paper py-2 text-sm text-ink outline-none focus:border-b-2 focus:border-brass">
                   <option value="">{t("allPublishers")}</option>
                   {publishers.map((value) => <option key={value} value={value}>{value}</option>)}
+                </select>
+              </label>
+              <label className="block sm:col-span-2">
+                <span className="sr-only">{t("organizationLabel")}</span>
+                <select
+                  value={organization}
+                  onChange={(event) => onOrganizationChange(event.target.value as BookOrganizationMode)}
+                  className="w-full border-0 border-b border-line bg-paper py-2 text-sm text-ink outline-none focus:border-b-2 focus:border-brass"
+                >
+                  <option value="month">{t("organizationMonth")}</option>
+                  <option value="status">{t("organizationStatus")}</option>
                 </select>
               </label>
             </div>
