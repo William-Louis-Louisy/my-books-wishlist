@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, useReducedMotion, type PanInfo } from "motion/react";
+import { useLocale, useTranslations } from "next-intl";
 import { BookmarkToggle } from "@/components/BookmarkToggle";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { deleteBook, togglePurchased } from "@/lib/book-repository";
@@ -15,6 +16,8 @@ interface BookCardProps {
 }
 
 export function BookCard({ book }: BookCardProps) {
+  const t = useTranslations("BookCard");
+  const locale = useLocale();
   const router = useRouter();
   const reduceMotion = useReducedMotion();
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -22,7 +25,7 @@ export function BookCard({ book }: BookCardProps) {
   const [visualPurchased, setVisualPurchased] = useState(book.purchased);
   const dragged = useRef(false);
   const status = resolveBookStatus(book);
-  const seriesMeta = [book.series, book.volume ? `Tome ${book.volume}` : undefined]
+  const seriesMeta = [book.series, book.volume ? t("volume", { volume: book.volume }) : undefined]
     .filter((value): value is string => Boolean(value))
     .join(" · ");
 
@@ -66,7 +69,7 @@ export function BookCard({ book }: BookCardProps) {
     <>
       <motion.div layout transition={{ duration: reduceMotion ? 0.1 : 0.18, ease: "easeOut" }} className="relative overflow-hidden rounded-card">
         <div aria-hidden="true" className="absolute inset-0 flex items-center justify-between bg-surface-muted px-4 text-xs uppercase tracking-[0.08em] text-ink-muted">
-          <span>Modifier</span><span>Supprimer</span>
+          <span>{t("edit")}</span><span>{t("delete")}</span>
         </div>
         <motion.article
           drag="x"
@@ -86,7 +89,7 @@ export function BookCard({ book }: BookCardProps) {
         >
           <button
             type="button"
-            aria-label={`Modifier « ${book.title} »`}
+            aria-label={t("editAria", { title: book.title })}
             onClick={editBook}
             className="absolute inset-0 z-0 cursor-pointer rounded-card focus-visible:outline-2 focus-visible:outline-offset-[-3px] focus-visible:outline-brass"
           />
@@ -101,15 +104,15 @@ export function BookCard({ book }: BookCardProps) {
               {book.note ? <p className="mt-2 line-clamp-2 text-sm leading-5 text-ink-muted">{book.note}</p> : null}
             </div>
             <time dateTime={book.releaseDate} className="shrink-0 pt-0.5 font-mono text-[0.72rem] font-medium uppercase tracking-[0.02em] text-ink-muted">
-              {formatReleaseDate(book.releaseDate)}
+              {formatReleaseDate(book.releaseDate, locale)}
             </time>
           </div>
         </motion.article>
       </motion.div>
       <ConfirmDialog
         open={confirmDelete}
-        title="Supprimer ce livre ?"
-        description={`« ${book.title} » sera retiré de votre liste locale.`}
+        title={t("deleteTitle")}
+        description={t("deleteDescription", { title: book.title })}
         onCancel={() => setConfirmDelete(false)}
         onConfirm={() => void handleDelete()}
       />
