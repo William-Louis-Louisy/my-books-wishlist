@@ -1,13 +1,6 @@
 "use client";
 
 import {
-  getDriveEmail,
-  isDriveConnected,
-  isDriveConfigured,
-  connectGoogleDrive,
-  exportBooksToDrive,
-  importBooksFromDrive,
-  disconnectGoogleDrive,
   useEffect,
   useRef,
   useState,
@@ -15,6 +8,7 @@ import {
 } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { AppHeader } from "@/components/AppHeader";
+import { DriveIcon, ExportIcon, ImportIcon } from "@/components/Icons";
 import { useThemePreference } from "@/components/ThemeProvider";
 import { useBooks } from "@/hooks/useBooks";
 import {
@@ -32,20 +26,13 @@ import {
   importBooksFromDrive,
   isDriveConfigured,
 } from "@/lib/drive-sync";
-import type { Book } from "@/types/book";
-import { useBooks } from "@/hooks/useBooks";
 import type { AppLocale } from "@/lib/i18n";
-import { AppHeader } from "@/components/AppHeader";
 import { setStoredLocale } from "@/lib/locale-store";
-import { useSyncStatus } from "@/hooks/useSyncStatus";
-import { useLocale, useTranslations } from "next-intl";
-import { formatDateTime, getTodayIso } from "@/lib/date";
-import { DriveIcon, ExportIcon, ImportIcon } from "./Icons";
-import { useThemePreference } from "@/components/ThemeProvider";
-import { useEffect, useRef, useState, type ChangeEvent } from "react";
-import { applyBookImport, type BookImportMode } from "@/lib/book-import";
-import { setStoredTheme, type ThemePreference } from "@/lib/theme-store";
-import { parseBookBackupJson, serializeBookBackup } from "@/lib/book-backup";
+import {
+  setStoredTheme,
+  type ThemePreference,
+} from "@/lib/theme-store";
+import type { Book } from "@/types/book";
 
 interface PendingLocalImport {
   fileName: string;
@@ -114,14 +101,9 @@ export function SettingsScreen() {
     URL.revokeObjectURL(url);
   };
 
-  const importDrive = (mode: BookImportMode) =>
-    runDrive(`import-${mode}`, async () => {
-      const count = await importBooksFromDrive(mode);
-      setImportChoice(false);
-      setDriveMessage(t("importSuccess", { count }));
-    });
-
-  const prepareLocalImport = async (event: ChangeEvent<HTMLInputElement>) => {
+  const prepareLocalImport = async (
+    event: ChangeEvent<HTMLInputElement>,
+  ) => {
     const file = event.target.files?.[0];
     event.target.value = "";
     if (!file) return;
@@ -205,7 +187,8 @@ export function SettingsScreen() {
         </section>
 
         <section className="mt-8">
-          <h2 className="text-xs font-medium uppercase tracking-[0.08em] text-ink-muted">
+          <h2 className="flex items-center gap-2 text-xs font-medium uppercase tracking-[0.08em] text-ink-muted">
+            <DriveIcon className="size-4" />
             Google Drive
           </h2>
           <div className="mt-3 rounded-card border border-line p-4">
@@ -217,19 +200,6 @@ export function SettingsScreen() {
                 <p className="mt-1 text-sm leading-6 text-ink-muted">
                   {t("driveConfigHelp")}
                 </p>
-              </div>
-            ) : !connected ? (
-              <div>
-                <p className="text-sm text-ink">{t("driveIntro")}</p>
-                <button
-                  type="button"
-                  disabled={Boolean(busy)}
-                  onClick={() => void connect()}
-                  className="mt-4 inline-flex items-center justify-center w-full gap-2 rounded-lg bg-brass px-4 py-2.5 text-sm font-medium text-paper focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brass disabled:opacity-50"
-                >
-                  <DriveIcon />
-                  {busy === "connect" ? t("connecting") : t("connectDrive")}
-                </button>
               </div>
             ) : (
               <div>
@@ -245,13 +215,14 @@ export function SettingsScreen() {
                     ),
                   })}
                 </p>
-                <div className="mt-5 flex flex-wrap gap-2">
+                <div className="mt-5 grid grid-cols-2 gap-2">
                   <button
                     type="button"
                     disabled={Boolean(busy)}
                     onClick={() => void exportDrive()}
                     className={buttonSecondary}
                   >
+                    <ExportIcon className="text-ink" />
                     {busy === "drive-export"
                       ? t("saving")
                       : t("exportToDrive")}
@@ -264,6 +235,7 @@ export function SettingsScreen() {
                     }
                     className={buttonSecondary}
                   >
+                    <ImportIcon className="text-ink" />
                     {t("importFromDrive")}
                   </button>
                 </div>
