@@ -33,7 +33,7 @@ L'application fonctionne entièrement en local sans configuration Google. Pour a
 
 L'application demande exclusivement le scope `https://www.googleapis.com/auth/drive.file`. Le jeton d'accès reste en mémoire ; aucun refresh token n'est stocké en clair. Le fichier distant s'appelle `book-wishlist-export.json` et est réécrit au lieu d'être dupliqué.
 
-> **Décision OAuth :** la spec initiale mentionne PKCE tout en interdisant tout backend. Google exige aujourd'hui une plateforme backend pour terminer son *Authorization Code flow* (échange du code contre les tokens). La V1 utilise donc le *GIS token model* côté navigateur, qui est le seul modèle GIS compatible avec l'architecture 100 % client imposée. Si un backend est accepté plus tard, ce point devra être migré vers Authorization Code + PKCE.
+> **Décision OAuth :** la spec initiale mentionne PKCE tout en interdisant tout backend. Google exige aujourd'hui une plateforme backend pour terminer son *Authorization Code flow* (échange du code contre les tokens). La V1 utilise donc le *GIS token model* côté navigateur, qui est le seul modèle GIS compatible avec l'architecture 100 % client imposée. La sauvegarde automatique sera retirée dans une itération dédiée au profit d'actions Drive manuelles explicites.
 
 ## Internationalisation
 
@@ -59,19 +59,21 @@ npm run build
 
 ## Règles métier importantes
 
-- La date de sortie reste obligatoire.
-- L'identité d'un livre nécessite soit un **titre**, soit une **série + un tome**. Auteur, éditeur et note sont optionnels.
+- La date de sortie reste obligatoire, mais sa précision peut être l'**année** (`2027`), le **mois** (`2027-11`) ou la **date exacte** (`2027-11-18`). Aucun jour ou mois fictif n'est ajouté.
+- L'identité d'un livre nécessite soit un **titre**, soit une **série + un tome**. Auteur, éditeur et note sont optionnels dans le modèle.
 - Si le titre est absent, l'interface construit le titre d'affichage à partir de la série et du tome (`Saga · Tome 2`) sans dupliquer artificiellement cette valeur dans `title`.
-- Le statut est dérivé de `releaseDate` à l'affichage. Le formulaire ne permet plus de forcer manuellement `À paraître` ou `Disponible` ; les anciens `statusOverride` restent temporairement lus pour compatibilité jusqu'à la migration du modèle V2.
+- Le statut n'est plus stocké : il est dérivé à l'affichage uniquement depuis `releaseDate`.
+- Une date exacte est `Disponible` dès le jour de sortie. Un mois ou une année incomplets donnent `Disponible` s'ils sont entièrement passés, `À paraître` s'ils sont entièrement futurs et `Statut indéterminé` lorsqu'ils recouvrent la période courante.
 - Auteur, série et éditeur proposent un autocomplete alimenté par les valeurs déjà enregistrées localement.
 - Les champs de saisie du formulaire utilisent une taille minimale de 16 px afin d'éviter le zoom automatique de Safari iOS ; l'autocorrection et la vérification orthographique sont désactivées pour Auteur et Éditeur.
 - La recherche texte porte sur le titre, l'auteur, la série et le tome.
-- `purchased` ne modifie plus le regroupement : un livre acheté conserve son mois et sa position chronologique.
-- L'organisation par défaut est une timeline **par mois**, sans séparation globale `À paraître` / `Disponibles`.
-- La timeline commence par le mois courant, poursuit avec les mois futurs dans l'ordre croissant, puis affiche les mois passés du plus récent au plus ancien.
-- Le statut reste visible sur chaque card via les accents `--accent-brass` (`À paraître`) et `--accent-cloth` (`Disponible`).
-- Une organisation **Par statut** reste disponible en option dans le panneau de recherche/filtres et reproduit l'ancien découpage en deux sections.
-- Toute mutation locale programme un export Drive après ~5 secondes si Drive est connecté.
+- `purchased` ne modifie pas le regroupement : un livre acheté conserve sa position chronologique.
+- L'organisation par défaut reste une timeline par période de sortie : mois connu ou groupe `Année · Mois non précisé` pour une date annuelle.
+- La timeline commence par le mois courant, place ensuite l'éventuel groupe annuel courant, poursuit avec les périodes futures, puis affiche les périodes passées du plus récent au plus ancien.
+- Le statut reste visible sur chaque card via `--accent-brass` (`À paraître`), `--accent-cloth` (`Disponible`) et un rendu neutre pour `Statut indéterminé`.
+- Une organisation **Par statut** reste disponible en option et contient désormais trois groupes : `À paraître`, `Statut indéterminé`, `Disponibles`.
+- La base IndexedDB utilise une migration V2 qui supprime les anciens champs persistés `status` / `statusOverride` sans modifier les autres données.
+- Toute mutation locale programme encore temporairement un export Drive après ~5 secondes si Drive est connecté ; ce comportement sera supprimé dans l'itération Drive manuel.
 - Aucun backend, aucune API de catalogue de livres, aucune couverture, aucune notification push et aucune Background Sync API.
 
 ## PWA / iOS
@@ -84,3 +86,4 @@ Le service worker n'est enregistré qu'en production. Après déploiement HTTPS,
 - `docs/design-system-book-wishlist.md` : identité visuelle et règles UI.
 - `docs/feature-month-grouping-i18n.md` : décisions détaillées pour le regroupement mensuel et l'internationalisation.
 - `docs/feature-purchased-theme-autocomplete.md` : évolution du comportement acheté, thème manuel et autocomplete.
+- `docs/feature-book-model-v2.md` : modèle V2, dates à précision variable, statut dérivé et migration IndexedDB.
