@@ -2,7 +2,7 @@
 
 ## Objectif
 
-L'application dispose désormais d'un même format de sauvegarde et d'un même pipeline de validation pour :
+L'application dispose d'un même format de sauvegarde et d'un même pipeline de validation pour :
 
 - l'export JSON local ;
 - l'import JSON local ;
@@ -91,10 +91,14 @@ Un fichier invalide affiche une erreur explicite et n'altère jamais IndexedDB.
 
 ## Google Drive
 
-`drive-sync.ts` ne maintient plus son propre normaliseur de livres. Il utilise désormais :
+`drive-sync.ts` ne maintient plus son propre normaliseur de livres. Il utilise :
 
 - `serializeBookBackup` pour l'export ;
 - `parseBookBackup` pour la restauration ;
 - `applyBookImport` pour l'écriture locale.
 
-La suppression de la sauvegarde Drive automatique reste volontairement dans l'itération suivante. Cette feature ne modifie pas encore le modèle OAuth ni les déclencheurs automatiques existants.
+Google Drive est désormais un **mécanisme de sauvegarde/restauration strictement manuel**. Les deux opérations sont lancées uniquement depuis les réglages par une action utilisateur explicite.
+
+Un import Drive ne programme aucun export en retour. De la même manière, les mutations locales n'appellent jamais Drive. IndexedDB reste donc la source de vérité et le pipeline de sauvegarde ne crée aucune boucle de synchronisation implicite.
+
+Le détail du choix OAuth et de la suppression de l'autosync est documenté dans `docs/feature-manual-drive-backup.md`.

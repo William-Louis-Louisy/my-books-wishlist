@@ -1,5 +1,4 @@
 import { db } from "@/lib/db";
-import { queueDriveExport } from "@/lib/drive-sync";
 import type { Book, BookDraft } from "@/types/book";
 
 function normalizeOptional(value: string | undefined): string | undefined {
@@ -23,7 +22,6 @@ export async function createBook(draft: BookDraft): Promise<Book> {
     updatedAt: now,
   };
   await db.books.add(book);
-  queueDriveExport();
   return book;
 }
 
@@ -50,13 +48,11 @@ export async function updateBook(id: string, draft: BookDraft): Promise<Book> {
     updatedAt: now,
   };
   await db.books.put(updated);
-  queueDriveExport();
   return updated;
 }
 
 export async function deleteBook(id: string): Promise<void> {
   await db.books.delete(id);
-  queueDriveExport();
 }
 
 export async function togglePurchased(id: string): Promise<void> {
@@ -68,5 +64,4 @@ export async function togglePurchased(id: string): Promise<void> {
     purchasedAt: purchased ? new Date().toISOString() : undefined,
     updatedAt: new Date().toISOString(),
   });
-  queueDriveExport();
 }
