@@ -12,7 +12,7 @@ export default function HomePage() {
 
   return (
     <>
-      <AppHeader showSettings showSync />
+      <AppHeader showSettings />
       <main className="mx-auto max-w-app">
         {loading ? (
           <p className="py-16 text-center font-display italic text-ink-muted">
