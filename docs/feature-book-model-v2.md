@@ -27,6 +27,8 @@ Quand `title` est absent, `getBookDisplayTitle` produit uniquement pour l'interf
 
 Le formulaire propose explicitement trois modes de saisie : **Date précise**, **Mois**, **Année**. Changer de précision ne complète jamais automatiquement une partie inconnue.
 
+Les contrôles natifs `type="date"` et `type="month"` utilisent `defaultValue` afin de laisser le navigateur conserver correctement une saisie clavier segmentée incomplète sur desktop. La valeur métier n'est synchronisée via `onChange` que lorsque le navigateur produit une valeur exploitable. Le mode `Année`, basé sur un input texte, reste contrôlé et conserve les saisies partielles `2`, `20`, `202`, puis `2027` jusqu'à validation finale.
+
 ## Statut entièrement dérivé
 
 Le statut n'est plus stocké dans `Book`. Les anciens champs `status` et `statusOverride` disparaissent du modèle.
@@ -62,6 +64,8 @@ Dans la timeline par défaut :
 2. éventuel groupe `année courante · mois non précisé` ;
 3. périodes futures dans l'ordre croissant ;
 4. périodes passées du plus récent au plus ancien.
+
+Tous les groupes mensuels `YYYY-MM` de l'organisation `Par mois` sont ouverts par défaut et peuvent être repliés individuellement. Cela inclut les mois futurs et les mois d'années passées lorsqu'une archive annuelle est ouverte. Les groupes annuels `YYYY · Mois non précisé` ne sont pas collapsables.
 
 Le mode optionnel **Par statut** possède désormais trois sections :
 

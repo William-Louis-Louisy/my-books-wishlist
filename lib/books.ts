@@ -14,6 +14,17 @@ export interface BookReleaseGroup {
   books: Book[];
 }
 
+export interface BookYearArchive {
+  year: string;
+  groups: BookReleaseGroup[];
+  bookCount: number;
+}
+
+export interface BookTimeline {
+  activeGroups: BookReleaseGroup[];
+  archives: BookYearArchive[];
+}
+
 export type BookOrganizationMode = "month" | "status";
 export type BookAutocompleteField = "author" | "series" | "publisher";
 
@@ -102,9 +113,10 @@ export function groupBooks(books: Book[], today = getTodayIso()): BookGroups {
 function toReleaseGroup(book: Book): Omit<BookReleaseGroup, "books"> {
   const precision = getReleaseDatePrecision(book.releaseDate);
   const year = book.releaseDate.slice(0, 4);
-  const month = precision === "month" || precision === "day"
-    ? book.releaseDate.slice(5, 7)
-    : undefined;
+  const month =
+    precision === "month" || precision === "day"
+      ? book.releaseDate.slice(5, 7)
+      : undefined;
 
   return {
     key: month ? `${year}-${month}` : year,
@@ -182,6 +194,41 @@ export function groupBooksByTimelinePeriod(
   });
 }
 
+export function buildBookTimeline(
+  books: Book[],
+  today = getTodayIso(),
+): BookTimeline {
+  const currentYear = today.slice(0, 4);
+  const orderedGroups = groupBooksByTimelinePeriod(books, today);
+  const activeGroups: BookReleaseGroup[] = [];
+  const archivesByYear = new Map<string, BookYearArchive>();
+
+  for (const group of orderedGroups) {
+    if (group.year >= currentYear) {
+      activeGroups.push(group);
+      continue;
+    }
+
+    const existing = archivesByYear.get(group.year);
+    if (existing) {
+      existing.groups.push(group);
+      existing.bookCount += group.books.length;
+      continue;
+    }
+
+    archivesByYear.set(group.year, {
+      year: group.year,
+      groups: [group],
+      bookCount: group.books.length,
+    });
+  }
+
+  return {
+    activeGroups,
+    archives: [...archivesByYear.values()],
+  };
+}
+
 export function getBookAutocompleteOptions(
   books: Book[],
   field: BookAutocompleteField,
@@ -209,7 +256,8 @@ export function filterBooks(books: Book[], query: string, publisher: string): Bo
       .filter((value): value is string => Boolean(value))
       .map((value) => value.toLowerCase());
     const matchesQuery =
-      !normalizedQuery || searchableValues.some((value) => value.includes(normalizedQuery));
+      !normalizedQuery ||
+      searchableValues.some((value) => value.includes(normalizedQuery));
     return matchesPublisher && matchesQuery;
   });
 }

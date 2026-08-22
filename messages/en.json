@@ -68,8 +68,15 @@
     "opening": "Opening your list…"
   },
   "Sections": {
+    "archiveBooks": "{count, plural, =1 {# book} other {# books}}",
+    "archiveCollapse": "Collapse books from {year}",
+    "archiveExpand": "Show books from {year}",
     "available": "Available",
+    "monthBooks": "{count, plural, =1 {# book} other {# books}}",
+    "monthCollapse": "Collapse books from {month}",
+    "monthExpand": "Show books from {month}",
     "monthUnspecified": "{year} · Month unspecified",
+    "monthUnspecifiedShort": "Month unspecified",
     "unknown": "Status undetermined",
     "upcoming": "Upcoming"
   },
