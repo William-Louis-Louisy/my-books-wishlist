@@ -71,6 +71,6 @@ La fonction pure `hasValidBookIdentity` centralise cette règle afin qu'elle pui
 
 Lorsqu'un livre ne possède pas de titre explicite, `getBookDisplayTitle` construit uniquement pour l'affichage une valeur localisée du type `Saga · Tome 2`. La valeur n'est pas recopiée artificiellement dans le champ `title`.
 
-Tous les champs de saisie utilisent la même typographie et une taille minimale de `16px`. Ce choix supprime le zoom automatique de Safari iOS au focus sur les champs qui étaient auparavant rendus en 15px ou 13px.
+Tous les contrôles textuels du formulaire (`input`, autocomplete, `select`, date, mois et `textarea`) utilisent la classe dédiée `.book-form-control`. Elle impose explicitement `Inter`, `16px` et une hauteur de ligne commune au lieu de dépendre uniquement de l'héritage ou d'une utilité Tailwind. La valeur interne des contrôles date/mois WebKit hérite également de ces règles. Cela garantit un rendu homogène et maintient une taille calculée d'au moins `16px`, nécessaire pour éviter le zoom automatique de Safari iOS au focus.
 
 Le modèle V2 supprime définitivement le statut forcé : `status` et `statusOverride` ne sont plus persistés. Le statut est entièrement dérivé de la précision réelle de `releaseDate`.
