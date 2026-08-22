@@ -10,7 +10,6 @@ import { useLocale, useTranslations } from "next-intl";
 import { AppHeader } from "@/components/AppHeader";
 import { useThemePreference } from "@/components/ThemeProvider";
 import { useBooks } from "@/hooks/useBooks";
-import { useSyncStatus } from "@/hooks/useSyncStatus";
 import {
   parseBookBackupJson,
   serializeBookBackup,
@@ -21,13 +20,10 @@ import {
 } from "@/lib/book-import";
 import { formatDateTime, getTodayIso } from "@/lib/date";
 import {
-  connectGoogleDrive,
-  disconnectGoogleDrive,
   exportBooksToDrive,
-  getDriveEmail,
+  getDriveLastBackupAt,
   importBooksFromDrive,
   isDriveConfigured,
-  isDriveConnected,
 } from "@/lib/drive-sync";
 import type { AppLocale } from "@/lib/i18n";
 import { setStoredLocale } from "@/lib/locale-store";
@@ -48,22 +44,19 @@ export function SettingsScreen() {
   const locale = useLocale();
   const theme = useThemePreference();
   const { books } = useBooks();
-  const sync = useSyncStatus();
   const localImportInputRef = useRef<HTMLInputElement>(null);
-  const [connected, setConnected] = useState(false);
-  const [email, setEmail] = useState<string>();
   const [busy, setBusy] = useState<string>();
   const [driveMessage, setDriveMessage] = useState<string>();
   const [localMessage, setLocalMessage] = useState<string>();
-  const [importChoice, setImportChoice] = useState(false);
+  const [driveImportChoice, setDriveImportChoice] = useState(false);
+  const [lastDriveBackupAt, setLastDriveBackupAt] = useState<string>();
   const [pendingLocalImport, setPendingLocalImport] =
     useState<PendingLocalImport>();
   const configured = isDriveConfigured();
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
-      setConnected(isDriveConnected());
-      setEmail(getDriveEmail());
+      setLastDriveBackupAt(getDriveLastBackupAt());
     }, 0);
 
     return () => window.clearTimeout(timer);
@@ -81,18 +74,18 @@ export function SettingsScreen() {
     }
   };
 
-  const connect = () =>
-    runDrive("connect", async () => {
-      await connectGoogleDrive();
-      setConnected(true);
-      setEmail(getDriveEmail());
+  const exportDrive = () =>
+    runDrive("drive-export", async () => {
+      const exportedAt = await exportBooksToDrive();
+      setLastDriveBackupAt(exportedAt);
+      setDriveMessage(t("driveExportSuccess"));
     });
 
-  const disconnect = () =>
-    runDrive("disconnect", async () => {
-      await disconnectGoogleDrive();
-      setConnected(false);
-      setEmail(undefined);
+  const importDrive = (mode: BookImportMode) =>
+    runDrive(`drive-import-${mode}`, async () => {
+      const count = await importBooksFromDrive(mode);
+      setDriveImportChoice(false);
+      setDriveMessage(t("importSuccess", { count }));
     });
 
   const exportLocal = () => {
@@ -106,13 +99,6 @@ export function SettingsScreen() {
     anchor.click();
     URL.revokeObjectURL(url);
   };
-
-  const importDrive = (mode: BookImportMode) =>
-    runDrive(`import-${mode}`, async () => {
-      const count = await importBooksFromDrive(mode);
-      setImportChoice(false);
-      setDriveMessage(t("importSuccess", { count }));
-    });
 
   const prepareLocalImport = async (
     event: ChangeEvent<HTMLInputElement>,
@@ -146,15 +132,6 @@ export function SettingsScreen() {
       setBusy(undefined);
     }
   };
-
-  const syncMessage =
-    sync.state === "synced"
-      ? t("syncSynced")
-      : sync.state === "error"
-        ? t("syncError")
-        : sync.state === "pending"
-          ? t("syncPending")
-          : undefined;
 
   const buttonSecondary =
     "rounded-lg border border-line px-4 py-2.5 text-sm text-ink transition-colors hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brass disabled:opacity-50 motion-reduce:transition-none";
@@ -222,72 +199,43 @@ export function SettingsScreen() {
                   {t("driveConfigHelp")}
                 </p>
               </div>
-            ) : !connected ? (
-              <div>
-                <p className="text-sm text-ink">{t("driveIntro")}</p>
-                <button
-                  type="button"
-                  disabled={Boolean(busy)}
-                  onClick={() => void connect()}
-                  className="mt-4 rounded-lg bg-brass px-4 py-2.5 text-sm font-medium text-paper focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brass disabled:opacity-50"
-                >
-                  {busy === "connect" ? t("connecting") : t("connectDrive")}
-                </button>
-              </div>
             ) : (
               <div>
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <p className="text-sm font-medium text-ink">
-                      {email ?? t("driveConnected")}
-                    </p>
-                    <p className="mt-1 font-mono text-[0.72rem] uppercase tracking-[0.02em] text-ink-muted">
-                      {t("lastBackup", {
-                        date: formatDateTime(
-                          sync.lastExportAt,
-                          locale,
-                          common("never"),
-                        ),
-                      })}
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => void disconnect()}
-                    disabled={Boolean(busy)}
-                    className="text-sm text-ink-muted underline decoration-line underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brass"
-                  >
-                    {t("disconnect")}
-                  </button>
-                </div>
-                {syncMessage ? (
-                  <p className="mt-3 text-sm leading-5 text-ink-muted">
-                    {syncMessage}
-                  </p>
-                ) : null}
+                <p className="text-sm leading-6 text-ink-muted">
+                  {t("driveIntro")}
+                </p>
+                <p className="mt-3 font-mono text-[0.72rem] uppercase tracking-[0.02em] text-ink-muted">
+                  {t("lastBackup", {
+                    date: formatDateTime(
+                      lastDriveBackupAt,
+                      locale,
+                      common("never"),
+                    ),
+                  })}
+                </p>
                 <div className="mt-5 flex flex-wrap gap-2">
                   <button
                     type="button"
                     disabled={Boolean(busy)}
-                    onClick={() =>
-                      void runDrive("export", () =>
-                        exportBooksToDrive({ interactive: true }),
-                      )
-                    }
+                    onClick={() => void exportDrive()}
                     className={buttonSecondary}
                   >
-                    {busy === "export" ? t("saving") : t("exportNow")}
+                    {busy === "drive-export"
+                      ? t("saving")
+                      : t("exportToDrive")}
                   </button>
                   <button
                     type="button"
                     disabled={Boolean(busy)}
-                    onClick={() => setImportChoice((value) => !value)}
+                    onClick={() =>
+                      setDriveImportChoice((value) => !value)
+                    }
                     className={buttonSecondary}
                   >
                     {t("importFromDrive")}
                   </button>
                 </div>
-                {importChoice ? (
+                {driveImportChoice ? (
                   <div className="mt-4 border-t border-line pt-4">
                     <p className="text-sm leading-6 text-ink-muted">
                       {t("restoreQuestion")}
