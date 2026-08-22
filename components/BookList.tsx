@@ -29,23 +29,35 @@ export function BookList({ books }: BookListProps) {
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [publisher, setPublisher] = useState("");
-  const [organization, setOrganization] = useState<BookOrganizationMode>("month");
+  const [organization, setOrganization] =
+    useState<BookOrganizationMode>("month");
 
   const publishers = useMemo(
-    () => [...new Set(books.map((book) => book.publisher))].sort((a, b) => a.localeCompare(b, locale)),
+    () =>
+      [...new Set(books.map((book) => book.publisher))].sort((a, b) =>
+        a.localeCompare(b, locale),
+      ),
     [books, locale],
   );
   const filteredBooks = useMemo(
     () => filterBooks(books, query, publisher),
     [books, query, publisher],
   );
-  const statusGroups = useMemo(() => groupBooks(filteredBooks), [filteredBooks]);
-  const timelineGroups = useMemo(() => groupBooksByTimelineMonth(filteredBooks), [filteredBooks]);
+  const statusGroups = useMemo(
+    () => groupBooks(filteredBooks),
+    [filteredBooks],
+  );
+  const timelineGroups = useMemo(
+    () => groupBooksByTimelineMonth(filteredBooks),
+    [filteredBooks],
+  );
 
   const renderCards = (items: Book[]) => (
     <div className="space-y-2">
       <AnimatePresence initial={false}>
-        {items.map((book) => <BookCard key={book.id} book={book} />)}
+        {items.map((book) => (
+          <BookCard key={book.id} book={book} />
+        ))}
       </AnimatePresence>
     </div>
   );
@@ -62,9 +74,7 @@ export function BookList({ books }: BookListProps) {
             <span
               aria-hidden="true"
               className={`size-1.5 rounded-full ${
-                accent === "brass"
-                  ? "bg-[var(--accent-brass)]"
-                  : "bg-[var(--accent-cloth)]"
+                accent === "brass" ? "bg-brass" : "bg-cloth"
               }`}
             />
             {formatMonthLabel(group.month, locale)}
@@ -79,7 +89,7 @@ export function BookList({ books }: BookListProps) {
     <div className="space-y-6 pb-28">
       {timelineGroups.map((group) => (
         <section key={group.month}>
-          <h2 className="mb-2 font-display text-sm font-semibold text-ink">
+          <h2 className="px-page my-2 font-display text-sm font-semibold text-ink">
             {formatMonthLabel(group.month, locale)}
           </h2>
           {renderCards(group.books)}
@@ -121,8 +131,12 @@ export function BookList({ books }: BookListProps) {
 
       {filteredBooks.length === 0 ? (
         <div className="py-16 text-center">
-          <p className="font-display text-base italic text-ink">{books.length === 0 ? tHome("emptyTitle") : tHome("noResultsTitle")}</p>
-          <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-ink-muted">{books.length === 0 ? tHome("emptyBody") : tHome("noResultsBody")}</p>
+          <p className="font-display text-base italic text-ink">
+            {books.length === 0 ? tHome("emptyTitle") : tHome("noResultsTitle")}
+          </p>
+          <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-ink-muted">
+            {books.length === 0 ? tHome("emptyBody") : tHome("noResultsBody")}
+          </p>
         </div>
       ) : organization === "month" ? (
         renderMonthlyTimeline()

@@ -50,7 +50,9 @@ export function BookForm({ bookId }: BookFormProps) {
   const { book, loading } = useBook(bookId);
   const { books } = useBooks();
   const [formChanges, setFormChanges] = useState<Partial<FormState>>({});
-  const [errors, setErrors] = useState<Partial<Record<keyof FormState, string>>>({});
+  const [errors, setErrors] = useState<
+    Partial<Record<keyof FormState, string>>
+  >({});
   const [saving, setSaving] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const isEdit = Boolean(bookId);
@@ -83,7 +85,10 @@ export function BookForm({ bookId }: BookFormProps) {
     [books, locale],
   );
 
-  const updateField = <K extends keyof FormState>(key: K, value: FormState[K]) => {
+  const updateField = <K extends keyof FormState>(
+    key: K,
+    value: FormState[K],
+  ) => {
     setFormChanges((current) => ({ ...current, [key]: value }));
     setErrors((current) => ({ ...current, [key]: undefined }));
   };
@@ -134,78 +139,213 @@ export function BookForm({ bookId }: BookFormProps) {
   };
 
   if (isEdit && loading) {
-    return <><AppHeader title={t("editTitle")} backHref="/" /><main className="mx-auto max-w-app px-page py-10 text-sm text-ink-muted">{t("loading")}</main></>;
+    return (
+      <>
+        <AppHeader title={t("editTitle")} backHref="/" />
+        <main className="mx-auto max-w-app px-page py-10 text-sm text-ink-muted">
+          {t("loading")}
+        </main>
+      </>
+    );
   }
 
   if (isEdit && !loading && !book) {
-    return <><AppHeader title={t("editTitle")} backHref="/" /><main className="mx-auto max-w-app px-page py-10"><p className="font-display italic text-ink">{t("missing")}</p></main></>;
+    return (
+      <>
+        <AppHeader title={t("editTitle")} backHref="/" />
+        <main className="mx-auto max-w-app px-page py-10">
+          <p className="font-display italic text-ink">{t("missing")}</p>
+        </main>
+      </>
+    );
   }
 
-  const fieldClass = "w-full border-0 border-b border-line bg-transparent py-2 text-[0.9375rem] text-ink outline-none transition-[border-color,border-width] focus:border-b-2 focus:border-brass motion-reduce:transition-none";
-  const labelClass = "block text-xs font-medium uppercase tracking-[0.08em] text-ink-muted";
-  const optionalLabel = <span className="normal-case tracking-normal">{common("optional")}</span>;
+  const fieldClass =
+    "w-full border-0 border-b border-line bg-transparent py-2 text-[0.9375rem] text-ink outline-none transition-[border-color,border-width] focus:border-b-2 focus:border-brass motion-reduce:transition-none";
+  const labelClass =
+    "block text-xs font-medium uppercase tracking-[0.08em] text-ink-muted";
+  const optionalLabel = (
+    <span className="normal-case tracking-normal">{common("optional")}</span>
+  );
 
   return (
     <>
       <AppHeader title={isEdit ? t("editTitle") : t("addTitle")} backHref="/" />
       <main className="mx-auto max-w-app px-page pb-[max(32px,env(safe-area-inset-bottom))] pt-7">
-        <form onSubmit={onSubmit} noValidate autoComplete="off" className="space-y-6">
-          <label className={labelClass}>{t("title")}
-            <input autoFocus={!isEdit} value={form.title} onChange={(event) => updateField("title", event.target.value)} className={`${fieldClass} font-display text-lg`} aria-invalid={Boolean(errors.title)} />
-            {errors.title ? <span className="mt-1 block text-xs text-ink-muted">{errors.title}</span> : null}
+        <form
+          onSubmit={onSubmit}
+          noValidate
+          autoComplete="off"
+          className="space-y-6"
+        >
+          <label className={labelClass}>
+            {t("title")}
+            <input
+              autoFocus={!isEdit}
+              value={form.title}
+              onChange={(event) => updateField("title", event.target.value)}
+              className={`${fieldClass} font-display text-lg`}
+              aria-invalid={Boolean(errors.title)}
+            />
+            {errors.title ? (
+              <span className="mt-1 block text-xs text-ink-muted">
+                {errors.title}
+              </span>
+            ) : null}
           </label>
 
           <div>
-            <label htmlFor="book-author" className={labelClass}>{t("author")}</label>
-            <AutocompleteInput id="book-author" value={form.author} options={authorOptions} onChange={(value) => updateField("author", value)} className={fieldClass} invalid={Boolean(errors.author)} />
-            {errors.author ? <span className="mt-1 block text-xs text-ink-muted">{errors.author}</span> : null}
+            <label htmlFor="book-author" className={labelClass}>
+              {t("author")}
+            </label>
+            <AutocompleteInput
+              id="book-author"
+              value={form.author}
+              options={authorOptions}
+              onChange={(value) => updateField("author", value)}
+              className={fieldClass}
+              invalid={Boolean(errors.author)}
+            />
+            {errors.author ? (
+              <span className="mt-1 block text-xs text-ink-muted">
+                {errors.author}
+              </span>
+            ) : null}
           </div>
 
           <div>
-            <label htmlFor="book-series" className={labelClass}>{t("series")} {optionalLabel}</label>
-            <AutocompleteInput id="book-series" value={form.series} options={seriesOptions} onChange={(value) => updateField("series", value)} className={fieldClass} />
+            <label htmlFor="book-series" className={labelClass}>
+              {t("series")} {optionalLabel}
+            </label>
+            <AutocompleteInput
+              id="book-series"
+              value={form.series}
+              options={seriesOptions}
+              onChange={(value) => updateField("series", value)}
+              className={fieldClass}
+            />
           </div>
 
-          <label className={labelClass}>{t("volume")} {optionalLabel}
-            <input value={form.volume} onChange={(event) => updateField("volume", event.target.value)} className={`${fieldClass} font-mono text-[0.8125rem]`} inputMode="text" />
+          <label className={labelClass}>
+            {t("volume")} {optionalLabel}
+            <input
+              value={form.volume}
+              onChange={(event) => updateField("volume", event.target.value)}
+              className={`${fieldClass} font-mono text-[0.8125rem]`}
+              inputMode="text"
+            />
           </label>
 
           <div>
-            <label htmlFor="book-publisher" className={labelClass}>{t("publisher")}</label>
-            <AutocompleteInput id="book-publisher" value={form.publisher} options={publisherOptions} onChange={(value) => updateField("publisher", value)} className={fieldClass} invalid={Boolean(errors.publisher)} />
-            {errors.publisher ? <span className="mt-1 block text-xs text-ink-muted">{errors.publisher}</span> : null}
+            <label htmlFor="book-publisher" className={labelClass}>
+              {t("publisher")}
+            </label>
+            <AutocompleteInput
+              id="book-publisher"
+              value={form.publisher}
+              options={publisherOptions}
+              onChange={(value) => updateField("publisher", value)}
+              className={fieldClass}
+              invalid={Boolean(errors.publisher)}
+            />
+            {errors.publisher ? (
+              <span className="mt-1 block text-xs text-ink-muted">
+                {errors.publisher}
+              </span>
+            ) : null}
           </div>
 
-          <label className={labelClass}>{t("releaseDate")}
-            <input type="date" value={form.releaseDate} onChange={(event) => updateField("releaseDate", event.target.value)} className={`${fieldClass} font-mono text-[0.8125rem] uppercase tracking-[0.02em]`} aria-invalid={Boolean(errors.releaseDate)} />
-            {errors.releaseDate ? <span className="mt-1 block text-xs text-ink-muted">{errors.releaseDate}</span> : null}
+          <label className={labelClass}>
+            {t("releaseDate")}
+            <input
+              type="date"
+              value={form.releaseDate}
+              onChange={(event) =>
+                updateField("releaseDate", event.target.value)
+              }
+              className={`${fieldClass} font-mono text-[0.8125rem] uppercase tracking-[0.02em]`}
+              aria-invalid={Boolean(errors.releaseDate)}
+            />
+            {errors.releaseDate ? (
+              <span className="mt-1 block text-xs text-ink-muted">
+                {errors.releaseDate}
+              </span>
+            ) : null}
           </label>
-          <label className={labelClass}>{t("releaseStatus")}
-            <select value={form.statusChoice} onChange={(event) => updateField("statusChoice", event.target.value as StatusChoice)} className={fieldClass}>
+          <label className={labelClass}>
+            {t("releaseStatus")}
+            <select
+              value={form.statusChoice}
+              onChange={(event) =>
+                updateField("statusChoice", event.target.value as StatusChoice)
+              }
+              className={fieldClass}
+            >
               <option value="auto">{t("automaticStatus")}</option>
               <option value="upcoming">{t("forceUpcoming")}</option>
               <option value="available">{t("forceAvailable")}</option>
             </select>
           </label>
-          <label className={labelClass}>{t("note")} {optionalLabel}
-            <textarea value={form.note} onChange={(event) => updateField("note", event.target.value)} rows={4} className={`${fieldClass} resize-y leading-6`} />
+          <label className={labelClass}>
+            {t("note")} {optionalLabel}
+            <textarea
+              value={form.note}
+              onChange={(event) => updateField("note", event.target.value)}
+              rows={4}
+              className={`${fieldClass} resize-y leading-6`}
+            />
           </label>
 
           <label className="flex cursor-pointer items-center gap-3 border-y border-line py-4 text-sm text-ink">
-            <input type="checkbox" checked={form.purchased} onChange={(event) => updateField("purchased", event.target.checked)} className="size-4 accent-[var(--accent-brass)]" />
+            <input
+              type="checkbox"
+              checked={form.purchased}
+              onChange={(event) =>
+                updateField("purchased", event.target.checked)
+              }
+              className="size-4 accent-brass"
+            />
             {t("alreadyPurchased")}
           </label>
 
           <div className="flex items-center gap-3 pt-2">
-            <button type="submit" disabled={saving} className="rounded-lg bg-brass px-5 py-2.5 text-sm font-medium text-paper focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brass disabled:opacity-50">
+            <button
+              type="submit"
+              disabled={saving}
+              className="rounded-lg bg-brass px-5 py-2.5 text-sm font-medium text-paper focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brass disabled:opacity-50"
+            >
               {saving ? t("saving") : t("save")}
             </button>
-            <button type="button" onClick={() => router.back()} className="rounded-lg px-3 py-2.5 text-sm text-ink-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brass">{common("cancel")}</button>
-            {isEdit ? <button type="button" onClick={() => setConfirmDelete(true)} className="ml-auto rounded-lg px-3 py-2.5 text-sm text-ink-muted underline decoration-line underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brass">{common("delete")}</button> : null}
+            <button
+              type="button"
+              onClick={() => router.back()}
+              className="rounded-lg px-3 py-2.5 text-sm text-ink-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brass"
+            >
+              {common("cancel")}
+            </button>
+            {isEdit ? (
+              <button
+                type="button"
+                onClick={() => setConfirmDelete(true)}
+                className="ml-auto rounded-lg px-3 py-2.5 text-sm text-ink-muted underline decoration-line underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brass"
+              >
+                {common("delete")}
+              </button>
+            ) : null}
           </div>
         </form>
       </main>
-      <ConfirmDialog open={confirmDelete} title={t("deleteTitle")} description={book ? t("deleteDescription", { title: book.title }) : t("deleteDescriptionFallback")} onCancel={() => setConfirmDelete(false)} onConfirm={() => void onDelete()} />
+      <ConfirmDialog
+        open={confirmDelete}
+        title={t("deleteTitle")}
+        description={
+          book
+            ? t("deleteDescription", { title: book.title })
+            : t("deleteDescriptionFallback")
+        }
+        onCancel={() => setConfirmDelete(false)}
+        onConfirm={() => void onDelete()}
+      />
     </>
   );
 }

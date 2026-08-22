@@ -32,7 +32,9 @@ export function AppHeader({
             <ArrowLeftIcon />
           </Link>
         ) : null}
-        <h1 className="font-display text-[1.375rem] font-semibold leading-tight text-ink">{title ?? t("appName")}</h1>
+        <h1 className="font-display text-[1.375rem] font-semibold leading-tight text-ink">
+          {title ?? t("appName")}
+        </h1>
         <div className="ml-auto flex items-center gap-1">
           {showSync ? <SyncDot /> : null}
           {showSettings ? (

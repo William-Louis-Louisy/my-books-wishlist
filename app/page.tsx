@@ -13,9 +13,17 @@ export default function HomePage() {
   return (
     <>
       <AppHeader showSettings showSync />
-      <main className="mx-auto max-w-app px-page">
-        {loading ? <p className="py-16 text-center font-display italic text-ink-muted">{t("opening")}</p> : null}
-        {error ? <p className="py-16 text-center text-sm text-ink-muted">{t("error")}</p> : null}
+      <main className="mx-auto max-w-app">
+        {loading ? (
+          <p className="py-16 text-center font-display italic text-ink-muted">
+            {t("opening")}
+          </p>
+        ) : null}
+        {error ? (
+          <p className="py-16 text-center text-sm text-ink-muted">
+            {t("error")}
+          </p>
+        ) : null}
         {!loading && !error ? <BookList books={books} /> : null}
       </main>
       <FloatingActionButton />

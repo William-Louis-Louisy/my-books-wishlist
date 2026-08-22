@@ -2,7 +2,13 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { animate, motion, useMotionValue, useReducedMotion, type PanInfo } from "motion/react";
+import {
+  animate,
+  motion,
+  useMotionValue,
+  useReducedMotion,
+  type PanInfo,
+} from "motion/react";
 import { useLocale, useTranslations } from "next-intl";
 import { BookmarkToggle } from "@/components/BookmarkToggle";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
@@ -10,7 +16,10 @@ import { PencilIcon, TrashIcon } from "@/components/Icons";
 import { deleteBook, togglePurchased } from "@/lib/book-repository";
 import { formatReleaseDate } from "@/lib/date";
 import { resolveBookStatus } from "@/lib/books";
-import { resolveBookCardSwipeAction, type BookCardSwipeAction } from "@/lib/swipe";
+import {
+  resolveBookCardSwipeAction,
+  type BookCardSwipeAction,
+} from "@/lib/swipe";
 import type { Book } from "@/types/book";
 
 interface BookCardProps {
@@ -32,16 +41,22 @@ export function BookCard({ book }: BookCardProps) {
   const [busy, setBusy] = useState(false);
   const [visualPurchased, setVisualPurchased] = useState(book.purchased);
   const status = resolveBookStatus(book);
-  const seriesMeta = [book.series, book.volume ? t("volume", { volume: book.volume }) : undefined]
+  const seriesMeta = [
+    book.series,
+    book.volume ? t("volume", { volume: book.volume }) : undefined,
+  ]
     .filter((value): value is string => Boolean(value))
     .join(" · ");
 
-  const settleCard = useCallback((target: number) => {
-    animate(x, target, {
-      duration: reduceMotion ? 0.1 : 0.18,
-      ease: "easeOut",
-    });
-  }, [reduceMotion, x]);
+  const settleCard = useCallback(
+    (target: number) => {
+      animate(x, target, {
+        duration: reduceMotion ? 0.1 : 0.18,
+        ease: "easeOut",
+      });
+    },
+    [reduceMotion, x],
+  );
 
   const closeActions = useCallback(() => {
     setOpenAction(null);
@@ -70,7 +85,10 @@ export function BookCard({ book }: BookCardProps) {
     };
   }, [closeActions, openAction]);
 
-  const onDragEnd = (_: PointerEvent | MouseEvent | TouchEvent, info: PanInfo) => {
+  const onDragEnd = (
+    _: PointerEvent | MouseEvent | TouchEvent,
+    info: PanInfo,
+  ) => {
     const action = resolveBookCardSwipeAction(info.offset.x, info.velocity.x);
     setOpenAction(action);
 
@@ -91,7 +109,9 @@ export function BookCard({ book }: BookCardProps) {
     setBusy(true);
     setVisualPurchased((value) => !value);
     try {
-      await new Promise((resolve) => window.setTimeout(resolve, reduceMotion ? 100 : 250));
+      await new Promise((resolve) =>
+        window.setTimeout(resolve, reduceMotion ? 100 : 250),
+      );
       await togglePurchased(book.id);
     } catch {
       setVisualPurchased(book.purchased);
@@ -118,8 +138,8 @@ export function BookCard({ book }: BookCardProps) {
   const dateColor = visualPurchased
     ? "text-ink-muted"
     : status === "upcoming"
-      ? "text-[var(--accent-brass)]"
-      : "text-[var(--accent-cloth)]";
+      ? "text-brass"
+      : "text-cloth";
 
   return (
     <>
@@ -127,9 +147,12 @@ export function BookCard({ book }: BookCardProps) {
         ref={cardRef}
         layout
         transition={{ duration: reduceMotion ? 0.1 : 0.18, ease: "easeOut" }}
-        className="relative overflow-hidden rounded-card"
+        className="relative overflow-hidden"
       >
-        <div className="absolute inset-0 flex" aria-hidden={openAction === null}>
+        <div
+          className="absolute inset-0 flex"
+          aria-hidden={openAction === null}
+        >
           <button
             type="button"
             aria-label={t("editAria", { title: book.title })}
@@ -163,21 +186,42 @@ export function BookCard({ book }: BookCardProps) {
             visualPurchased
               ? "border-l-[3px] border-l-ink-muted/40"
               : status === "upcoming"
-                ? "border-l-[3px] border-l-[var(--accent-brass)]"
-                : "border-l-[3px] border-l-[var(--accent-cloth)]"
+                ? "border-l-[3px] border-l-brass"
+                : "border-l-[3px] border-l-cloth"
           }`}
         >
-          <BookmarkToggle purchased={visualPurchased} onToggle={handleToggle} disabled={busy} />
-          <div className={`pointer-events-none relative z-[1] flex items-start gap-4 transition-opacity duration-200 ease-out motion-reduce:transition-none ${visualPurchased ? "opacity-[0.55]" : "opacity-100"}`}>
+          <BookmarkToggle
+            purchased={visualPurchased}
+            onToggle={handleToggle}
+            disabled={busy}
+          />
+          <div
+            className={`pointer-events-none relative z-1 flex items-start gap-4 transition-opacity duration-200 ease-out motion-reduce:transition-none ${visualPurchased ? "opacity-[0.55]" : "opacity-100"}`}
+          >
             <div className="min-w-0 flex-1">
-              <h3 className={`font-display text-lg font-medium leading-[1.3] text-ink ${visualPurchased ? "line-through" : ""}`}>
+              <h3
+                className={`font-display text-lg font-medium leading-[1.3] text-ink ${visualPurchased ? "line-through" : ""}`}
+              >
                 {book.title}
               </h3>
-              {seriesMeta ? <p className="mt-1 truncate text-[0.8125rem] text-ink-muted">{seriesMeta}</p> : null}
-              <p className="mt-1 truncate text-[0.8125rem] text-ink-muted">{book.author} · {book.publisher}</p>
-              {book.note ? <p className="mt-2 line-clamp-2 text-sm leading-5 text-ink-muted">{book.note}</p> : null}
+              {seriesMeta ? (
+                <p className="mt-1 truncate text-[0.8125rem] text-ink-muted">
+                  {seriesMeta}
+                </p>
+              ) : null}
+              <p className="mt-1 truncate text-[0.8125rem] text-ink-muted">
+                {book.author} · {book.publisher}
+              </p>
+              {book.note ? (
+                <p className="mt-2 line-clamp-2 text-sm leading-5 text-ink-muted">
+                  {book.note}
+                </p>
+              ) : null}
             </div>
-            <time dateTime={book.releaseDate} className={`shrink-0 pt-0.5 font-mono text-[0.8125rem] font-medium uppercase tracking-[0.02em] ${dateColor}`}>
+            <time
+              dateTime={book.releaseDate}
+              className={`shrink-0 pt-0.5 font-mono text-[0.8125rem] font-medium uppercase tracking-[0.02em] ${dateColor}`}
+            >
               {formatReleaseDate(book.releaseDate, locale)}
             </time>
           </div>

@@ -13,12 +13,12 @@ export function SyncDot() {
   const sync = useSyncStatus();
   const color =
     sync.state === "synced"
-      ? "bg-[var(--accent-cloth)]"
+      ? "bg-cloth"
       : sync.state === "error"
         ? "bg-sync-error"
         : sync.state === "disconnected"
           ? "bg-ink-muted/35"
-          : "bg-[var(--accent-brass)]";
+          : "bg-brass";
   const statusLabel =
     sync.state === "synced"
       ? t("synced")
@@ -43,7 +43,9 @@ export function SyncDot() {
         <div className="absolute right-0 top-10 z-30 w-64 rounded-card border border-line bg-paper p-3 text-xs text-ink shadow-none">
           <p className="font-medium">{statusLabel}</p>
           <p className="mt-1 font-mono text-[0.7rem] uppercase tracking-[0.02em] text-ink-muted">
-            {t("lastBackup", { date: formatDateTime(sync.lastExportAt, locale, common("never")) })}
+            {t("lastBackup", {
+              date: formatDateTime(sync.lastExportAt, locale, common("never")),
+            })}
           </p>
         </div>
       ) : null}
