@@ -6,7 +6,7 @@ Le champ `purchased` reste une information indépendante du statut de sortie. Il
 
 Un livre acheté :
 
-- reste dans `À paraître` ou `Disponibles` selon `releaseDate` et l'éventuel `statusOverride` ;
+- reste dans son groupe de sortie selon `releaseDate` ; les anciens `statusOverride` restent encore lus temporairement pour compatibilité, mais le formulaire ne permet plus d'en créer ;
 - conserve son groupe mensuel et sa position chronologique ;
 - garde le titre barré et un rendu atténué ;
 - utilise une bande latérale grisée pour signaler l'état acheté.
@@ -56,4 +56,21 @@ Les suggestions proviennent uniquement des livres déjà enregistrés localement
 
 Le composant d'autocomplete n'utilise plus de `datalist` natif afin d'éviter les heuristiques d'autofill du navigateur (par exemple les suggestions de moyens de paiement sur le champ Série). Il expose une vraie combobox accessible au clavier : flèches, Entrée et Échap.
 
+Pour Auteur et Éditeur, l'autocorrection et la vérification orthographique sont désactivées afin d'éviter les corrections indésirables d'iOS sur les noms propres et maisons d'édition.
+
 Aucune API externe de livres ou d'auteurs n'est introduite.
+
+## Formulaire — feedback utilisateurs, itération 1
+
+La date de sortie reste obligatoire. Tous les autres champs deviennent optionnels, avec une règle métier unique pour identifier le livre :
+
+- un titre suffit ;
+- sans titre, une série **et** un tome sont requis ensemble.
+
+La fonction pure `hasValidBookIdentity` centralise cette règle afin qu'elle puisse être réutilisée plus tard par l'import JSON et les migrations de données.
+
+Lorsqu'un livre ne possède pas de titre explicite, `getBookDisplayTitle` construit uniquement pour l'affichage une valeur localisée du type `Saga · Tome 2`. La valeur n'est pas recopiée artificiellement dans le champ `title`.
+
+Tous les champs de saisie utilisent désormais la même typographie et une taille minimale de `16px`. Ce choix supprime le zoom automatique de Safari iOS au focus sur les champs qui étaient auparavant rendus en 15px ou 13px.
+
+Le sélecteur permettant de forcer `À paraître` / `Disponible` est retiré du formulaire. Les anciens overrides restent temporairement compatibles dans le modèle courant et seront supprimés avec la migration du modèle de date V2.
