@@ -9,6 +9,8 @@
   --color-line: var(--line);
   --color-surface-muted: var(--surface-muted);
   --color-sync-error: var(--sync-error);
+  --color-action-edit: var(--action-edit);
+  --color-action-delete: var(--action-delete);
   --font-display: var(--font-literata);
   --font-sans: var(--font-inter);
   --font-mono: var(--font-plex-mono);
@@ -27,6 +29,8 @@
   --line: #dfdad0;
   --surface-muted: #edeae3;
   --sync-error: #b4543f;
+  --action-edit: #2f6f9f;
+  --action-delete: #a6493d;
   color-scheme: light;
 }
 
@@ -39,6 +43,8 @@
   --line: #26333a;
   --surface-muted: #182229;
   --sync-error: #b4543f;
+  --action-edit: #2b648f;
+  --action-delete: #9e3f35;
   color-scheme: dark;
 }
 
@@ -53,6 +59,8 @@
     --line: #26333a;
     --surface-muted: #182229;
     --sync-error: #b4543f;
+    --action-edit: #2b648f;
+    --action-delete: #9e3f35;
     color-scheme: dark;
   }
 }

@@ -33,6 +33,7 @@
     "edit": "Modifier",
     "delete": "Supprimer",
     "editAria": "Modifier « {title} »",
+    "deleteAria": "Supprimer « {title} »",
     "volume": "Tome {volume}",
     "deleteTitle": "Supprimer ce livre ?",
     "deleteDescription": "« {title} » sera retiré de votre liste locale."

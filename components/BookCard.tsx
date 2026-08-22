@@ -1,58 +1,67 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { motion, useReducedMotion, type PanInfo } from "motion/react";
+import { animate, motion, useMotionValue, useReducedMotion, type PanInfo } from "motion/react";
 import { useLocale, useTranslations } from "next-intl";
 import { BookmarkToggle } from "@/components/BookmarkToggle";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { PencilIcon, TrashIcon } from "@/components/Icons";
 import { deleteBook, togglePurchased } from "@/lib/book-repository";
 import { formatReleaseDate } from "@/lib/date";
 import { resolveBookStatus } from "@/lib/books";
-import { resolveBookCardSwipeAction } from "@/lib/swipe";
+import { resolveBookCardSwipeAction, type BookCardSwipeAction } from "@/lib/swipe";
 import type { Book } from "@/types/book";
 
 interface BookCardProps {
   book: Book;
 }
 
-const POST_SWIPE_CLICK_BLOCK_MS = 250;
+const ACTION_REVEAL_WIDTH = 76;
+const DRAG_LIMIT = 104;
 
 export function BookCard({ book }: BookCardProps) {
   const t = useTranslations("BookCard");
   const locale = useLocale();
   const router = useRouter();
   const reduceMotion = useReducedMotion();
+  const x = useMotionValue(0);
+  const [openAction, setOpenAction] = useState<BookCardSwipeAction>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [busy, setBusy] = useState(false);
   const [visualPurchased, setVisualPurchased] = useState(book.purchased);
-  const suppressClickUntil = useRef(0);
   const status = resolveBookStatus(book);
   const seriesMeta = [book.series, book.volume ? t("volume", { volume: book.volume }) : undefined]
     .filter((value): value is string => Boolean(value))
     .join(" · ");
 
-  const editBook = () => {
-    if (performance.now() < suppressClickUntil.current) return;
-    router.push(`/book/${book.id}/edit`);
+  const settleCard = (target: number) => {
+    animate(x, target, {
+      duration: reduceMotion ? 0.1 : 0.18,
+      ease: "easeOut",
+    });
   };
 
-  const onDragStart = () => {
-    suppressClickUntil.current = performance.now() + POST_SWIPE_CLICK_BLOCK_MS;
+  const closeActions = () => {
+    setOpenAction(null);
+    settleCard(0);
   };
 
   const onDragEnd = (_: PointerEvent | MouseEvent | TouchEvent, info: PanInfo) => {
-    suppressClickUntil.current = performance.now() + POST_SWIPE_CLICK_BLOCK_MS;
-    const action = resolveBookCardSwipeAction(info.offset.x);
+    const action = resolveBookCardSwipeAction(info.offset.x, info.velocity.x);
+    setOpenAction(action);
 
-    if (action === "delete") {
-      setConfirmDelete(true);
+    if (action === "edit") {
+      settleCard(ACTION_REVEAL_WIDTH);
       return;
     }
 
-    if (action === "edit") {
-      router.push(`/book/${book.id}/edit`);
+    if (action === "delete") {
+      settleCard(-ACTION_REVEAL_WIDTH);
+      return;
     }
+
+    settleCard(0);
   };
 
   const handleToggle = async () => {
@@ -68,6 +77,11 @@ export function BookCard({ book }: BookCardProps) {
     }
   };
 
+  const handleDeleteRequest = () => {
+    closeActions();
+    setConfirmDelete(true);
+  };
+
   const handleDelete = async () => {
     setBusy(true);
     try {
@@ -78,19 +92,47 @@ export function BookCard({ book }: BookCardProps) {
     }
   };
 
+  const dateColor = visualPurchased
+    ? "text-ink-muted"
+    : status === "upcoming"
+      ? "text-brass"
+      : "text-cloth";
+
   return (
     <>
-      <motion.div layout transition={{ duration: reduceMotion ? 0.1 : 0.18, ease: "easeOut" }} className="relative overflow-hidden rounded-card">
-        <div aria-hidden="true" className="absolute inset-0 flex items-center justify-between bg-surface-muted px-4 text-xs uppercase tracking-[0.08em] text-ink-muted">
-          <span>{t("edit")}</span><span>{t("delete")}</span>
+      <motion.div
+        layout
+        transition={{ duration: reduceMotion ? 0.1 : 0.18, ease: "easeOut" }}
+        className="relative overflow-hidden rounded-card"
+      >
+        <div className="absolute inset-0 flex" aria-hidden={openAction === null}>
+          <button
+            type="button"
+            aria-label={t("editAria", { title: book.title })}
+            disabled={openAction !== "edit"}
+            onClick={() => router.push(`/book/${book.id}/edit`)}
+            className="flex w-1/2 items-center justify-start bg-action-edit pl-6 text-white focus-visible:outline-2 focus-visible:outline-offset-[-3px] focus-visible:outline-white disabled:pointer-events-none"
+          >
+            <PencilIcon className="size-6" />
+          </button>
+          <button
+            type="button"
+            aria-label={t("deleteAria", { title: book.title })}
+            disabled={openAction !== "delete"}
+            onClick={handleDeleteRequest}
+            className="flex w-1/2 items-center justify-end bg-action-delete pr-6 text-white focus-visible:outline-2 focus-visible:outline-offset-[-3px] focus-visible:outline-white disabled:pointer-events-none"
+          >
+            <TrashIcon className="size-6" />
+          </button>
         </div>
+
         <motion.article
           drag="x"
-          dragConstraints={{ left: 0, right: 0 }}
-          dragElastic={0.16}
-          onDragStart={onDragStart}
+          dragConstraints={{ left: -DRAG_LIMIT, right: DRAG_LIMIT }}
+          dragElastic={0.2}
+          dragMomentum={false}
           onDragEnd={onDragEnd}
-          whileTap={reduceMotion ? undefined : { scale: 0.995 }}
+          style={{ x, touchAction: "pan-y" }}
           className={`relative border border-line px-4 py-4 pr-14 transition-[background-color] duration-200 ease-out motion-reduce:transition-none ${
             visualPurchased ? "bg-surface-muted" : "bg-paper"
           } ${
@@ -101,23 +143,17 @@ export function BookCard({ book }: BookCardProps) {
                 : "border-l-[3px] border-l-cloth"
           }`}
         >
-          <button
-            type="button"
-            aria-label={t("editAria", { title: book.title })}
-            onClick={editBook}
-            className="absolute inset-0 z-0 cursor-pointer rounded-card focus-visible:outline-2 focus-visible:outline-offset-[-3px] focus-visible:outline-brass"
-          />
           <BookmarkToggle purchased={visualPurchased} onToggle={handleToggle} disabled={busy} />
           <div className={`pointer-events-none relative z-[1] flex items-start gap-4 transition-opacity duration-200 ease-out motion-reduce:transition-none ${visualPurchased ? "opacity-[0.55]" : "opacity-100"}`}>
             <div className="min-w-0 flex-1">
               <h3 className={`font-display text-lg font-medium leading-[1.3] text-ink ${visualPurchased ? "line-through" : ""}`}>
                 {book.title}
               </h3>
-              {seriesMeta ? <p className="mt-1 truncate text-xs font-medium text-ink">{seriesMeta}</p> : null}
+              {seriesMeta ? <p className="mt-1 truncate text-[0.8125rem] text-ink-muted">{seriesMeta}</p> : null}
               <p className="mt-1 truncate text-[0.8125rem] text-ink-muted">{book.author} · {book.publisher}</p>
               {book.note ? <p className="mt-2 line-clamp-2 text-sm leading-5 text-ink-muted">{book.note}</p> : null}
             </div>
-            <time dateTime={book.releaseDate} className="shrink-0 pt-0.5 font-mono text-[0.72rem] font-medium uppercase tracking-[0.02em] text-ink-muted">
+            <time dateTime={book.releaseDate} className={`shrink-0 pt-0.5 font-mono text-[0.8125rem] font-medium uppercase tracking-[0.02em] ${dateColor}`}>
               {formatReleaseDate(book.releaseDate, locale)}
             </time>
           </div>
