@@ -7,6 +7,7 @@ import {
   groupBooks,
   groupBooksByReleaseMonth,
   groupBooksByTimelineMonth,
+  hasValidBookIdentity,
   mergeBooksIgnoringDuplicateIds,
   resolveBookStatus,
 } from "@/lib/books";
@@ -31,6 +32,13 @@ describe("book business rules", () => {
   it("derives availability from the local ISO date", () => {
     expect(deriveStatus("2026-08-22", "2026-08-22")).toBe("available");
     expect(deriveStatus("2026-08-23", "2026-08-22")).toBe("upcoming");
+  });
+
+  it("accepts a title or a complete series and volume identity", () => {
+    expect(hasValidBookIdentity(baseBook)).toBe(true);
+    expect(hasValidBookIdentity({ ...baseBook, title: "" })).toBe(true);
+    expect(hasValidBookIdentity({ ...baseBook, title: "", volume: undefined })).toBe(false);
+    expect(hasValidBookIdentity({ ...baseBook, title: "", series: undefined })).toBe(false);
   });
 
   it("uses the explicit title or falls back to series and volume", () => {
