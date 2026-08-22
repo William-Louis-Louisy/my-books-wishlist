@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, useReducedMotion, type PanInfo } from "motion/react";
 import { BookmarkToggle } from "@/components/BookmarkToggle";
@@ -22,10 +22,6 @@ export function BookCard({ book }: BookCardProps) {
   const [visualPurchased, setVisualPurchased] = useState(book.purchased);
   const dragged = useRef(false);
   const status = resolveBookStatus(book);
-
-  useEffect(() => {
-    setVisualPurchased(book.purchased);
-  }, [book.purchased]);
 
   const editBook = () => {
     if (!dragged.current) router.push(`/book/${book.id}/edit`);
