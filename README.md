@@ -65,14 +65,16 @@ npm run build
 - Le statut n'est plus persisté : il est dérivé de `releaseDate` à l'affichage et peut être `À paraître`, `Disponible` ou `Indéterminé` lorsque la précision de la date ne permet pas de trancher.
 - Auteur, série et éditeur proposent un autocomplete alimenté par les valeurs déjà enregistrées localement.
 - Les contrôles textuels du formulaire utilisent `.book-form-control`, qui impose explicitement Inter, `16px`, poids 400, casse et espacement normaux, y compris pour la valeur interne des champs date/mois WebKit. Cela homogénéise réellement les champs et évite le zoom Safari iOS au focus.
+- Les champs natifs Date précise et Mois utilisent `defaultValue` plutôt qu'un `value` React strict afin de préserver la saisie segmentée manuelle sur desktop ; le mode Année reste contrôlé et accepte les quatre chiffres progressivement.
 - L'autocorrection et la vérification orthographique sont désactivées pour Auteur et Éditeur.
 - La recherche texte porte sur le titre, l'auteur, la série et le tome.
 - `purchased` ne modifie plus le regroupement : un livre acheté conserve son groupe temporel et sa position chronologique.
 - L'organisation par défaut reste une timeline temporelle sans séparation globale `À paraître` / `Disponibles`.
 - Les dates mensuelles et exactes sont groupées par mois ; les dates annuelles utilisent un groupe `YYYY · Mois non précisé`.
 - La partie active de la timeline conserve l'année courante et les années futures ; les mois déjà passés de l'année courante restent visibles du plus récent au plus ancien.
+- Les mois de l'année courante sont ouverts par défaut mais peuvent être repliés individuellement ; chaque en-tête affiche son nombre de livres et un chevron.
 - Les années strictement antérieures sont regroupées en **archives annuelles collapsables**, fermées par défaut, avec compteur de livres. Une archive ouverte affiche ses mois du plus récent au plus ancien puis `Mois non précisé` si nécessaire.
-- Une recherche texte ou un filtre éditeur force temporairement l'ouverture des archives concernées afin qu'aucun résultat ne soit masqué.
+- Une recherche texte ou un filtre éditeur force temporairement l'ouverture des mois courants et des archives concernées afin qu'aucun résultat ne soit masqué.
 - Les statuts certains restent visibles sur chaque card via les accents `--accent-brass` (`À paraître`) et `--accent-cloth` (`Disponible`) ; le statut indéterminé utilise un rendu neutre.
 - Une organisation **Par statut** reste disponible en option et comporte désormais `À paraître`, `Statut indéterminé` et `Disponibles`.
 - Toute mutation locale programme encore un export Drive après ~5 secondes si Drive est connecté ; cette sauvegarde automatique sera supprimée dans l'itération Drive dédiée afin de rester cohérent avec l'architecture sans backend.
@@ -87,5 +89,5 @@ Le service worker n'est enregistré qu'en production. Après déploiement HTTPS,
 - `docs/spec-book-wishlist.md` : spécification fonctionnelle historique.
 - `docs/design-system-book-wishlist.md` : identité visuelle et règles UI.
 - `docs/feature-book-model-v2.md` : modèle métier V2, dates partielles et migration IndexedDB.
-- `docs/feature-month-grouping-i18n.md` : décisions détaillées pour la timeline temporelle, les archives annuelles et l'internationalisation.
+- `docs/feature-month-grouping-i18n.md` : décisions détaillées pour la timeline temporelle, les mois/archives collapsables et l'internationalisation.
 - `docs/feature-purchased-theme-autocomplete.md` : comportement acheté, thème manuel, autocomplete et formulaire.
