@@ -16,18 +16,36 @@ Le statut de sortie reste visible au niveau de chaque card :
 - `Disponible` utilise `--accent-cloth` ;
 - `Statut indéterminé` utilise un rendu neutre.
 
-### Ordre de la timeline
+### Ordre de la timeline active
 
-La timeline est centrée autour de la période courante :
+La partie toujours visible de la timeline est centrée autour de la période courante :
 
 1. mois courant ;
 2. éventuel groupe `année courante · mois non précisé` ;
 3. périodes futures dans l'ordre chronologique croissant ;
-4. périodes passées du plus récent au plus ancien.
+4. périodes déjà passées de l'année courante, du plus récent au plus ancien.
 
 Les dates précises sont triées chronologiquement dans leur groupe. Une date connue uniquement au mois reste après les dates précises du même mois afin de ne pas lui inventer un jour implicite.
 
-Cette logique vit dans `groupBooksByTimelinePeriod` (`lib/books.ts`) et est couverte par Vitest.
+La logique de tri temporel vit dans `groupBooksByTimelinePeriod` (`lib/books.ts`) et est couverte par Vitest.
+
+### Archives annuelles collapsables
+
+Les années strictement antérieures à l'année courante ne sont plus déroulées intégralement dans la timeline par défaut. `buildBookTimeline` sépare désormais :
+
+- `activeGroups` : année courante et années futures ;
+- `archives` : années passées regroupées de la plus récente à la plus ancienne.
+
+Chaque archive annuelle est **repliée par défaut** et affiche son année, son nombre de livres et un chevron. Une fois ouverte, elle retrouve le détail par période :
+
+- mois du plus récent au plus ancien ;
+- éventuel groupe `Mois non précisé` en dernier pour les livres dont seule l'année est connue.
+
+L'état ouvert/fermé est un état d'interface local à `BookList` et n'est pas persisté dans IndexedDB.
+
+Lorsqu'une recherche texte ou un filtre éditeur est actif, les archives concernées sont temporairement forcées ouvertes afin qu'aucun résultat ne soit masqué derrière un groupe fermé. Lorsque les filtres sont retirés, l'interface retrouve l'état manuel des archives.
+
+Les archives annuelles s'appliquent à l'organisation principale `Par mois`. Le mode optionnel `Par statut` conserve son regroupement métier propre.
 
 ### Organisation optionnelle par statut
 
@@ -58,7 +76,7 @@ L'internationalisation utilise `next-intl`. Les catalogues sont séparés dans :
 - `messages/fr.json`
 - `messages/en.json`
 
-Les textes visibles, libellés d'accessibilité, confirmations, validations, états Drive, mois et dates sont localisés.
+Les textes visibles, libellés d'accessibilité, confirmations, validations, états Drive, mois, dates et contrôles d'archives sont localisés.
 
 ### Persistance de la langue
 
