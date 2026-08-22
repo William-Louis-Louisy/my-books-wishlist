@@ -23,20 +23,23 @@ Un livre (`Book`) :
 ```ts
 interface Book {
   id: string;              // uuid v4, généré côté client
-  title: string;            // requis
-  author: string;           // requis
-  publisher: string;        // requis
-  releaseDate: string;      // format ISO "YYYY-MM-DD", requis
-  note?: string;             // champ libre, optionnel
-  status: "upcoming" | "available"; // dérivé automatiquement de releaseDate vs date du jour, mais stocké pour permettre un override manuel
-  purchased: boolean;        // true = déjà acheté, indépendant du status
-  purchasedAt?: string;      // ISO datetime, renseigné au moment du toggle
-  createdAt: string;         // ISO datetime
-  updatedAt: string;         // ISO datetime
+  title: string;           // requis
+  author: string;          // requis
+  series?: string;         // série / saga, optionnel
+  volume?: string;         // tome dans la série, optionnel ; string pour accepter "1.5", "HS", etc.
+  publisher: string;       // requis
+  releaseDate: string;     // format ISO "YYYY-MM-DD", requis
+  note?: string;           // champ libre, optionnel
+  status: "upcoming" | "available"; // statut stocké
+  statusOverride?: "upcoming" | "available" | null; // override manuel optionnel ; sinon statut dérivé de releaseDate
+  purchased: boolean;      // true = déjà acheté, indépendant du status
+  purchasedAt?: string;    // ISO datetime, renseigné au moment du toggle
+  createdAt: string;       // ISO datetime
+  updatedAt: string;       // ISO datetime
 }
 ```
 
-Règle métier : `status` passe automatiquement à `"available"` dès que `releaseDate <= aujourd'hui`, calculé à l'affichage (pas besoin de tâche planifiée). L'utilisateur peut aussi forcer manuellement le statut (ex: livre disponible en avance, ou retardé). `purchased` est un champ indépendant : un livre peut être acheté avant même sa sortie officielle (précommande) tout comme après.
+Règle métier : `status` passe automatiquement à `"available"` dès que `releaseDate <= aujourd'hui`, calculé à l'affichage (pas besoin de tâche planifiée), sauf lorsqu'un `statusOverride` explicite est renseigné. `series` et `volume` sont indépendants et optionnels : un ouvrage hors série n'a rien à renseigner, tandis qu'un tome peut être identifié sans rendre ces champs obligatoires pour toute la bibliothèque. `purchased` est un champ indépendant : un livre peut être acheté avant même sa sortie officielle (précommande) tout comme après.
 
 Table Dexie unique : `books`, indexée sur `releaseDate` et `publisher`.
 
@@ -55,10 +58,10 @@ Pas de navigation complexe : une bottom bar ou un simple bouton flottant "+" suf
 - **Header** : titre de l'app, icône réglages (→ écran Paramètres), indicateur discret de statut de sync (ex: petit point vert/orange/rouge + horodatage dernier export au tap).
 - **Liste des livres**, triée par `releaseDate` croissant :
   - Groupée en trois sections : **"À paraître"** (releaseDate future, non acheté), **"Disponibles"** (releaseDate passée, non acheté), et **"Acheté"** en bas de liste, **repliée par défaut** (affiche juste le nombre, ex: "Acheté (12)", tap pour déplier). Un livre marqué acheté bascule dans cette troisième section quel que soit son `releaseDate` — le statut de sortie devient secondaire une fois l'achat effectué.
-  - Chaque item : titre, auteur, éditeur, date de sortie formatée (ex: "12 mars 2027"), pas de couverture ni d'image. Un bouton/icône de type case à cocher (cercle) en bordure de card permet de basculer `purchased` en un tap, sans passer par le formulaire d'édition.
+  - Chaque item : titre, série et tome lorsqu'ils existent, auteur, éditeur, date de sortie formatée (ex: "12 mars 2027"), pas de couverture ni d'image. Un bouton/icône de type case à cocher (cercle) en bordure de card permet de basculer `purchased` en un tap, sans passer par le formulaire d'édition.
   - **Différenciation visuelle des livres achetés** : card en opacité réduite (ex: 50%) et titre barré (`line-through`). La transition (tap sur la case → card qui s'estompe et glisse vers la section "Acheté") est animée en douceur avec Framer Motion pour donner un retour visuel satisfaisant sans être too much.
   - Swipe gauche → supprimer (avec confirmation). Swipe droit ou tap → édition.
-- **Barre de recherche / filtre** (repliable) : filtre par éditeur ou recherche texte libre sur titre/auteur.
+- **Barre de recherche / filtre** (repliable) : filtre par éditeur ou recherche texte libre sur titre, auteur, série ou tome.
 - **Bouton flottant "+"** : ouvre le formulaire d'ajout.
 - **État vide** : message et illustration simple invitant à ajouter un premier livre.
 
@@ -67,13 +70,16 @@ Pas de navigation complexe : une bottom bar ou un simple bouton flottant "+" suf
 Champs, dans cet ordre :
 1. Titre (texte, requis)
 2. Auteur (texte, requis)
-3. Éditeur (texte, requis, avec autocomplete basé sur les éditeurs déjà saisis localement)
-4. Date de sortie (date picker natif, requis)
-5. Note (textarea, optionnel)
-6. Case à cocher "Déjà acheté" (reflète/modifie `purchased` ; redondant avec le toggle rapide de la liste mais utile pour corriger un oubli en une seule fois)
+3. Série (texte, optionnel, avec autocomplete basé sur les séries déjà saisies localement)
+4. Tome (texte, optionnel)
+5. Éditeur (texte, requis, avec autocomplete basé sur les éditeurs déjà saisis localement)
+6. Date de sortie (date picker natif, requis)
+7. Statut de sortie (automatique selon la date ou override manuel)
+8. Note (textarea, optionnel)
+9. Case à cocher "Déjà acheté" (reflète/modifie `purchased` ; redondant avec le toggle rapide de la liste mais utile pour corriger un oubli en une seule fois)
 
 - Bouton principal "Enregistrer", bouton secondaire "Annuler".
-- Validation inline (champs requis non vides, date valide).
+- Validation inline (champs requis non vides, date valide). Série et tome ne déclenchent aucune validation de présence.
 - En édition : bouton "Supprimer" accessible (avec confirmation).
 - Après enregistrement : déclenche l'export auto vers Drive (voir section 8).
 
@@ -92,6 +98,8 @@ Champs, dans cet ordre :
 
 - **Tri** : toujours par `releaseDate` croissant au sein de chaque section.
 - **Statut** : calculé à l'affichage via comparaison `releaseDate` / date du jour, sauf override manuel stocké.
+- **Série / tome** : deux métadonnées optionnelles, conservées telles quelles après trim. `volume` reste une chaîne et n'impose aucune numérotation strictement numérique.
+- **Recherche** : porte sur le titre, l'auteur, la série et le tome.
 - **Filtre éditeur** : liste déroulante générée dynamiquement à partir des éditeurs existants en base locale.
 - **Achat** : `purchased` prime sur `status` pour le regroupement visuel — un livre acheté sort des sections "À paraître"/"Disponibles" et rejoint la section "Acheté", quel que soit son `releaseDate`. Toggle possible depuis la liste (icône case à cocher) ou depuis le formulaire d'édition ; `purchasedAt` est renseigné/effacé en conséquence.
 - **Pas de notifications push** dans une v1 — non demandé, à ne pas implémenter sauf demande explicite ultérieure.
@@ -99,6 +107,7 @@ Champs, dans cet ordre :
 ## 7. Persistance locale (IndexedDB / Dexie)
 
 - Une seule table `books`, CRUD complet en local.
+- Les nouveaux champs optionnels n'exigent pas de migration de table : les entrées existantes sans `series`/`volume` restent valides.
 - Toute mutation (create/update/delete) déclenche :
   1. L'écriture immédiate en IndexedDB.
   2. Le déclenchement de l'export debounced vers Drive (section 8).
@@ -114,7 +123,7 @@ Champs, dans cet ordre :
 ### 8.2 Fichier de sync
 
 - Un seul fichier `book-wishlist-export.json` dans le Drive de l'utilisateur (créé au premier export, puis réécrit — pas de multiplication de fichiers).
-- Contenu : tableau JSON de tous les objets `Book`, plus un `exportedAt` (timestamp).
+- Contenu : tableau JSON de tous les objets `Book`, plus un `exportedAt` (timestamp). Les champs optionnels `series` et `volume` sont inclus lorsqu'ils sont renseignés.
 
 ### 8.3 Déclencheurs d'export automatique
 
@@ -156,3 +165,4 @@ Champs, dans cet ordre :
 - Prioriser la simplicité et la lisibilité du code plutôt que l'abstraction prématurée — c'est une app mono-utilisateur à usage personnel, pas un produit multi-tenant.
 - Tester en priorité le parcours : ajout d'un livre → apparition triée dans la bonne section → export automatique déclenché → statut de sync visible.
 - Tester également : toggle "acheté" depuis la liste → card grisée/barrée avec animation → livre déplacé dans la section "Acheté" repliée → export auto déclenché.
+- Tester la recherche d'un livre par son nom de série ainsi que la rétrocompatibilité des entrées dépourvues de `series` et `volume`.
