@@ -72,9 +72,10 @@ npm run build
 - L'organisation par défaut reste une timeline temporelle sans séparation globale `À paraître` / `Disponibles`.
 - Les dates mensuelles et exactes sont groupées par mois ; les dates annuelles utilisent un groupe `YYYY · Mois non précisé`.
 - La partie active de la timeline conserve l'année courante et les années futures ; les mois déjà passés de l'année courante restent visibles du plus récent au plus ancien.
-- Les mois de l'année courante sont ouverts par défaut mais peuvent être repliés individuellement ; chaque en-tête affiche son nombre de livres et un chevron.
+- Tous les groupes mensuels `YYYY-MM` de la timeline sont ouverts par défaut mais peuvent être repliés individuellement, y compris les mois futurs et les mois contenus dans une archive annuelle ouverte.
+- Les groupes `YYYY · Mois non précisé` restent non collapsables car ils ne représentent pas un mois réel.
 - Les années strictement antérieures sont regroupées en **archives annuelles collapsables**, fermées par défaut, avec compteur de livres. Une archive ouverte affiche ses mois du plus récent au plus ancien puis `Mois non précisé` si nécessaire.
-- Une recherche texte ou un filtre éditeur force temporairement l'ouverture des mois courants et des archives concernées afin qu'aucun résultat ne soit masqué.
+- Une recherche texte ou un filtre éditeur force temporairement l'ouverture des mois et archives concernés afin qu'aucun résultat ne soit masqué.
 - Les statuts certains restent visibles sur chaque card via les accents `--accent-brass` (`À paraître`) et `--accent-cloth` (`Disponible`) ; le statut indéterminé utilise un rendu neutre.
 - Une organisation **Par statut** reste disponible en option et comporte désormais `À paraître`, `Statut indéterminé` et `Disponibles`.
 - Toute mutation locale programme encore un export Drive après ~5 secondes si Drive est connecté ; cette sauvegarde automatique sera supprimée dans l'itération Drive dédiée afin de rester cohérent avec l'architecture sans backend.
