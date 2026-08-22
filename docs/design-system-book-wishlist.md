@@ -6,7 +6,7 @@ Complète `spec-book-wishlist.md` (logique fonctionnelle) : ce fichier ne traite
 
 Le point de départ n'est pas "une app à liste" générique, mais l'univers de l'édition : ex-libris, tranche de livre, ruban marque-page, papier bible. Deux idées porteuses :
 
-- Chaque livre est traité comme une **fiche d'éditeur** (titre, auteur, éditeur, date — présentés avec la sobriété d'une notice bibliographique), pas comme une vignette e-commerce.
+- Chaque livre est traité comme une **fiche d'éditeur** (titre, série/tome lorsqu'ils existent, auteur, éditeur, date — présentés avec la sobriété d'une notice bibliographique), pas comme une vignette e-commerce.
 - L'action "marqué comme acheté" est incarnée par un **ruban marque-page** qui se réduit/se range visuellement, plutôt qu'une case à cocher générique — c'est la signature de l'app (voir 6.3).
 
 À éviter explicitement : le combo fond crème + accent terracotta, le fond quasi noir + accent néon, et les mises en page façon "journal" à colonnes serrées — ce sont les trois défauts par lesquels une UI générée par IA se reconnaît. On s'en écarte volontairement ci-dessous.
@@ -19,7 +19,7 @@ Le point de départ n'est pas "une app à liste" générique, mais l'univers de 
 |---|---|---|
 | `--paper` | `#F7F6F2` | Fond principal — blanc papier, pas crème |
 | `--ink` | `#14212B` | Texte principal — bleu-noir encre, pas noir pur |
-| `--ink-muted` | `#5B6B72` | Texte secondaire (auteur, éditeur) |
+| `--ink-muted` | `#5B6B72` | Texte secondaire (auteur, éditeur, métadonnées) |
 | `--accent-brass` | `#B9873F` | Accent signature — doré/laiton (tranche dorée), utilisé pour "À paraître", CTA principal |
 | `--accent-cloth` | `#3E6259` | Vert reliure toilée — utilisé pour "Disponible" |
 | `--line` | `#DFDAD0` | Hairlines, séparateurs, bordures de card |
@@ -44,15 +44,15 @@ Règle : `--accent-brass` et `--accent-cloth` sont les deux seules couleurs vive
 | Rôle | Police | Usage |
 |---|---|---|
 | Display | **Literata** (variable, `opsz` bas pour les gros titres) | Titre de l'app, titres de livre dans la liste et le formulaire — utilisée avec retenue, jamais pour un paragraphe entier. Choix délibéré : Literata a été dessinée à l'origine pour la lecture de livres numériques (Google Play Books), ce qui colle directement au sujet plutôt que d'être une serif display générique |
-| Corps | **Inter** | Auteur, éditeur, notes, labels d'UI, boutons |
-| Utilitaire / data | **IBM Plex Mono** | Dates de sortie, compteur "J-3", champs numériques — donne un rendu "fiche technique" cohérent avec l'univers éditorial |
+| Corps | **Inter** | Auteur, éditeur, série, notes, labels d'UI, boutons |
+| Utilitaire / data | **IBM Plex Mono** | Dates de sortie, tome lorsqu'il est purement utilitaire, compteur "J-3", champs numériques — donne un rendu "fiche technique" cohérent avec l'univers éditorial |
 
 Échelle (mobile-first, en rem) :
 
 - Titre livre (Literata, 500) : `1.125rem` / line-height `1.3`
 - Titre de section / app (Literata, 600) : `1.375rem`
 - Corps (Inter, 400) : `0.9375rem`
-- Meta / auteur-éditeur (Inter, 400, `--ink-muted`) : `0.8125rem`
+- Meta / auteur-éditeur / série-tome (Inter, 400, `--ink-muted`) : `0.8125rem`
 - Date / mono (Plex Mono, 500, letter-spacing `0.02em`) : `0.8125rem`, toujours en petites capitales ou majuscules (ex: `12 MARS 2027`)
 
 ## 4. Espacement & grille
@@ -67,7 +67,8 @@ Règle : `--accent-brass` et `--accent-cloth` sont les deux seules couleurs vive
 ### 5.1 Card livre (liste principale)
 
 - Bande verticale de 3px sur le bord gauche de la card, couleur = statut : `--accent-brass` (à paraître), `--accent-cloth` (disponible), `--ink-muted` à 40% d'opacité (acheté).
-- Titre en Literata, auteur + éditeur en Inter sur une seule ligne (`Auteur · Éditeur`), date en Plex Mono alignée à droite.
+- Titre en Literata. Si le livre appartient à une série ou possède un tome renseigné, afficher juste sous le titre une ligne compacte `Série · Tome X`; omettre complètement cette ligne lorsque les deux champs sont absents. Auteur + éditeur restent sur la ligne suivante (`Auteur · Éditeur`). Date en Plex Mono alignée à droite.
+- Série/tome sont des métadonnées, pas un second titre : pas de couleur d'accent dédiée, pas de badge, pas de chip.
 - Livre acheté : card entière à `opacity: 0.55`, titre en `text-decoration: line-through`, bande latérale grisée comme ci-dessus.
 
 ### 5.2 En-tête de section
@@ -84,6 +85,8 @@ Règle : `--accent-brass` et `--accent-cloth` sont les deux seules couleurs vive
 ### 5.4 Formulaire (ajout/édition)
 
 - Champs en Inter, labels au-dessus (jamais en placeholder seul), soulignés par une hairline `--line` plutôt que des inputs "boîte" avec bordure complète — cohérent avec l'esprit fiche/formulaire papier.
+- Les labels `Série`, `Tome` et `Note` affichent explicitement `(optionnel)` dans une casse normale et sans letter-spacing afin que l'utilisateur comprenne immédiatement qu'ils peuvent être ignorés.
+- `Série` utilise un autocomplete discret à partir des valeurs déjà présentes localement ; `Tome` reste un champ texte pour accepter aussi bien une numérotation classique que `1.5`, `HS`, etc.
 - Focus visible : la hairline passe à `--accent-brass` et s'épaissit à 2px (jamais de glow/box-shadow flou).
 - Bouton principal "Enregistrer" : fond `--accent-brass`, texte `--paper`, rayon `8px`. Bouton secondaire "Annuler" : texte seul, `--ink-muted`.
 
@@ -128,7 +131,7 @@ colors: {
   brass: "var(--accent-brass)",
   cloth: "var(--accent-cloth)",
   line: "var(--line)",
-  "surface-muted": "var(--surface-muted)",
+  "surface-muted": "var(--surface-muted",
 },
 fontFamily: {
   display: ["Literata", "serif"],
