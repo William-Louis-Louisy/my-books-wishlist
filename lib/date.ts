@@ -32,6 +32,17 @@ export function getReleaseDatePrecision(
   return isValidIsoDate(value) ? "day" : null;
 }
 
+export function getReleaseDateInputValue(
+  value: string,
+  precision: ReleaseDatePrecision,
+): string {
+  if (precision === "year") {
+    return /^\d{0,4}$/.test(value) ? value : "";
+  }
+
+  return getReleaseDatePrecision(value) === precision ? value : "";
+}
+
 export function isValidReleaseDate(value: string): boolean {
   return getReleaseDatePrecision(value) !== null;
 }
