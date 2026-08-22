@@ -148,17 +148,17 @@ export function BookCard({ book }: BookCardProps) {
   const dateColor = visualPurchased
     ? "text-ink-muted"
     : status === "upcoming"
-      ? "text-brass"
+      ? "text-[var(--accent-brass)]"
       : status === "available"
-        ? "text-cloth"
+        ? "text-[var(--accent-cloth)]"
         : "text-ink-muted";
 
   const statusBorder = visualPurchased
     ? "border-l-[3px] border-l-ink-muted/40"
     : status === "upcoming"
-      ? "border-l-[3px] border-l-brass"
+      ? "border-l-[3px] border-l-[var(--accent-brass)]"
       : status === "available"
-        ? "border-l-[3px] border-l-cloth"
+        ? "border-l-[3px] border-l-[var(--accent-cloth)]"
         : "border-l-[3px] border-l-ink-muted/40";
 
   return (
