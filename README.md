@@ -1,6 +1,6 @@
 # Livres à paraître / Upcoming Books
 
-PWA mobile-first pour suivre une liste personnelle de livres à paraître, disponibles ou déjà achetés. Les données restent locales dans IndexedDB et peuvent être sauvegardées dans un unique fichier Google Drive créé par l'application.
+PWA mobile-first pour suivre une liste personnelle de livres à paraître, disponibles ou déjà achetés. Les données restent locales dans IndexedDB et peuvent être exportées/importées en JSON ou sauvegardées dans un unique fichier Google Drive créé par l'application.
 
 ## Stack
 
@@ -34,6 +34,20 @@ L'application fonctionne entièrement en local sans configuration Google. Pour a
 L'application demande exclusivement le scope `https://www.googleapis.com/auth/drive.file`. Le jeton d'accès reste en mémoire ; aucun refresh token n'est stocké en clair. Le fichier distant s'appelle `book-wishlist-export.json` et est réécrit au lieu d'être dupliqué.
 
 > **Décision OAuth :** la spec initiale mentionne PKCE tout en interdisant tout backend. Google exige aujourd'hui une plateforme backend pour terminer son *Authorization Code flow* (échange du code contre les tokens). La V1 utilise donc le *GIS token model* côté navigateur, qui est le seul modèle GIS compatible avec l'architecture 100 % client imposée. Si un backend est accepté plus tard, ce point devra être migré vers Authorization Code + PKCE.
+
+## Sauvegardes JSON
+
+Les exports locaux et Google Drive utilisent désormais le même format versionné (`version: 2`) et le même pipeline de validation.
+
+Depuis **Réglages → Données locales**, l'utilisateur peut :
+
+- exporter la bibliothèque en JSON ;
+- sélectionner un fichier JSON local ;
+- vérifier le nom du fichier et le nombre de livres détectés ;
+- remplacer entièrement la liste locale ;
+- ou fusionner uniquement les IDs absents.
+
+Les anciens exports V1 restent importables, notamment les enveloppes sans numéro de version, les anciens tableaux bruts et les livres contenant encore `status` / `statusOverride`. Un fichier invalide est rejeté avant toute mutation IndexedDB.
 
 ## Internationalisation
 
@@ -76,6 +90,8 @@ npm run build
 - Les groupes `YYYY · Mois non précisé` restent non collapsables car ils ne représentent pas un mois réel.
 - Les années strictement antérieures sont regroupées en **archives annuelles collapsables**, fermées par défaut, avec compteur de livres. Une archive ouverte affiche ses mois du plus récent au plus ancien puis `Mois non précisé` si nécessaire.
 - Une recherche texte ou un filtre éditeur force temporairement l'ouverture des mois et archives concernés afin qu'aucun résultat ne soit masqué.
+- Les sauvegardes JSON locales et Drive partagent le même sérialiseur, validateur et migrateur V1→V2 ; toute sauvegarde est entièrement validée avant écriture en base.
+- En mode Fusionner, les livres locaux gagnent en cas d'ID déjà existant et le compteur ne rapporte que les nouvelles entrées réellement ajoutées.
 - Les statuts certains restent visibles sur chaque card via les accents `--accent-brass` (`À paraître`) et `--accent-cloth` (`Disponible`) ; le statut indéterminé utilise un rendu neutre.
 - Une organisation **Par statut** reste disponible en option et comporte désormais `À paraître`, `Statut indéterminé` et `Disponibles`.
 - Toute mutation locale programme encore un export Drive après ~5 secondes si Drive est connecté ; cette sauvegarde automatique sera supprimée dans l'itération Drive dédiée afin de rester cohérent avec l'architecture sans backend.
@@ -90,5 +106,6 @@ Le service worker n'est enregistré qu'en production. Après déploiement HTTPS,
 - `docs/spec-book-wishlist.md` : spécification fonctionnelle historique.
 - `docs/design-system-book-wishlist.md` : identité visuelle et règles UI.
 - `docs/feature-book-model-v2.md` : modèle métier V2, dates partielles et migration IndexedDB.
+- `docs/feature-backup-import.md` : format de sauvegarde, compatibilité V1/V2 et pipeline d'import commun.
 - `docs/feature-month-grouping-i18n.md` : décisions détaillées pour la timeline temporelle, les mois/archives collapsables et l'internationalisation.
 - `docs/feature-purchased-theme-autocomplete.md` : comportement acheté, thème manuel, autocomplete et formulaire.

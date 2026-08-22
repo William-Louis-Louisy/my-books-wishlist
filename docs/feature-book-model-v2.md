@@ -85,10 +85,14 @@ La base passe en version 2 sans modifier les index existants. L'upgrade :
 
 Les IDs, dates, série/tome, note, état acheté et timestamps restent inchangés.
 
-## Compatibilité Drive
+## Compatibilité des sauvegardes
 
-L'import Drive accepte temporairement les anciens exports V1 : les anciens champs de statut sont ignorés et chaque entrée est normalisée vers le modèle V2 avant insertion.
+Le pipeline commun `lib/book-backup.ts` normalise désormais aussi bien les imports JSON locaux que les imports Google Drive.
 
-La future itération **Import JSON** extraira cette validation dans un pipeline commun aux fichiers locaux et à Google Drive.
+Il accepte les anciens exports V1 : les champs `status` et `statusOverride` sont ignorés et chaque entrée est normalisée vers le modèle V2 avant insertion. Les anciennes enveloppes `{ exportedAt, books }` sans numéro de version et les anciens tableaux bruts restent également importables.
 
-La suppression de la sauvegarde Drive automatique appartient à une itération séparée afin de conserver des PR petites et vérifiables.
+Les nouveaux exports utilisent une enveloppe `version: 2`. Une sauvegarde explicitement plus récente que la version comprise par l'application est rejetée plutôt que migrée silencieusement.
+
+Le détail du format, de la validation et des modes `Remplacer` / `Fusionner` est documenté dans `docs/feature-backup-import.md`.
+
+La suppression de la sauvegarde Drive automatique appartient toujours à l'itération suivante afin de conserver une architecture sans backend et un comportement OAuth honnête.
