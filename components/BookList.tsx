@@ -14,6 +14,8 @@ interface BookListProps {
   books: Book[];
 }
 
+type StatusAccent = "brass" | "cloth";
+
 export function BookList({ books }: BookListProps) {
   const tHome = useTranslations("Home");
   const tSections = useTranslations("Sections");
@@ -37,11 +39,19 @@ export function BookList({ books }: BookListProps) {
     </div>
   );
 
-  const renderMonthGroups = (items: Book[], order: "asc" | "desc") => (
+  const renderMonthGroups = (
+    items: Book[],
+    order: "asc" | "desc",
+    accent: StatusAccent,
+  ) => (
     <div className="space-y-5">
       {groupBooksByReleaseMonth(items, order).map((group) => (
         <div key={group.month}>
-          <h3 className="mb-2 font-display text-sm font-semibold text-ink">
+          <h3 className="mb-2 flex items-center gap-2 font-display text-sm font-semibold text-ink">
+            <span
+              aria-hidden="true"
+              className={`size-1.5 rounded-full ${accent === "brass" ? "bg-brass" : "bg-cloth"}`}
+            />
             {formatMonthLabel(group.month, locale)}
           </h3>
           {renderCards(group.books)}
@@ -69,8 +79,8 @@ export function BookList({ books }: BookListProps) {
         </div>
       ) : (
         <div className="pb-28">
-          {groups.upcoming.length ? <section><SectionHeader label={tSections("upcoming")} />{renderMonthGroups(groups.upcoming, "asc")}</section> : null}
-          {groups.available.length ? <section className="mt-5"><SectionHeader label={tSections("available")} />{renderMonthGroups(groups.available, "desc")}</section> : null}
+          {groups.upcoming.length ? <section><SectionHeader label={tSections("upcoming")} />{renderMonthGroups(groups.upcoming, "asc", "brass")}</section> : null}
+          {groups.available.length ? <section className="mt-5"><SectionHeader label={tSections("available")} />{renderMonthGroups(groups.available, "desc", "cloth")}</section> : null}
         </div>
       )}
     </>
