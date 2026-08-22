@@ -2,16 +2,41 @@
 
 ## Regroupement par mois
 
-Les groupes métier visibles sont désormais `À paraître` et `Disponibles`. Le champ `purchased` reste indépendant du statut de sortie et ne crée plus de troisième section : un livre acheté conserve sa section, son mois et sa position chronologique.
+L'organisation principale de la liste est désormais **mensuelle**. Les livres `À paraître` et `Disponibles` ne sont plus séparés en deux grandes sections dans l'affichage par défaut : ils cohabitent dans le même groupe `YYYY-MM` selon leur `releaseDate`.
 
-À l'intérieur des deux sections, les livres sont regroupés par mois de `releaseDate` :
+Le statut de sortie reste une information métier indépendante et continue d'être visible au niveau de chaque card :
 
-- `À paraître` : mois le plus proche en premier, puis progression vers le futur (`asc`).
-- `Disponibles` : mois le plus récent en premier, puis remontée vers le passé (`desc`).
+- `À paraître` utilise `--accent-brass` ;
+- `Disponible` utilise `--accent-cloth` ;
+- `purchased` reste indépendant du statut de sortie et ne change ni le mois ni la position du livre.
 
-Un groupe mensuel est identifié par une clé stable `YYYY-MM`, mais son libellé est formaté selon la langue active (`Août 2026` / `August 2026`). Les livres à l'intérieur du mois suivent la même direction chronologique que le groupe.
+### Ordre de la timeline mensuelle
 
-La logique pure vit dans `groupBooksByReleaseMonth` (`lib/books.ts`) et est couverte par Vitest.
+Le mode mensuel est centré autour du mois courant :
+
+1. mois courant ;
+2. mois futurs dans l'ordre chronologique croissant ;
+3. mois passés du plus récent au plus ancien.
+
+À l'intérieur d'un mois courant ou futur, les livres sont triés par date croissante. Dans les mois passés, ils sont triés par date décroissante.
+
+Cette logique vit dans `groupBooksByTimelineMonth` (`lib/books.ts`) et est couverte par Vitest.
+
+### Organisation optionnelle par statut
+
+Le panneau de recherche/filtres propose une option d'organisation :
+
+- `Par mois (par défaut)` ;
+- `Par statut`.
+
+Le mode `Par statut` conserve l'ancien comportement :
+
+- section `À paraître` avec mois croissants ;
+- section `Disponibles` avec mois décroissants.
+
+Ce mode est volontairement secondaire : il permet de retrouver une lecture par état de sortie sans imposer cette séparation à la timeline principale.
+
+Un groupe mensuel est identifié par une clé stable `YYYY-MM`, mais son libellé est formaté selon la langue active (`Août 2026` / `August 2026`).
 
 ## Internationalisation
 

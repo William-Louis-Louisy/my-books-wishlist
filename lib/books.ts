@@ -11,6 +11,7 @@ export interface BookMonthGroup {
   books: Book[];
 }
 
+export type BookOrganizationMode = "month" | "status";
 export type BookAutocompleteField = "author" | "series" | "publisher";
 
 export function deriveStatus(releaseDate: string, today = getTodayIso()): BookStatus {
@@ -59,6 +60,45 @@ export function groupBooksByReleaseMonth(
         return byDate || a.title.localeCompare(b.title);
       }),
     }));
+}
+
+export function groupBooksByTimelineMonth(
+  books: Book[],
+  today = getTodayIso(),
+): BookMonthGroup[] {
+  const currentMonth = today.slice(0, 7);
+  const grouped = new Map<string, Book[]>();
+
+  for (const book of books) {
+    const month = book.releaseDate.slice(0, 7);
+    const existing = grouped.get(month);
+    if (existing) existing.push(book);
+    else grouped.set(month, [book]);
+  }
+
+  return [...grouped.entries()]
+    .sort(([monthA], [monthB]) => {
+      const aIsCurrentOrFuture = monthA >= currentMonth;
+      const bIsCurrentOrFuture = monthB >= currentMonth;
+
+      if (aIsCurrentOrFuture !== bIsCurrentOrFuture) {
+        return aIsCurrentOrFuture ? -1 : 1;
+      }
+
+      return aIsCurrentOrFuture
+        ? monthA.localeCompare(monthB)
+        : monthB.localeCompare(monthA);
+    })
+    .map(([month, monthBooks]) => {
+      const direction = month >= currentMonth ? 1 : -1;
+      return {
+        month,
+        books: [...monthBooks].sort((a, b) => {
+          const byDate = a.releaseDate.localeCompare(b.releaseDate) * direction;
+          return byDate || a.title.localeCompare(b.title);
+        }),
+      };
+    });
 }
 
 export function getBookAutocompleteOptions(

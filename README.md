@@ -64,9 +64,11 @@ npm run build
 - `series` et `volume` sont optionnels : ils permettent de rattacher un livre à une série et à un tome sans imposer cette structure aux ouvrages indépendants.
 - Auteur, série et éditeur proposent un autocomplete alimenté par les valeurs déjà enregistrées localement.
 - La recherche texte porte sur le titre, l'auteur, la série et le tome.
-- `purchased` ne modifie plus le regroupement : un livre acheté conserve sa section de sortie, son mois et sa position chronologique.
-- Les livres sont séparés en `À paraître` / `Disponibles`, puis regroupés par mois de sortie à l'intérieur de chaque section.
-- Dans `À paraître`, les mois sont affichés du plus proche vers le futur ; dans `Disponibles`, du plus récent vers les plus anciens.
+- `purchased` ne modifie plus le regroupement : un livre acheté conserve son mois et sa position chronologique.
+- L'organisation par défaut est une timeline **par mois**, sans séparation globale `À paraître` / `Disponibles`.
+- La timeline commence par le mois courant, poursuit avec les mois futurs dans l'ordre croissant, puis affiche les mois passés du plus récent au plus ancien.
+- Le statut reste visible sur chaque card via les accents `--accent-brass` (`À paraître`) et `--accent-cloth` (`Disponible`).
+- Une organisation **Par statut** reste disponible en option dans le panneau de recherche/filtres et reproduit l'ancien découpage en deux sections.
 - Toute mutation locale programme un export Drive après ~5 secondes si Drive est connecté.
 - Aucun backend, aucune API de catalogue de livres, aucune couverture, aucune notification push et aucune Background Sync API.
 

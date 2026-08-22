@@ -5,6 +5,7 @@ import {
   getBookAutocompleteOptions,
   groupBooks,
   groupBooksByReleaseMonth,
+  groupBooksByTimelineMonth,
   mergeBooksIgnoringDuplicateIds,
   resolveBookStatus,
 } from "@/lib/books";
@@ -61,6 +62,31 @@ describe("book business rules", () => {
     const descending = groupBooksByReleaseMonth(books, "desc");
     expect(descending.map((group) => group.month)).toEqual(["2026-10", "2026-09"]);
     expect(descending[0].books.map((book) => book.id)).toEqual(["a", "c"]);
+  });
+
+  it("builds a month-first timeline around the current month", () => {
+    const books: Book[] = [
+      { ...baseBook, id: "future-later", releaseDate: "2026-10-20" },
+      { ...baseBook, id: "past-older", releaseDate: "2026-06-05", status: "available" },
+      { ...baseBook, id: "current-upcoming", releaseDate: "2026-08-30" },
+      { ...baseBook, id: "future-next", releaseDate: "2026-09-03" },
+      { ...baseBook, id: "past-recent", releaseDate: "2026-07-24", status: "available" },
+      { ...baseBook, id: "current-available", releaseDate: "2026-08-02", status: "available" },
+    ];
+
+    const groups = groupBooksByTimelineMonth(books, "2026-08-22");
+
+    expect(groups.map((group) => group.month)).toEqual([
+      "2026-08",
+      "2026-09",
+      "2026-10",
+      "2026-07",
+      "2026-06",
+    ]);
+    expect(groups[0].books.map((book) => book.id)).toEqual([
+      "current-available",
+      "current-upcoming",
+    ]);
   });
 
   it("builds trimmed case-insensitive autocomplete options", () => {
