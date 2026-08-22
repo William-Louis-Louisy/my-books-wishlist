@@ -59,10 +59,12 @@ npm run build
 
 ## Règles métier importantes
 
-- Le statut est dérivé de `releaseDate` à l'affichage.
-- Un override manuel optionnel permet de gérer les sorties avancées ou retardées sans empêcher les statuts automatiques de vieillir correctement.
-- `series` et `volume` sont optionnels : ils permettent de rattacher un livre à une série et à un tome sans imposer cette structure aux ouvrages indépendants.
+- La date de sortie reste obligatoire.
+- L'identité d'un livre nécessite soit un **titre**, soit une **série + un tome**. Auteur, éditeur et note sont optionnels.
+- Si le titre est absent, l'interface construit le titre d'affichage à partir de la série et du tome (`Saga · Tome 2`) sans dupliquer artificiellement cette valeur dans `title`.
+- Le statut est dérivé de `releaseDate` à l'affichage. Le formulaire ne permet plus de forcer manuellement `À paraître` ou `Disponible` ; les anciens `statusOverride` restent temporairement lus pour compatibilité jusqu'à la migration du modèle V2.
 - Auteur, série et éditeur proposent un autocomplete alimenté par les valeurs déjà enregistrées localement.
+- Les champs de saisie du formulaire utilisent une taille minimale de 16 px afin d'éviter le zoom automatique de Safari iOS ; l'autocorrection et la vérification orthographique sont désactivées pour Auteur et Éditeur.
 - La recherche texte porte sur le titre, l'auteur, la série et le tome.
 - `purchased` ne modifie plus le regroupement : un livre acheté conserve son mois et sa position chronologique.
 - L'organisation par défaut est une timeline **par mois**, sans séparation globale `À paraître` / `Disponibles`.
