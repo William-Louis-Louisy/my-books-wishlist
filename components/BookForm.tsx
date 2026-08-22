@@ -19,6 +19,7 @@ import {
   isValidReleaseDate,
 } from "@/lib/date";
 import type { BookDraft, ReleaseDatePrecision } from "@/types/book";
+import { TrashIcon } from "./Icons";
 
 interface BookFormProps {
   bookId?: string;
@@ -258,7 +259,10 @@ export function BookForm({ bookId }: BookFormProps) {
               aria-invalid={identityInvalid}
             />
             {errors.identity ? (
-              <span className="mt-1 block text-xs normal-case tracking-normal text-ink-muted" role="alert">
+              <span
+                className="mt-1 block text-xs normal-case tracking-normal text-ink-muted"
+                role="alert"
+              >
                 {errors.identity}
               </span>
             ) : null}
@@ -347,7 +351,10 @@ export function BookForm({ bookId }: BookFormProps) {
               )}
             </div>
             {errors.releaseDate ? (
-              <span className="mt-1 block text-xs normal-case tracking-normal text-ink-muted" role="alert">
+              <span
+                className="mt-1 block text-xs normal-case tracking-normal text-ink-muted"
+                role="alert"
+              >
                 {errors.releaseDate}
               </span>
             ) : null}
@@ -375,30 +382,33 @@ export function BookForm({ bookId }: BookFormProps) {
             {t("alreadyPurchased")}
           </label>
 
-          <div className="flex items-center gap-3 pt-2">
-            <button
-              type="submit"
-              disabled={saving}
-              className="rounded-lg bg-brass px-5 py-2.5 text-sm font-medium text-paper focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brass disabled:opacity-50"
-            >
-              {saving ? t("saving") : t("save")}
-            </button>
-            <button
-              type="button"
-              onClick={() => router.back()}
-              className="rounded-lg px-3 py-2.5 text-sm text-ink-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brass"
-            >
-              {common("cancel")}
-            </button>
+          <div className="flex items-center justify-between gap-3 pt-2">
             {isEdit ? (
               <button
                 type="button"
                 onClick={() => setConfirmDelete(true)}
-                className="ml-auto rounded-lg px-3 py-2.5 text-sm text-ink-muted underline decoration-line underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brass"
+                className="rounded-lg inline-flex items-center gap-2 text-action-delete px-3 py-2.5 text-sm underline decoration-action-delete underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-action-delete"
               >
+                <TrashIcon className="size-4" />
                 {common("delete")}
               </button>
             ) : null}
+            <div className="flex items-center justify-end w-full gap-3">
+              <button
+                type="button"
+                onClick={() => router.back()}
+                className="rounded-lg px-3 py-2.5 text-sm text-ink-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brass"
+              >
+                {common("cancel")}
+              </button>
+              <button
+                type="submit"
+                disabled={saving}
+                className="rounded-lg bg-brass px-5 py-2.5 text-sm font-medium text-paper focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brass disabled:opacity-50"
+              >
+                {saving ? t("saving") : t("save")}
+              </button>
+            </div>
           </div>
         </form>
       </main>

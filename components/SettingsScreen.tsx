@@ -8,6 +8,7 @@ import {
 } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { AppHeader } from "@/components/AppHeader";
+import { DriveIcon, ExportIcon, ImportIcon } from "@/components/Icons";
 import { useThemePreference } from "@/components/ThemeProvider";
 import { useBooks } from "@/hooks/useBooks";
 import {
@@ -134,7 +135,7 @@ export function SettingsScreen() {
   };
 
   const buttonSecondary =
-    "rounded-lg border border-line px-4 py-2.5 text-sm text-ink transition-colors hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brass disabled:opacity-50 motion-reduce:transition-none";
+    "inline-flex items-center justify-center gap-2 rounded-lg border border-line px-4 py-2.5 text-sm text-ink transition-colors hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brass disabled:opacity-50 motion-reduce:transition-none";
   const selectClass =
     "border-0 border-b border-line bg-paper py-2 text-sm text-ink outline-none focus:border-b-2 focus:border-brass";
 
@@ -186,7 +187,8 @@ export function SettingsScreen() {
         </section>
 
         <section className="mt-8">
-          <h2 className="text-xs font-medium uppercase tracking-[0.08em] text-ink-muted">
+          <h2 className="flex items-center gap-2 text-xs font-medium uppercase tracking-[0.08em] text-ink-muted">
+            <DriveIcon className="size-4" />
             Google Drive
           </h2>
           <div className="mt-3 rounded-card border border-line p-4">
@@ -213,13 +215,14 @@ export function SettingsScreen() {
                     ),
                   })}
                 </p>
-                <div className="mt-5 flex flex-wrap gap-2">
+                <div className="mt-5 grid grid-cols-2 gap-2">
                   <button
                     type="button"
                     disabled={Boolean(busy)}
                     onClick={() => void exportDrive()}
                     className={buttonSecondary}
                   >
+                    <ExportIcon className="text-ink" />
                     {busy === "drive-export"
                       ? t("saving")
                       : t("exportToDrive")}
@@ -232,6 +235,7 @@ export function SettingsScreen() {
                     }
                     className={buttonSecondary}
                   >
+                    <ImportIcon className="text-ink" />
                     {t("importFromDrive")}
                   </button>
                 </div>
@@ -287,13 +291,14 @@ export function SettingsScreen() {
             <p className="mt-2 text-sm leading-6 text-ink-muted">
               {t("localImportHelp")}
             </p>
-            <div className="mt-5 flex flex-wrap gap-2">
+            <div className="mt-5 grid grid-cols-2 gap-2">
               <button
                 type="button"
                 onClick={exportLocal}
                 disabled={Boolean(busy)}
                 className={buttonSecondary}
               >
+                <ExportIcon className="text-ink" />
                 {t("localExport")}
               </button>
               <button
@@ -302,6 +307,7 @@ export function SettingsScreen() {
                 disabled={Boolean(busy)}
                 className={buttonSecondary}
               >
+                <ImportIcon className="text-ink" />
                 {t("localImport")}
               </button>
               <input

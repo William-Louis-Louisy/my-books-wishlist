@@ -117,7 +117,7 @@ export function BookList({ books }: BookListProps) {
     <div className="space-y-5">
       {groupBooksByReleasePeriod(items, order).map((group) => (
         <div key={group.key}>
-          <h3 className="mb-2 flex items-center gap-2 font-display text-sm font-semibold text-ink">
+          <h3 className="mb-2 px-2.5 flex items-center gap-2 font-display text-base font-semibold text-ink">
             <span
               aria-hidden="true"
               className={`size-1.5 rounded-full ${accentClass(accent)}`}
@@ -139,7 +139,7 @@ export function BookList({ books }: BookListProps) {
     if (!group.month) {
       return (
         <div key={group.key}>
-          <h3 className="mb-2 px-page font-display text-sm font-semibold text-ink">
+          <h3 className="mb-2 px-page font-display text-base font-semibold text-ink">
             {label}
           </h3>
           {renderCards(group.books)}
@@ -156,15 +156,14 @@ export function BookList({ books }: BookListProps) {
           type="button"
           aria-expanded={expanded}
           aria-controls={panelId}
-          aria-label={tSections(
-            expanded ? "monthCollapse" : "monthExpand",
-            { month: label },
-          )}
+          aria-label={tSections(expanded ? "monthCollapse" : "monthExpand", {
+            month: label,
+          })}
           disabled={hasActiveFilter}
           onClick={() => toggleMonth(group.key)}
-          className="my-2 flex w-full items-center gap-3 px-page py-1 text-left focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-brass disabled:cursor-default"
+          className="my-2 flex w-full items-center gap-3 px-page py-1 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brass disabled:cursor-default"
         >
-          <span className="font-display text-sm font-semibold text-ink">
+          <span className="font-display text-base font-semibold text-ink">
             {label}
           </span>
           <span className="ml-auto text-xs text-ink-muted">
