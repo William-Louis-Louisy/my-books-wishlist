@@ -50,7 +50,11 @@ export function BookList({ books }: BookListProps) {
           <h3 className="mb-2 flex items-center gap-2 font-display text-sm font-semibold text-ink">
             <span
               aria-hidden="true"
-              className={`size-1.5 rounded-full ${accent === "brass" ? "bg-brass" : "bg-cloth"}`}
+              className={`size-1.5 rounded-full ${
+                accent === "brass"
+                  ? "bg-[var(--accent-brass)]"
+                  : "bg-[var(--accent-cloth)]"
+              }`}
             />
             {formatMonthLabel(group.month, locale)}
           </h3>
