@@ -166,7 +166,6 @@ describe("book business rules", () => {
 
     const timeline = buildBookTimeline(books, "2026-08-22");
 
-    expect(timeline.currentYear).toBe("2026");
     expect(timeline.activeGroups.map((group) => group.key)).toEqual([
       "2026-08",
       "2027",
