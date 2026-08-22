@@ -3,20 +3,17 @@
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { ArrowLeftIcon, SettingsIcon } from "@/components/Icons";
-import { SyncDot } from "@/components/SyncDot";
 
 interface AppHeaderProps {
   title?: string;
   backHref?: string;
   showSettings?: boolean;
-  showSync?: boolean;
 }
 
 export function AppHeader({
   title,
   backHref,
   showSettings = false,
-  showSync = false,
 }: AppHeaderProps) {
   const t = useTranslations("Common");
 
@@ -36,7 +33,6 @@ export function AppHeader({
           {title ?? t("appName")}
         </h1>
         <div className="ml-auto flex items-center gap-1">
-          {showSync ? <SyncDot /> : null}
           {showSettings ? (
             <Link
               href="/settings"
