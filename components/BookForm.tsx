@@ -8,15 +8,17 @@ import { AutocompleteInput } from "@/components/AutocompleteInput";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { useBook, useBooks } from "@/hooks/useBooks";
 import { createBook, deleteBook, updateBook } from "@/lib/book-repository";
-import { getBookAutocompleteOptions } from "@/lib/books";
+import {
+  getBookAutocompleteOptions,
+  getBookDisplayTitle,
+  hasValidBookIdentity,
+} from "@/lib/books";
 import { isValidIsoDate } from "@/lib/date";
-import type { BookDraft, BookStatus } from "@/types/book";
+import type { BookDraft } from "@/types/book";
 
 interface BookFormProps {
   bookId?: string;
 }
-
-type StatusChoice = "auto" | BookStatus;
 
 interface FormState {
   title: string;
@@ -26,9 +28,11 @@ interface FormState {
   publisher: string;
   releaseDate: string;
   note: string;
-  statusChoice: StatusChoice;
   purchased: boolean;
 }
+
+type FormErrorKey = keyof FormState | "identity";
+type FormErrors = Partial<Record<FormErrorKey, string>>;
 
 const EMPTY_FORM: FormState = {
   title: "",
@@ -38,7 +42,6 @@ const EMPTY_FORM: FormState = {
   publisher: "",
   releaseDate: "",
   note: "",
-  statusChoice: "auto",
   purchased: false,
 };
 
@@ -50,9 +53,7 @@ export function BookForm({ bookId }: BookFormProps) {
   const { book, loading } = useBook(bookId);
   const { books } = useBooks();
   const [formChanges, setFormChanges] = useState<Partial<FormState>>({});
-  const [errors, setErrors] = useState<
-    Partial<Record<keyof FormState, string>>
-  >({});
+  const [errors, setErrors] = useState<FormErrors>({});
   const [saving, setSaving] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const isEdit = Boolean(bookId);
@@ -66,7 +67,6 @@ export function BookForm({ bookId }: BookFormProps) {
         publisher: book.publisher,
         releaseDate: book.releaseDate,
         note: book.note ?? "",
-        statusChoice: book.statusOverride ?? "auto",
         purchased: book.purchased,
       }
     : EMPTY_FORM;
@@ -90,15 +90,25 @@ export function BookForm({ bookId }: BookFormProps) {
     value: FormState[K],
   ) => {
     setFormChanges((current) => ({ ...current, [key]: value }));
-    setErrors((current) => ({ ...current, [key]: undefined }));
+    setErrors((current) => {
+      const next = { ...current, [key]: undefined };
+      if (key === "title" || key === "series" || key === "volume") {
+        next.identity = undefined;
+      }
+      return next;
+    });
   };
 
   const validate = (): boolean => {
-    const next: Partial<Record<keyof FormState, string>> = {};
-    if (!form.title.trim()) next.title = t("titleRequired");
-    if (!form.author.trim()) next.author = t("authorRequired");
-    if (!form.publisher.trim()) next.publisher = t("publisherRequired");
-    if (!isValidIsoDate(form.releaseDate)) next.releaseDate = t("dateRequired");
+    const next: FormErrors = {};
+
+    if (!hasValidBookIdentity(form)) {
+      next.identity = t("identityRequired");
+    }
+    if (!isValidIsoDate(form.releaseDate)) {
+      next.releaseDate = t("dateRequired");
+    }
+
     setErrors(next);
     return Object.keys(next).length === 0;
   };
@@ -116,7 +126,6 @@ export function BookForm({ bookId }: BookFormProps) {
         publisher: form.publisher,
         releaseDate: form.releaseDate,
         note: form.note,
-        statusOverride: form.statusChoice === "auto" ? null : form.statusChoice,
         purchased: form.purchased,
       };
       if (bookId) await updateBook(bookId, draft);
@@ -161,12 +170,16 @@ export function BookForm({ bookId }: BookFormProps) {
   }
 
   const fieldClass =
-    "w-full border-0 border-b border-line bg-transparent py-2 text-[0.9375rem] text-ink outline-none transition-[border-color,border-width] focus:border-b-2 focus:border-brass motion-reduce:transition-none";
+    "w-full border-0 border-b border-line bg-transparent py-2 text-base text-ink outline-none transition-[border-color,border-width] focus:border-b-2 focus:border-brass motion-reduce:transition-none";
   const labelClass =
     "block text-xs font-medium uppercase tracking-[0.08em] text-ink-muted";
   const optionalLabel = (
     <span className="normal-case tracking-normal">{common("optional")}</span>
   );
+  const identityInvalid = Boolean(errors.identity);
+  const bookDisplayTitle = book
+    ? getBookDisplayTitle(book, (volume) => `${t("volume")} ${volume}`)
+    : "";
 
   return (
     <>
@@ -179,24 +192,19 @@ export function BookForm({ bookId }: BookFormProps) {
           className="space-y-6"
         >
           <label className={labelClass}>
-            {t("title")}
+            {t("title")} {optionalLabel}
             <input
               autoFocus={!isEdit}
               value={form.title}
               onChange={(event) => updateField("title", event.target.value)}
-              className={`${fieldClass} font-display text-lg`}
-              aria-invalid={Boolean(errors.title)}
+              className={fieldClass}
+              aria-invalid={identityInvalid}
             />
-            {errors.title ? (
-              <span className="mt-1 block text-xs text-ink-muted">
-                {errors.title}
-              </span>
-            ) : null}
           </label>
 
           <div>
             <label htmlFor="book-author" className={labelClass}>
-              {t("author")}
+              {t("author")} {optionalLabel}
             </label>
             <AutocompleteInput
               id="book-author"
@@ -204,13 +212,10 @@ export function BookForm({ bookId }: BookFormProps) {
               options={authorOptions}
               onChange={(value) => updateField("author", value)}
               className={fieldClass}
-              invalid={Boolean(errors.author)}
+              autoCorrect="off"
+              spellCheck={false}
+              autoCapitalize="words"
             />
-            {errors.author ? (
-              <span className="mt-1 block text-xs text-ink-muted">
-                {errors.author}
-              </span>
-            ) : null}
           </div>
 
           <div>
@@ -223,6 +228,8 @@ export function BookForm({ bookId }: BookFormProps) {
               options={seriesOptions}
               onChange={(value) => updateField("series", value)}
               className={fieldClass}
+              invalid={identityInvalid}
+              autoCapitalize="words"
             />
           </div>
 
@@ -231,14 +238,20 @@ export function BookForm({ bookId }: BookFormProps) {
             <input
               value={form.volume}
               onChange={(event) => updateField("volume", event.target.value)}
-              className={`${fieldClass} font-mono text-[0.8125rem]`}
+              className={fieldClass}
               inputMode="text"
+              aria-invalid={identityInvalid}
             />
+            {errors.identity ? (
+              <span className="mt-1 block text-xs normal-case tracking-normal text-ink-muted" role="alert">
+                {errors.identity}
+              </span>
+            ) : null}
           </label>
 
           <div>
             <label htmlFor="book-publisher" className={labelClass}>
-              {t("publisher")}
+              {t("publisher")} {optionalLabel}
             </label>
             <AutocompleteInput
               id="book-publisher"
@@ -246,13 +259,10 @@ export function BookForm({ bookId }: BookFormProps) {
               options={publisherOptions}
               onChange={(value) => updateField("publisher", value)}
               className={fieldClass}
-              invalid={Boolean(errors.publisher)}
+              autoCorrect="off"
+              spellCheck={false}
+              autoCapitalize="words"
             />
-            {errors.publisher ? (
-              <span className="mt-1 block text-xs text-ink-muted">
-                {errors.publisher}
-              </span>
-            ) : null}
           </div>
 
           <label className={labelClass}>
@@ -263,29 +273,16 @@ export function BookForm({ bookId }: BookFormProps) {
               onChange={(event) =>
                 updateField("releaseDate", event.target.value)
               }
-              className={`${fieldClass} font-mono text-[0.8125rem] uppercase tracking-[0.02em]`}
+              className={fieldClass}
               aria-invalid={Boolean(errors.releaseDate)}
             />
             {errors.releaseDate ? (
-              <span className="mt-1 block text-xs text-ink-muted">
+              <span className="mt-1 block text-xs normal-case tracking-normal text-ink-muted">
                 {errors.releaseDate}
               </span>
             ) : null}
           </label>
-          <label className={labelClass}>
-            {t("releaseStatus")}
-            <select
-              value={form.statusChoice}
-              onChange={(event) =>
-                updateField("statusChoice", event.target.value as StatusChoice)
-              }
-              className={fieldClass}
-            >
-              <option value="auto">{t("automaticStatus")}</option>
-              <option value="upcoming">{t("forceUpcoming")}</option>
-              <option value="available">{t("forceAvailable")}</option>
-            </select>
-          </label>
+
           <label className={labelClass}>
             {t("note")} {optionalLabel}
             <textarea
@@ -340,7 +337,7 @@ export function BookForm({ bookId }: BookFormProps) {
         title={t("deleteTitle")}
         description={
           book
-            ? t("deleteDescription", { title: book.title })
+            ? t("deleteDescription", { title: bookDisplayTitle })
             : t("deleteDescriptionFallback")
         }
         onCancel={() => setConfirmDelete(false)}

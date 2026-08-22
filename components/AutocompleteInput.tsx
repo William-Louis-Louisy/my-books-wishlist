@@ -10,6 +10,9 @@ interface AutocompleteInputProps {
   className: string;
   invalid?: boolean;
   autoFocus?: boolean;
+  autoCorrect?: "on" | "off";
+  spellCheck?: boolean;
+  autoCapitalize?: "none" | "sentences" | "words" | "characters";
 }
 
 const MAX_SUGGESTIONS = 8;
@@ -22,6 +25,9 @@ export function AutocompleteInput({
   className,
   invalid = false,
   autoFocus = false,
+  autoCorrect,
+  spellCheck,
+  autoCapitalize,
 }: AutocompleteInputProps) {
   const reactId = useId();
   const listboxId = `${id}-${reactId.replaceAll(":", "")}-suggestions`;
@@ -105,6 +111,9 @@ export function AutocompleteInput({
         role="combobox"
         autoFocus={autoFocus}
         autoComplete="new-password"
+        autoCorrect={autoCorrect}
+        spellCheck={spellCheck}
+        autoCapitalize={autoCapitalize}
         inputMode="text"
       />
 
@@ -123,7 +132,7 @@ export function AutocompleteInput({
               aria-selected={index === activeIndex}
               onMouseDown={(event) => event.preventDefault()}
               onClick={() => selectSuggestion(suggestion)}
-              className={`block w-full px-3 py-2 text-left text-sm text-ink focus:outline-none ${
+              className={`block w-full px-3 py-2 text-left text-base text-ink focus:outline-none ${
                 index === activeIndex ? "bg-surface-muted" : "hover:bg-surface-muted"
               }`}
             >

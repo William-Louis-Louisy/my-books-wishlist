@@ -34,8 +34,8 @@ export function BookList({ books }: BookListProps) {
 
   const publishers = useMemo(
     () =>
-      [...new Set(books.map((book) => book.publisher))].sort((a, b) =>
-        a.localeCompare(b, locale),
+      [...new Set(books.map((book) => book.publisher.trim()).filter(Boolean))].sort(
+        (a, b) => a.localeCompare(b, locale),
       ),
     [books, locale],
   );

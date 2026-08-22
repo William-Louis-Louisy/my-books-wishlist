@@ -14,6 +14,28 @@ export interface BookMonthGroup {
 export type BookOrganizationMode = "month" | "status";
 export type BookAutocompleteField = "author" | "series" | "publisher";
 
+type BookDisplayIdentity = Pick<Book, "title" | "series" | "volume">;
+
+export function hasValidBookIdentity(book: BookDisplayIdentity): boolean {
+  const hasTitle = Boolean(book.title.trim());
+  const hasSeriesAndVolume = Boolean(book.series?.trim() && book.volume?.trim());
+  return hasTitle || hasSeriesAndVolume;
+}
+
+export function getBookDisplayTitle(
+  book: BookDisplayIdentity,
+  formatVolume: (volume: string) => string = (volume) => volume,
+): string {
+  const title = book.title.trim();
+  if (title) return title;
+
+  const series = book.series?.trim();
+  const volume = book.volume?.trim();
+  if (series && volume) return `${series} · ${formatVolume(volume)}`;
+
+  return series || volume || "";
+}
+
 export function deriveStatus(releaseDate: string, today = getTodayIso()): BookStatus {
   return releaseDate <= today ? "available" : "upcoming";
 }
