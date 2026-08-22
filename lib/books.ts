@@ -40,10 +40,11 @@ export function filterBooks(books: Book[], query: string, publisher: string): Bo
   const normalizedQuery = query.trim().toLocaleLowerCase("fr-FR");
   return books.filter((book) => {
     const matchesPublisher = !publisher || book.publisher === publisher;
+    const searchableValues = [book.title, book.author, book.series, book.volume]
+      .filter((value): value is string => Boolean(value))
+      .map((value) => value.toLocaleLowerCase("fr-FR"));
     const matchesQuery =
-      !normalizedQuery ||
-      book.title.toLocaleLowerCase("fr-FR").includes(normalizedQuery) ||
-      book.author.toLocaleLowerCase("fr-FR").includes(normalizedQuery);
+      !normalizedQuery || searchableValues.some((value) => value.includes(normalizedQuery));
     return matchesPublisher && matchesQuery;
   });
 }
