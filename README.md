@@ -70,7 +70,9 @@ npm run build
 - `purchased` ne modifie plus le regroupement : un livre acheté conserve son groupe temporel et sa position chronologique.
 - L'organisation par défaut reste une timeline temporelle sans séparation globale `À paraître` / `Disponibles`.
 - Les dates mensuelles et exactes sont groupées par mois ; les dates annuelles utilisent un groupe `YYYY · Mois non précisé`.
-- La timeline commence par le groupe courant, poursuit avec les groupes futurs dans l'ordre croissant, puis affiche les groupes passés du plus récent au plus ancien.
+- La partie active de la timeline conserve l'année courante et les années futures ; les mois déjà passés de l'année courante restent visibles du plus récent au plus ancien.
+- Les années strictement antérieures sont regroupées en **archives annuelles collapsables**, fermées par défaut, avec compteur de livres. Une archive ouverte affiche ses mois du plus récent au plus ancien puis `Mois non précisé` si nécessaire.
+- Une recherche texte ou un filtre éditeur force temporairement l'ouverture des archives concernées afin qu'aucun résultat ne soit masqué.
 - Les statuts certains restent visibles sur chaque card via les accents `--accent-brass` (`À paraître`) et `--accent-cloth` (`Disponible`) ; le statut indéterminé utilise un rendu neutre.
 - Une organisation **Par statut** reste disponible en option et comporte désormais `À paraître`, `Statut indéterminé` et `Disponibles`.
 - Toute mutation locale programme encore un export Drive après ~5 secondes si Drive est connecté ; cette sauvegarde automatique sera supprimée dans l'itération Drive dédiée afin de rester cohérent avec l'architecture sans backend.
@@ -85,5 +87,5 @@ Le service worker n'est enregistré qu'en production. Après déploiement HTTPS,
 - `docs/spec-book-wishlist.md` : spécification fonctionnelle historique.
 - `docs/design-system-book-wishlist.md` : identité visuelle et règles UI.
 - `docs/feature-book-model-v2.md` : modèle métier V2, dates partielles et migration IndexedDB.
-- `docs/feature-month-grouping-i18n.md` : décisions détaillées pour la timeline temporelle et l'internationalisation.
+- `docs/feature-month-grouping-i18n.md` : décisions détaillées pour la timeline temporelle, les archives annuelles et l'internationalisation.
 - `docs/feature-purchased-theme-autocomplete.md` : comportement acheté, thème manuel, autocomplete et formulaire.
