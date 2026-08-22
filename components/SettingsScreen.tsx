@@ -3,10 +3,12 @@
 import { useEffect, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { AppHeader } from "@/components/AppHeader";
+import { useThemePreference } from "@/components/ThemeProvider";
 import { useBooks } from "@/hooks/useBooks";
 import { useSyncStatus } from "@/hooks/useSyncStatus";
 import { formatDateTime, getTodayIso } from "@/lib/date";
 import { setStoredLocale } from "@/lib/locale-store";
+import { setStoredTheme, type ThemePreference } from "@/lib/theme-store";
 import type { AppLocale } from "@/lib/i18n";
 import {
   connectGoogleDrive,
@@ -22,6 +24,7 @@ export function SettingsScreen() {
   const t = useTranslations("Settings");
   const common = useTranslations("Common");
   const locale = useLocale();
+  const theme = useThemePreference();
   const { books } = useBooks();
   const sync = useSyncStatus();
   const [connected, setConnected] = useState(false);
@@ -91,6 +94,7 @@ export function SettingsScreen() {
           : undefined;
 
   const buttonSecondary = "rounded-lg border border-line px-4 py-2.5 text-sm text-ink transition-colors hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brass disabled:opacity-50 motion-reduce:transition-none";
+  const selectClass = "border-0 border-b border-line bg-paper py-2 text-sm text-ink outline-none focus:border-b-2 focus:border-brass";
 
   return (
     <>
@@ -104,10 +108,28 @@ export function SettingsScreen() {
               <select
                 value={locale}
                 onChange={(event) => setStoredLocale(event.target.value as AppLocale)}
-                className="border-0 border-b border-line bg-paper py-2 text-sm text-ink outline-none focus:border-b-2 focus:border-brass"
+                className={selectClass}
               >
                 <option value="fr">{t("french")}</option>
                 <option value="en">{t("english")}</option>
+              </select>
+            </label>
+          </div>
+        </section>
+
+        <section className="mt-8">
+          <h2 className="text-xs font-medium uppercase tracking-[0.08em] text-ink-muted">{t("appearanceSection")}</h2>
+          <div className="mt-3 rounded-card border border-line p-4">
+            <label className="flex items-center justify-between gap-4 text-sm text-ink">
+              <span>{t("themeLabel")}</span>
+              <select
+                value={theme}
+                onChange={(event) => setStoredTheme(event.target.value as ThemePreference)}
+                className={selectClass}
+              >
+                <option value="system">{t("themeSystem")}</option>
+                <option value="light">{t("themeLight")}</option>
+                <option value="dark">{t("themeDark")}</option>
               </select>
             </label>
           </div>

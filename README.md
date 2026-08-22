@@ -44,6 +44,10 @@ Les traductions vivent dans :
 - `messages/fr.json`
 - `messages/en.json`
 
+## Apparence
+
+Le thème peut être choisi depuis les réglages : **Système**, **Clair** ou **Sombre**. La préférence est persistée sous `book-wishlist:theme`. Le mode Système continue de suivre `prefers-color-scheme`, tandis que les modes Clair/Sombre forcent explicitement la palette correspondante.
+
 ## Scripts
 
 ```bash
@@ -58,10 +62,11 @@ npm run build
 - Le statut est dérivé de `releaseDate` à l'affichage.
 - Un override manuel optionnel permet de gérer les sorties avancées ou retardées sans empêcher les statuts automatiques de vieillir correctement.
 - `series` et `volume` sont optionnels : ils permettent de rattacher un livre à une série et à un tome sans imposer cette structure aux ouvrages indépendants.
+- Auteur, série et éditeur proposent un autocomplete alimenté par les valeurs déjà enregistrées localement.
 - La recherche texte porte sur le titre, l'auteur, la série et le tome.
-- `purchased` prime sur le statut pour le regroupement.
-- Les livres restent séparés en `À paraître` / `Disponibles` / `Acheté`, puis sont regroupés par mois de sortie à l'intérieur de chaque section.
-- Dans `À paraître`, les mois sont affichés du plus proche vers le futur ; dans `Disponibles` et `Acheté`, du plus récent vers les plus anciens.
+- `purchased` ne modifie plus le regroupement : un livre acheté conserve sa section de sortie, son mois et sa position chronologique.
+- Les livres sont séparés en `À paraître` / `Disponibles`, puis regroupés par mois de sortie à l'intérieur de chaque section.
+- Dans `À paraître`, les mois sont affichés du plus proche vers le futur ; dans `Disponibles`, du plus récent vers les plus anciens.
 - Toute mutation locale programme un export Drive après ~5 secondes si Drive est connecté.
 - Aucun backend, aucune API de catalogue de livres, aucune couverture, aucune notification push et aucune Background Sync API.
 
@@ -74,3 +79,4 @@ Le service worker n'est enregistré qu'en production. Après déploiement HTTPS,
 - `docs/spec-book-wishlist.md` : spécification fonctionnelle historique.
 - `docs/design-system-book-wishlist.md` : identité visuelle et règles UI.
 - `docs/feature-month-grouping-i18n.md` : décisions détaillées pour le regroupement mensuel et l'internationalisation.
+- `docs/feature-purchased-theme-autocomplete.md` : évolution du comportement acheté, thème manuel et autocomplete.

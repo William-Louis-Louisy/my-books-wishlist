@@ -19,8 +19,7 @@
   },
   "Sections": {
     "upcoming": "À paraître",
-    "available": "Disponibles",
-    "purchased": "Acheté"
+    "available": "Disponibles"
   },
   "Filters": {
     "toggle": "Rechercher ou filtrer",
@@ -75,6 +74,11 @@
     "languageLabel": "Langue de l’application",
     "french": "Français",
     "english": "English",
+    "appearanceSection": "Apparence",
+    "themeLabel": "Thème",
+    "themeSystem": "Système",
+    "themeLight": "Clair",
+    "themeDark": "Sombre",
     "driveNotConfigured": "Connexion Drive non configurée",
     "driveConfigHelp": "Ajoutez NEXT_PUBLIC_GOOGLE_CLIENT_ID dans les variables d’environnement pour activer la sauvegarde Drive.",
     "driveIntro": "Sauvegardez cette liste dans un fichier créé par l’application sur votre Drive.",

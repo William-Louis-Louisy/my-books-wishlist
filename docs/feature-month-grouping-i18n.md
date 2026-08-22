@@ -2,13 +2,12 @@
 
 ## Regroupement par mois
 
-Les trois groupes métier historiques restent inchangés : `À paraître`, `Disponibles`, `Acheté`.
+Les groupes métier visibles sont désormais `À paraître` et `Disponibles`. Le champ `purchased` reste indépendant du statut de sortie et ne crée plus de troisième section : un livre acheté conserve sa section, son mois et sa position chronologique.
 
-À l'intérieur de chacun, les livres sont désormais regroupés par mois de `releaseDate` :
+À l'intérieur des deux sections, les livres sont regroupés par mois de `releaseDate` :
 
 - `À paraître` : mois le plus proche en premier, puis progression vers le futur (`asc`).
 - `Disponibles` : mois le plus récent en premier, puis remontée vers le passé (`desc`).
-- `Acheté` : même ordre que `Disponibles`, la section restant repliée par défaut.
 
 Un groupe mensuel est identifié par une clé stable `YYYY-MM`, mais son libellé est formaté selon la langue active (`Août 2026` / `August 2026`). Les livres à l'intérieur du mois suivent la même direction chronologique que le groupe.
 

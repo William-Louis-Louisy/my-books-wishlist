@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { AnimatePresence } from "motion/react";
 import { useLocale, useTranslations } from "next-intl";
 import { BookCard } from "@/components/BookCard";
 import { FilterPanel } from "@/components/FilterPanel";
@@ -21,15 +21,13 @@ export function BookList({ books }: BookListProps) {
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [publisher, setPublisher] = useState("");
-  const [purchasedOpen, setPurchasedOpen] = useState(false);
-  const reduceMotion = useReducedMotion();
 
   const publishers = useMemo(
     () => [...new Set(books.map((book) => book.publisher))].sort((a, b) => a.localeCompare(b, locale)),
     [books, locale],
   );
   const groups = useMemo(() => groupBooks(filterBooks(books, query, publisher)), [books, query, publisher]);
-  const filteredCount = groups.upcoming.length + groups.available.length + groups.purchased.length;
+  const filteredCount = groups.upcoming.length + groups.available.length;
 
   const renderCards = (items: Book[]) => (
     <div className="space-y-2">
@@ -73,24 +71,6 @@ export function BookList({ books }: BookListProps) {
         <div className="pb-28">
           {groups.upcoming.length ? <section><SectionHeader label={tSections("upcoming")} />{renderMonthGroups(groups.upcoming, "asc")}</section> : null}
           {groups.available.length ? <section className="mt-5"><SectionHeader label={tSections("available")} />{renderMonthGroups(groups.available, "desc")}</section> : null}
-          {groups.purchased.length ? (
-            <section className="mt-5">
-              <SectionHeader label={tSections("purchased")} count={groups.purchased.length} collapsible expanded={purchasedOpen} onToggle={() => setPurchasedOpen((value) => !value)} />
-              <AnimatePresence initial={false}>
-                {purchasedOpen ? (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: reduceMotion ? 0.1 : 0.2, ease: "easeOut" }}
-                    className="overflow-hidden"
-                  >
-                    {renderMonthGroups(groups.purchased, "desc")}
-                  </motion.div>
-                ) : null}
-              </AnimatePresence>
-            </section>
-          ) : null}
         </div>
       )}
     </>

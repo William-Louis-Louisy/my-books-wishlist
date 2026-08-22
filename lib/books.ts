@@ -4,13 +4,14 @@ import { getTodayIso } from "@/lib/date";
 export interface BookGroups {
   upcoming: Book[];
   available: Book[];
-  purchased: Book[];
 }
 
 export interface BookMonthGroup {
   month: string;
   books: Book[];
 }
+
+export type BookAutocompleteField = "author" | "series" | "publisher";
 
 export function deriveStatus(releaseDate: string, today = getTodayIso()): BookStatus {
   return releaseDate <= today ? "available" : "upcoming";
@@ -24,20 +25,14 @@ export function groupBooks(books: Book[], today = getTodayIso()): BookGroups {
   const byReleaseDate = (a: Book, b: Book) =>
     a.releaseDate.localeCompare(b.releaseDate) || a.title.localeCompare(b.title);
 
-  const groups: BookGroups = { upcoming: [], available: [], purchased: [] };
+  const groups: BookGroups = { upcoming: [], available: [] };
 
   for (const book of books) {
-    if (book.purchased) {
-      groups.purchased.push(book);
-      continue;
-    }
-
     groups[resolveBookStatus(book, today)].push(book);
   }
 
   groups.upcoming.sort(byReleaseDate);
   groups.available.sort(byReleaseDate);
-  groups.purchased.sort(byReleaseDate);
   return groups;
 }
 
@@ -64,6 +59,25 @@ export function groupBooksByReleaseMonth(
         return byDate || a.title.localeCompare(b.title);
       }),
     }));
+}
+
+export function getBookAutocompleteOptions(
+  books: Book[],
+  field: BookAutocompleteField,
+  locale: string,
+): string[] {
+  const unique = new Map<string, string>();
+
+  for (const book of books) {
+    const rawValue = book[field];
+    if (!rawValue) continue;
+    const value = rawValue.trim();
+    if (!value) continue;
+    const key = value.toLocaleLowerCase(locale);
+    if (!unique.has(key)) unique.set(key, value);
+  }
+
+  return [...unique.values()].sort((a, b) => a.localeCompare(b, locale));
 }
 
 export function filterBooks(books: Book[], query: string, publisher: string): Book[] {

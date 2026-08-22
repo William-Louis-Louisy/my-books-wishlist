@@ -17,7 +17,8 @@
   --container-app: 640px;
 }
 
-:root {
+:root,
+:root[data-theme="light"] {
   --paper: #f7f6f2;
   --ink: #14212b;
   --ink-muted: #5b6b72;
@@ -29,8 +30,21 @@
   color-scheme: light;
 }
 
+:root[data-theme="dark"] {
+  --paper: #10181c;
+  --ink: #ede7da;
+  --ink-muted: #94a0a3;
+  --accent-brass: #d6a75b;
+  --accent-cloth: #649583;
+  --line: #26333a;
+  --surface-muted: #182229;
+  --sync-error: #b4543f;
+  color-scheme: dark;
+}
+
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme]),
+  :root[data-theme="system"] {
     --paper: #10181c;
     --ink: #ede7da;
     --ink-muted: #94a0a3;

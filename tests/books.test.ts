@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   deriveStatus,
   filterBooks,
+  getBookAutocompleteOptions,
   groupBooks,
   groupBooksByReleaseMonth,
   mergeBooksIgnoringDuplicateIds,
@@ -34,16 +35,16 @@ describe("book business rules", () => {
     expect(resolveBookStatus({ ...baseBook, releaseDate: "2026-01-01", statusOverride: "upcoming" }, "2026-08-22")).toBe("upcoming");
   });
 
-  it("groups purchased books independently from release status and sorts by date", () => {
+  it("keeps purchased books in their release-status section", () => {
     const books: Book[] = [
       { ...baseBook, id: "a", releaseDate: "2027-05-01" },
       { ...baseBook, id: "b", releaseDate: "2026-01-01", status: "available" },
       { ...baseBook, id: "c", releaseDate: "2027-01-01", purchased: true, purchasedAt: "2026-08-22T10:00:00.000Z" },
+      { ...baseBook, id: "d", releaseDate: "2026-02-01", status: "available", purchased: true, purchasedAt: "2026-08-22T10:00:00.000Z" },
     ];
     const groups = groupBooks(books, "2026-08-22");
-    expect(groups.upcoming.map((book) => book.id)).toEqual(["a"]);
-    expect(groups.available.map((book) => book.id)).toEqual(["b"]);
-    expect(groups.purchased.map((book) => book.id)).toEqual(["c"]);
+    expect(groups.upcoming.map((book) => book.id)).toEqual(["c", "a"]);
+    expect(groups.available.map((book) => book.id)).toEqual(["b", "d"]);
   });
 
   it("groups releases by month with the requested chronological direction", () => {
@@ -60,6 +61,18 @@ describe("book business rules", () => {
     const descending = groupBooksByReleaseMonth(books, "desc");
     expect(descending.map((group) => group.month)).toEqual(["2026-10", "2026-09"]);
     expect(descending[0].books.map((book) => book.id)).toEqual(["a", "c"]);
+  });
+
+  it("builds trimmed case-insensitive autocomplete options", () => {
+    const books: Book[] = [
+      baseBook,
+      { ...baseBook, id: "2", author: " une autrice ", series: "Autre série", publisher: "Deuxième" },
+      { ...baseBook, id: "3", author: "Un auteur", series: undefined, publisher: "maison" },
+    ];
+
+    expect(getBookAutocompleteOptions(books, "author", "fr")).toEqual(["Un auteur", "Une autrice"]);
+    expect(getBookAutocompleteOptions(books, "series", "fr")).toEqual(["Autre série", "Les Archives de Brume"]);
+    expect(getBookAutocompleteOptions(books, "publisher", "fr")).toEqual(["Deuxième", "Maison"]);
   });
 
   it("filters by publisher, title, author, series or volume", () => {
