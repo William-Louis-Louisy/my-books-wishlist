@@ -1,19 +1,17 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 import {
+  getDefaultSyncSnapshot,
   readSyncSnapshot,
   subscribeToSyncSnapshot,
   type SyncSnapshot,
 } from "@/lib/sync-status";
 
+function subscribe(onStoreChange: () => void): () => void {
+  return subscribeToSyncSnapshot(() => onStoreChange());
+}
+
 export function useSyncStatus(): SyncSnapshot {
-  const [snapshot, setSnapshot] = useState<SyncSnapshot>({ state: "disconnected" });
-
-  useEffect(() => {
-    setSnapshot(readSyncSnapshot());
-    return subscribeToSyncSnapshot(setSnapshot);
-  }, []);
-
-  return snapshot;
+  return useSyncExternalStore(subscribe, readSyncSnapshot, getDefaultSyncSnapshot);
 }
