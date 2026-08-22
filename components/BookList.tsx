@@ -5,14 +5,16 @@ import { AnimatePresence } from "motion/react";
 import { useLocale, useTranslations } from "next-intl";
 import { BookCard } from "@/components/BookCard";
 import { FilterPanel } from "@/components/FilterPanel";
+import { ChevronIcon } from "@/components/Icons";
 import { SectionHeader } from "@/components/SectionHeader";
 import {
+  buildBookTimeline,
   filterBooks,
   groupBooks,
   groupBooksByReleasePeriod,
-  groupBooksByTimelinePeriod,
   type BookOrganizationMode,
   type BookReleaseGroup,
+  type BookYearArchive,
 } from "@/lib/books";
 import { formatMonthLabel } from "@/lib/date";
 import type { Book } from "@/types/book";
@@ -32,6 +34,9 @@ export function BookList({ books }: BookListProps) {
   const [publisher, setPublisher] = useState("");
   const [organization, setOrganization] =
     useState<BookOrganizationMode>("month");
+  const [expandedArchiveYears, setExpandedArchiveYears] = useState<Set<string>>(
+    () => new Set(),
+  );
 
   const publishers = useMemo(
     () =>
@@ -52,10 +57,20 @@ export function BookList({ books }: BookListProps) {
     () => groupBooks(filteredBooks),
     [filteredBooks],
   );
-  const timelineGroups = useMemo(
-    () => groupBooksByTimelinePeriod(filteredBooks),
+  const timeline = useMemo(
+    () => buildBookTimeline(filteredBooks),
     [filteredBooks],
   );
+  const hasActiveFilter = Boolean(query.trim() || publisher);
+
+  const toggleArchiveYear = (year: string) => {
+    setExpandedArchiveYears((current) => {
+      const next = new Set(current);
+      if (next.has(year)) next.delete(year);
+      else next.add(year);
+      return next;
+    });
+  };
 
   const renderCards = (items: Book[]) => (
     <div className="space-y-2">
@@ -67,10 +82,14 @@ export function BookList({ books }: BookListProps) {
     </div>
   );
 
-  const releaseGroupLabel = (group: BookReleaseGroup) =>
-    group.month
-      ? formatMonthLabel(group.key, locale)
-      : tSections("monthUnspecified", { year: group.year });
+  const releaseGroupLabel = (
+    group: BookReleaseGroup,
+    withinArchive = false,
+  ) => {
+    if (group.month) return formatMonthLabel(group.key, locale);
+    if (withinArchive) return tSections("monthUnspecifiedShort");
+    return tSections("monthUnspecified", { year: group.year });
+  };
 
   const accentClass = (accent: StatusAccent) => {
     if (accent === "brass") return "bg-[var(--accent-brass)]";
@@ -99,16 +118,76 @@ export function BookList({ books }: BookListProps) {
     </div>
   );
 
+  const renderArchive = (archive: BookYearArchive) => {
+    const expanded = hasActiveFilter || expandedArchiveYears.has(archive.year);
+    const panelId = `book-archive-${archive.year}`;
+
+    return (
+      <section
+        key={archive.year}
+        className="border-t border-line last:border-b"
+      >
+        <button
+          type="button"
+          aria-expanded={expanded}
+          aria-controls={panelId}
+          aria-label={tSections(
+            expanded ? "archiveCollapse" : "archiveExpand",
+            { year: archive.year },
+          )}
+          disabled={hasActiveFilter}
+          onClick={() => toggleArchiveYear(archive.year)}
+          className="flex w-full items-center gap-3 px-page py-4 text-left focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-brass disabled:cursor-default"
+        >
+          <span className="font-display text-base font-semibold text-ink">
+            {archive.year}
+          </span>
+          <span className="ml-auto text-xs text-ink-muted">
+            {tSections("archiveBooks", { count: archive.bookCount })}
+          </span>
+          <ChevronIcon
+            className={`size-4 shrink-0 text-ink-muted transition-transform duration-200 motion-reduce:transition-none ${
+              expanded ? "rotate-90" : ""
+            }`}
+          />
+        </button>
+
+        {expanded ? (
+          <div id={panelId} className="space-y-5 pb-5">
+            {archive.groups.map((group) => (
+              <div key={group.key}>
+                <h3 className="mb-2 px-page font-display text-sm font-semibold text-ink">
+                  {releaseGroupLabel(group, true)}
+                </h3>
+                {renderCards(group.books)}
+              </div>
+            ))}
+          </div>
+        ) : null}
+      </section>
+    );
+  };
+
   const renderMonthlyTimeline = () => (
-    <div className="space-y-6 pb-28">
-      {timelineGroups.map((group) => (
-        <section key={group.key}>
-          <h2 className="my-2 px-page font-display text-sm font-semibold text-ink">
-            {releaseGroupLabel(group)}
-          </h2>
-          {renderCards(group.books)}
-        </section>
-      ))}
+    <div className="pb-28">
+      {timeline.activeGroups.length ? (
+        <div className="space-y-6">
+          {timeline.activeGroups.map((group) => (
+            <section key={group.key}>
+              <h2 className="my-2 px-page font-display text-sm font-semibold text-ink">
+                {releaseGroupLabel(group)}
+              </h2>
+              {renderCards(group.books)}
+            </section>
+          ))}
+        </div>
+      ) : null}
+
+      {timeline.archives.length ? (
+        <div className={timeline.activeGroups.length ? "mt-6" : ""}>
+          {timeline.archives.map(renderArchive)}
+        </div>
+      ) : null}
     </div>
   );
 
