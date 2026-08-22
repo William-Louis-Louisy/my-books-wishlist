@@ -37,9 +37,9 @@ export function BookList({ books }: BookListProps) {
   const [expandedArchiveYears, setExpandedArchiveYears] = useState<Set<string>>(
     () => new Set(),
   );
-  const [collapsedCurrentYearMonths, setCollapsedCurrentYearMonths] = useState<
-    Set<string>
-  >(() => new Set());
+  const [collapsedMonths, setCollapsedMonths] = useState<Set<string>>(
+    () => new Set(),
+  );
 
   const publishers = useMemo(
     () =>
@@ -75,8 +75,8 @@ export function BookList({ books }: BookListProps) {
     });
   };
 
-  const toggleCurrentYearMonth = (monthKey: string) => {
-    setCollapsedCurrentYearMonths((current) => {
+  const toggleMonth = (monthKey: string) => {
+    setCollapsedMonths((current) => {
       const next = new Set(current);
       if (next.has(monthKey)) next.delete(monthKey);
       else next.add(monthKey);
@@ -130,6 +130,57 @@ export function BookList({ books }: BookListProps) {
     </div>
   );
 
+  const renderTimelineGroup = (
+    group: BookReleaseGroup,
+    withinArchive = false,
+  ) => {
+    const label = releaseGroupLabel(group, withinArchive);
+
+    if (!group.month) {
+      return (
+        <div key={group.key}>
+          <h3 className="mb-2 px-page font-display text-sm font-semibold text-ink">
+            {label}
+          </h3>
+          {renderCards(group.books)}
+        </div>
+      );
+    }
+
+    const expanded = hasActiveFilter || !collapsedMonths.has(group.key);
+    const panelId = `book-month-${group.key}`;
+
+    return (
+      <section key={group.key}>
+        <button
+          type="button"
+          aria-expanded={expanded}
+          aria-controls={panelId}
+          aria-label={tSections(
+            expanded ? "monthCollapse" : "monthExpand",
+            { month: label },
+          )}
+          disabled={hasActiveFilter}
+          onClick={() => toggleMonth(group.key)}
+          className="my-2 flex w-full items-center gap-3 px-page py-1 text-left focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-brass disabled:cursor-default"
+        >
+          <span className="font-display text-sm font-semibold text-ink">
+            {label}
+          </span>
+          <span className="ml-auto text-xs text-ink-muted">
+            {tSections("monthBooks", { count: group.books.length })}
+          </span>
+          <ChevronIcon
+            className={`size-4 shrink-0 text-ink-muted transition-transform duration-200 motion-reduce:transition-none ${
+              expanded ? "rotate-90" : ""
+            }`}
+          />
+        </button>
+        {expanded ? <div id={panelId}>{renderCards(group.books)}</div> : null}
+      </section>
+    );
+  };
+
   const renderArchive = (archive: BookYearArchive) => {
     const expanded = hasActiveFilter || expandedArchiveYears.has(archive.year);
     const panelId = `book-archive-${archive.year}`;
@@ -166,67 +217,9 @@ export function BookList({ books }: BookListProps) {
 
         {expanded ? (
           <div id={panelId} className="space-y-5 pb-5">
-            {archive.groups.map((group) => (
-              <div key={group.key}>
-                <h3 className="mb-2 px-page font-display text-sm font-semibold text-ink">
-                  {releaseGroupLabel(group, true)}
-                </h3>
-                {renderCards(group.books)}
-              </div>
-            ))}
+            {archive.groups.map((group) => renderTimelineGroup(group, true))}
           </div>
         ) : null}
-      </section>
-    );
-  };
-
-  const renderActiveGroup = (group: BookReleaseGroup) => {
-    const isCurrentYearMonth =
-      group.year === timeline.currentYear && Boolean(group.month);
-
-    if (!isCurrentYearMonth) {
-      return (
-        <section key={group.key}>
-          <h2 className="my-2 px-page font-display text-sm font-semibold text-ink">
-            {releaseGroupLabel(group)}
-          </h2>
-          {renderCards(group.books)}
-        </section>
-      );
-    }
-
-    const expanded =
-      hasActiveFilter || !collapsedCurrentYearMonths.has(group.key);
-    const panelId = `book-month-${group.key}`;
-    const label = releaseGroupLabel(group);
-
-    return (
-      <section key={group.key}>
-        <button
-          type="button"
-          aria-expanded={expanded}
-          aria-controls={panelId}
-          aria-label={tSections(
-            expanded ? "monthCollapse" : "monthExpand",
-            { month: label },
-          )}
-          disabled={hasActiveFilter}
-          onClick={() => toggleCurrentYearMonth(group.key)}
-          className="my-2 flex w-full items-center gap-3 px-page py-1 text-left focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-brass disabled:cursor-default"
-        >
-          <span className="font-display text-sm font-semibold text-ink">
-            {label}
-          </span>
-          <span className="ml-auto text-xs text-ink-muted">
-            {tSections("monthBooks", { count: group.books.length })}
-          </span>
-          <ChevronIcon
-            className={`size-4 shrink-0 text-ink-muted transition-transform duration-200 motion-reduce:transition-none ${
-              expanded ? "rotate-90" : ""
-            }`}
-          />
-        </button>
-        {expanded ? <div id={panelId}>{renderCards(group.books)}</div> : null}
       </section>
     );
   };
@@ -235,7 +228,7 @@ export function BookList({ books }: BookListProps) {
     <div className="pb-28">
       {timeline.activeGroups.length ? (
         <div className="space-y-6">
-          {timeline.activeGroups.map(renderActiveGroup)}
+          {timeline.activeGroups.map((group) => renderTimelineGroup(group))}
         </div>
       ) : null}
 
