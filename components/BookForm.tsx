@@ -303,9 +303,10 @@ export function BookForm({ bookId }: BookFormProps) {
 
               {form.releasePrecision === "day" ? (
                 <input
+                  key="release-day"
                   type="date"
                   aria-label={t("releaseDate")}
-                  value={releaseInputValue}
+                  defaultValue={releaseInputValue}
                   onChange={(event) =>
                     updateField("releaseDate", event.target.value)
                   }
@@ -314,9 +315,10 @@ export function BookForm({ bookId }: BookFormProps) {
                 />
               ) : form.releasePrecision === "month" ? (
                 <input
+                  key="release-month"
                   type="month"
                   aria-label={t("releaseDate")}
-                  value={releaseInputValue}
+                  defaultValue={releaseInputValue}
                   onChange={(event) =>
                     updateField("releaseDate", event.target.value)
                   }
@@ -325,6 +327,7 @@ export function BookForm({ bookId }: BookFormProps) {
                 />
               ) : (
                 <input
+                  key="release-year"
                   type="text"
                   inputMode="numeric"
                   pattern="[0-9]{4}"
