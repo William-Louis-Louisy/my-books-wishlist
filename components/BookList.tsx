@@ -73,8 +73,8 @@ export function BookList({ books }: BookListProps) {
       : tSections("monthUnspecified", { year: group.year });
 
   const accentClass = (accent: StatusAccent) => {
-    if (accent === "brass") return "bg-brass";
-    if (accent === "cloth") return "bg-cloth";
+    if (accent === "brass") return "bg-[var(--accent-brass)]";
+    if (accent === "cloth") return "bg-[var(--accent-cloth)]";
     return "bg-ink-muted/40";
   };
 
