@@ -77,8 +77,8 @@ export function BookCard({ book }: BookCardProps) {
           dragElastic={0.18}
           onDragEnd={onDragEnd}
           whileTap={reduceMotion ? undefined : { scale: 0.995 }}
-          className={`relative border border-line bg-paper px-4 py-4 pr-14 transition-[opacity,background-color] duration-200 ease-out motion-reduce:transition-none ${
-            visualPurchased ? "bg-surface-muted opacity-[0.55]" : ""
+          className={`relative border border-line px-4 py-4 pr-14 transition-[background-color] duration-200 ease-out motion-reduce:transition-none ${
+            visualPurchased ? "bg-surface-muted" : "bg-paper"
           } ${
             visualPurchased
               ? "border-l-[3px] border-l-ink-muted/40"
@@ -94,7 +94,7 @@ export function BookCard({ book }: BookCardProps) {
             className="absolute inset-0 z-0 cursor-pointer rounded-card focus-visible:outline-2 focus-visible:outline-offset-[-3px] focus-visible:outline-brass"
           />
           <BookmarkToggle purchased={visualPurchased} onToggle={handleToggle} disabled={busy} />
-          <div className="pointer-events-none relative z-[1] flex items-start gap-4">
+          <div className={`pointer-events-none relative z-[1] flex items-start gap-4 transition-opacity duration-200 ease-out motion-reduce:transition-none ${visualPurchased ? "opacity-[0.55]" : "opacity-100"}`}>
             <div className="min-w-0 flex-1">
               <h3 className={`font-display text-lg font-medium leading-[1.3] text-ink ${visualPurchased ? "line-through" : ""}`}>
                 {book.title}
