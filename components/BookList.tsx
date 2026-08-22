@@ -9,9 +9,10 @@ import { SectionHeader } from "@/components/SectionHeader";
 import {
   filterBooks,
   groupBooks,
-  groupBooksByReleaseMonth,
-  groupBooksByTimelineMonth,
+  groupBooksByReleasePeriod,
+  groupBooksByTimelinePeriod,
   type BookOrganizationMode,
+  type BookReleaseGroup,
 } from "@/lib/books";
 import { formatMonthLabel } from "@/lib/date";
 import type { Book } from "@/types/book";
@@ -20,7 +21,7 @@ interface BookListProps {
   books: Book[];
 }
 
-type StatusAccent = "brass" | "cloth";
+type StatusAccent = "brass" | "cloth" | "neutral";
 
 export function BookList({ books }: BookListProps) {
   const tHome = useTranslations("Home");
@@ -34,9 +35,13 @@ export function BookList({ books }: BookListProps) {
 
   const publishers = useMemo(
     () =>
-      [...new Set(books.map((book) => book.publisher.trim()).filter(Boolean))].sort(
-        (a, b) => a.localeCompare(b, locale),
-      ),
+      [
+        ...new Set(
+          books
+            .map((book) => book.publisher?.trim())
+            .filter((value): value is string => Boolean(value)),
+        ),
+      ].sort((a, b) => a.localeCompare(b, locale)),
     [books, locale],
   );
   const filteredBooks = useMemo(
@@ -48,7 +53,7 @@ export function BookList({ books }: BookListProps) {
     [filteredBooks],
   );
   const timelineGroups = useMemo(
-    () => groupBooksByTimelineMonth(filteredBooks),
+    () => groupBooksByTimelinePeriod(filteredBooks),
     [filteredBooks],
   );
 
@@ -62,22 +67,31 @@ export function BookList({ books }: BookListProps) {
     </div>
   );
 
-  const renderStatusMonthGroups = (
+  const releaseGroupLabel = (group: BookReleaseGroup) =>
+    group.month
+      ? formatMonthLabel(group.key, locale)
+      : tSections("monthUnspecified", { year: group.year });
+
+  const accentClass = (accent: StatusAccent) => {
+    if (accent === "brass") return "bg-brass";
+    if (accent === "cloth") return "bg-cloth";
+    return "bg-ink-muted/40";
+  };
+
+  const renderStatusReleaseGroups = (
     items: Book[],
     order: "asc" | "desc",
     accent: StatusAccent,
   ) => (
     <div className="space-y-5">
-      {groupBooksByReleaseMonth(items, order).map((group) => (
-        <div key={group.month}>
+      {groupBooksByReleasePeriod(items, order).map((group) => (
+        <div key={group.key}>
           <h3 className="mb-2 flex items-center gap-2 font-display text-sm font-semibold text-ink">
             <span
               aria-hidden="true"
-              className={`size-1.5 rounded-full ${
-                accent === "brass" ? "bg-brass" : "bg-cloth"
-              }`}
+              className={`size-1.5 rounded-full ${accentClass(accent)}`}
             />
-            {formatMonthLabel(group.month, locale)}
+            {releaseGroupLabel(group)}
           </h3>
           {renderCards(group.books)}
         </div>
@@ -88,9 +102,9 @@ export function BookList({ books }: BookListProps) {
   const renderMonthlyTimeline = () => (
     <div className="space-y-6 pb-28">
       {timelineGroups.map((group) => (
-        <section key={group.month}>
-          <h2 className="px-page my-2 font-display text-sm font-semibold text-ink">
-            {formatMonthLabel(group.month, locale)}
+        <section key={group.key}>
+          <h2 className="my-2 px-page font-display text-sm font-semibold text-ink">
+            {releaseGroupLabel(group)}
           </h2>
           {renderCards(group.books)}
         </section>
@@ -103,13 +117,19 @@ export function BookList({ books }: BookListProps) {
       {statusGroups.upcoming.length ? (
         <section>
           <SectionHeader label={tSections("upcoming")} />
-          {renderStatusMonthGroups(statusGroups.upcoming, "asc", "brass")}
+          {renderStatusReleaseGroups(statusGroups.upcoming, "asc", "brass")}
+        </section>
+      ) : null}
+      {statusGroups.unknown.length ? (
+        <section className="mt-5">
+          <SectionHeader label={tSections("unknown")} />
+          {renderStatusReleaseGroups(statusGroups.unknown, "asc", "neutral")}
         </section>
       ) : null}
       {statusGroups.available.length ? (
         <section className="mt-5">
           <SectionHeader label={tSections("available")} />
-          {renderStatusMonthGroups(statusGroups.available, "desc", "cloth")}
+          {renderStatusReleaseGroups(statusGroups.available, "desc", "cloth")}
         </section>
       ) : null}
     </div>
