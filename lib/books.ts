@@ -21,7 +21,6 @@ export interface BookYearArchive {
 }
 
 export interface BookTimeline {
-  currentYear: string;
   activeGroups: BookReleaseGroup[];
   archives: BookYearArchive[];
 }
@@ -225,7 +224,6 @@ export function buildBookTimeline(
   }
 
   return {
-    currentYear,
     activeGroups,
     archives: [...archivesByYear.values()],
   };
