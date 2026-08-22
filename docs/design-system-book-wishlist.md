@@ -131,7 +131,7 @@ colors: {
   brass: "var(--accent-brass)",
   cloth: "var(--accent-cloth)",
   line: "var(--line)",
-  "surface-muted": "var(--surface-muted",
+  "surface-muted": "var(--surface-muted)",
 },
 fontFamily: {
   display: ["Literata", "serif"],
