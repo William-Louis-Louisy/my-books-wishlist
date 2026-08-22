@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { animate, motion, useMotionValue, useReducedMotion, type PanInfo } from "motion/react";
 import { useLocale, useTranslations } from "next-intl";
@@ -26,6 +26,7 @@ export function BookCard({ book }: BookCardProps) {
   const router = useRouter();
   const reduceMotion = useReducedMotion();
   const x = useMotionValue(0);
+  const cardRef = useRef<HTMLDivElement>(null);
   const [openAction, setOpenAction] = useState<BookCardSwipeAction>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -35,17 +36,39 @@ export function BookCard({ book }: BookCardProps) {
     .filter((value): value is string => Boolean(value))
     .join(" · ");
 
-  const settleCard = (target: number) => {
+  const settleCard = useCallback((target: number) => {
     animate(x, target, {
       duration: reduceMotion ? 0.1 : 0.18,
       ease: "easeOut",
     });
-  };
+  }, [reduceMotion, x]);
 
-  const closeActions = () => {
+  const closeActions = useCallback(() => {
     setOpenAction(null);
     settleCard(0);
-  };
+  }, [settleCard]);
+
+  useEffect(() => {
+    if (openAction === null) return;
+
+    const handleOutsidePointerDown = (event: PointerEvent) => {
+      const target = event.target;
+      if (target instanceof Node && cardRef.current?.contains(target)) return;
+      closeActions();
+    };
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") closeActions();
+    };
+
+    document.addEventListener("pointerdown", handleOutsidePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("pointerdown", handleOutsidePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [closeActions, openAction]);
 
   const onDragEnd = (_: PointerEvent | MouseEvent | TouchEvent, info: PanInfo) => {
     const action = resolveBookCardSwipeAction(info.offset.x, info.velocity.x);
@@ -101,6 +124,7 @@ export function BookCard({ book }: BookCardProps) {
   return (
     <>
       <motion.div
+        ref={cardRef}
         layout
         transition={{ duration: reduceMotion ? 0.1 : 0.18, ease: "easeOut" }}
         className="relative overflow-hidden rounded-card"
