@@ -7,6 +7,7 @@ import { AppHeader } from "@/components/AppHeader";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { useBook, useBooks } from "@/hooks/useBooks";
 import { createBook, deleteBook, updateBook } from "@/lib/book-repository";
+import { getBookAutocompleteOptions } from "@/lib/books";
 import { isValidIsoDate } from "@/lib/date";
 import type { BookDraft, BookStatus } from "@/types/book";
 
@@ -68,12 +69,16 @@ export function BookForm({ bookId }: BookFormProps) {
     : EMPTY_FORM;
   const form: FormState = { ...baseForm, ...formChanges };
 
-  const publishers = useMemo(
-    () => [...new Set(books.map((item) => item.publisher))].sort((a, b) => a.localeCompare(b, locale)),
+  const authorOptions = useMemo(
+    () => getBookAutocompleteOptions(books, "author", locale),
     [books, locale],
   );
   const seriesOptions = useMemo(
-    () => [...new Set(books.map((item) => item.series).filter((series): series is string => Boolean(series)))].sort((a, b) => a.localeCompare(b, locale)),
+    () => getBookAutocompleteOptions(books, "series", locale),
+    [books, locale],
+  );
+  const publisherOptions = useMemo(
+    () => getBookAutocompleteOptions(books, "publisher", locale),
     [books, locale],
   );
 
@@ -149,7 +154,8 @@ export function BookForm({ bookId }: BookFormProps) {
             {errors.title ? <span className="mt-1 block text-xs text-ink-muted">{errors.title}</span> : null}
           </label>
           <label className={labelClass}>{t("author")}
-            <input value={form.author} onChange={(event) => updateField("author", event.target.value)} className={fieldClass} aria-invalid={Boolean(errors.author)} />
+            <input list="author-options" value={form.author} onChange={(event) => updateField("author", event.target.value)} className={fieldClass} aria-invalid={Boolean(errors.author)} autoComplete="off" />
+            <datalist id="author-options">{authorOptions.map((author) => <option key={author} value={author} />)}</datalist>
             {errors.author ? <span className="mt-1 block text-xs text-ink-muted">{errors.author}</span> : null}
           </label>
           <label className={labelClass}>{t("series")} {optionalLabel}
@@ -161,7 +167,7 @@ export function BookForm({ bookId }: BookFormProps) {
           </label>
           <label className={labelClass}>{t("publisher")}
             <input list="publisher-options" value={form.publisher} onChange={(event) => updateField("publisher", event.target.value)} className={fieldClass} aria-invalid={Boolean(errors.publisher)} autoComplete="off" />
-            <datalist id="publisher-options">{publishers.map((publisher) => <option key={publisher} value={publisher} />)}</datalist>
+            <datalist id="publisher-options">{publisherOptions.map((publisher) => <option key={publisher} value={publisher} />)}</datalist>
             {errors.publisher ? <span className="mt-1 block text-xs text-ink-muted">{errors.publisher}</span> : null}
           </label>
           <label className={labelClass}>{t("releaseDate")}
