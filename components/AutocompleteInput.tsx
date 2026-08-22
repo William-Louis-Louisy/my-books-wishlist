@@ -80,7 +80,7 @@ export function AutocompleteInput({
   };
 
   return (
-    <div className="relative">
+    <span className="relative block">
       <input
         id={id}
         name={`book-${id}`}
@@ -109,10 +109,10 @@ export function AutocompleteInput({
       />
 
       {showSuggestions ? (
-        <div
+        <span
           id={listboxId}
           role="listbox"
-          className="absolute left-0 right-0 top-full z-30 mt-1 max-h-52 overflow-y-auto rounded-card border border-line bg-paper py-1"
+          className="absolute left-0 right-0 top-full z-30 mt-1 block max-h-52 overflow-y-auto rounded-card border border-line bg-paper py-1"
         >
           {suggestions.map((suggestion, index) => (
             <button
@@ -130,8 +130,8 @@ export function AutocompleteInput({
               {suggestion}
             </button>
           ))}
-        </div>
+        </span>
       ) : null}
-    </div>
+    </span>
   );
 }
