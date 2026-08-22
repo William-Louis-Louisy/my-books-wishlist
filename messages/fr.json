@@ -89,7 +89,7 @@
     "driveIntro": "Google Drive est utilisé uniquement à votre demande. Aucun envoi n’est déclenché lors de l’ajout, de la modification ou de la suppression d’un livre. Une autorisation Google peut être demandée au moment de l’action.",
     "driveNotConfigured": "Google Drive non configuré",
     "english": "English",
-    "exportNow": "Exporter",
+    "exportToDrive": "Exporter",
     "french": "Français",
     "importFromDrive": "Importer",
     "importSuccess": "{count, plural, =0 {Aucun livre importé depuis Drive.} =1 {# livre importé depuis Drive.} other {# livres importés depuis Drive.}}",
