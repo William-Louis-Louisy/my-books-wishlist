@@ -22,6 +22,9 @@ export function BookCard({ book }: BookCardProps) {
   const [visualPurchased, setVisualPurchased] = useState(book.purchased);
   const dragged = useRef(false);
   const status = resolveBookStatus(book);
+  const seriesMeta = [book.series, book.volume ? `Tome ${book.volume}` : undefined]
+    .filter((value): value is string => Boolean(value))
+    .join(" · ");
 
   const editBook = () => {
     if (!dragged.current) router.push(`/book/${book.id}/edit`);
@@ -93,6 +96,7 @@ export function BookCard({ book }: BookCardProps) {
               <h3 className={`font-display text-lg font-medium leading-[1.3] text-ink ${visualPurchased ? "line-through" : ""}`}>
                 {book.title}
               </h3>
+              {seriesMeta ? <p className="mt-1 truncate text-xs font-medium text-ink">{seriesMeta}</p> : null}
               <p className="mt-1 truncate text-[0.8125rem] text-ink-muted">{book.author} · {book.publisher}</p>
               {book.note ? <p className="mt-2 line-clamp-2 text-sm leading-5 text-ink-muted">{book.note}</p> : null}
             </div>
