@@ -13,12 +13,12 @@ export function SyncDot() {
   const sync = useSyncStatus();
   const color =
     sync.state === "synced"
-      ? "bg-cloth"
+      ? "bg-[var(--accent-cloth)]"
       : sync.state === "error"
         ? "bg-sync-error"
         : sync.state === "disconnected"
           ? "bg-ink-muted/35"
-          : "bg-brass";
+          : "bg-[var(--accent-brass)]";
   const statusLabel =
     sync.state === "synced"
       ? t("synced")
