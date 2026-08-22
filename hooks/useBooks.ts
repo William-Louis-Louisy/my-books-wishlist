@@ -32,10 +32,8 @@ export function useBook(id?: string): { book?: Book; loading: boolean } {
   const [loading, setLoading] = useState(Boolean(id));
 
   useEffect(() => {
-    if (!id) {
-      setLoading(false);
-      return;
-    }
+    if (!id) return;
+
     const subscription = liveQuery(() => db.books.get(id)).subscribe({
       next: (value) => {
         setBook(value);
@@ -46,5 +44,5 @@ export function useBook(id?: string): { book?: Book; loading: boolean } {
     return () => subscription.unsubscribe();
   }, [id]);
 
-  return { book, loading };
+  return { book: id ? book : undefined, loading: id ? loading : false };
 }
