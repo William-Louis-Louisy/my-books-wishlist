@@ -8,7 +8,11 @@ import { AutocompleteInput } from "@/components/AutocompleteInput";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { useBook, useBooks } from "@/hooks/useBooks";
 import { createBook, deleteBook, updateBook } from "@/lib/book-repository";
-import { getBookAutocompleteOptions, getBookDisplayTitle } from "@/lib/books";
+import {
+  getBookAutocompleteOptions,
+  getBookDisplayTitle,
+  hasValidBookIdentity,
+} from "@/lib/books";
 import { isValidIsoDate } from "@/lib/date";
 import type { BookDraft } from "@/types/book";
 
@@ -97,10 +101,8 @@ export function BookForm({ bookId }: BookFormProps) {
 
   const validate = (): boolean => {
     const next: FormErrors = {};
-    const hasTitle = Boolean(form.title.trim());
-    const hasSeriesAndVolume = Boolean(form.series.trim() && form.volume.trim());
 
-    if (!hasTitle && !hasSeriesAndVolume) {
+    if (!hasValidBookIdentity(form)) {
       next.identity = t("identityRequired");
     }
     if (!isValidIsoDate(form.releaseDate)) {
