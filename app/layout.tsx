@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 import { IBM_Plex_Mono, Inter, Literata } from "next/font/google";
 import { AppLifecycle } from "@/components/AppLifecycle";
+import { LocaleProvider } from "@/components/LocaleProvider";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
@@ -9,10 +10,10 @@ const literata = Literata({ subsets: ["latin"], variable: "--font-literata", dis
 const plexMono = IBM_Plex_Mono({ weight: ["400", "500"], subsets: ["latin"], variable: "--font-plex-mono", display: "swap" });
 
 export const metadata: Metadata = {
-  title: "Livres à paraître",
-  description: "Une liste personnelle pour suivre les livres à paraître et déjà disponibles.",
-  applicationName: "Livres à paraître",
-  appleWebApp: { capable: true, statusBarStyle: "default", title: "Mes livres" },
+  title: "Book Wishlist",
+  description: "A personal wishlist for tracking upcoming, available and purchased books.",
+  applicationName: "Book Wishlist",
+  appleWebApp: { capable: true, statusBarStyle: "default", title: "Book Wishlist" },
   icons: { apple: "/icons/apple-touch-icon.png" },
 };
 
@@ -30,8 +31,10 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
   return (
     <html lang="fr" className={`${inter.variable} ${literata.variable} ${plexMono.variable}`}>
       <body>
-        <AppLifecycle />
-        {children}
+        <LocaleProvider>
+          <AppLifecycle />
+          {children}
+        </LocaleProvider>
       </body>
     </html>
   );
