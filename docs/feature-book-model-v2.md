@@ -27,6 +27,16 @@ Quand `title` est absent, `getBookDisplayTitle` produit uniquement pour l'interf
 
 Le formulaire propose explicitement trois modes de saisie : **Date précise**, **Mois**, **Année**. Changer de précision ne complète jamais automatiquement une partie inconnue.
 
+### Saisie native date/mois
+
+Les contrôles `type="date"` et `type="month"` conservent les sélecteurs natifs du navigateur, mais ils ne sont pas pilotés par React pendant la saisie intermédiaire. Ils utilisent une valeur initiale (`defaultValue`) puis remontent la valeur métier via `onChange`.
+
+Ce choix est volontaire : sur desktop, un contrôle natif segmenté ne fournit pas toujours une valeur ISO complète pendant que l'utilisateur saisit successivement jour, mois et année. Le rendre strictement contrôlé avec `value` pouvait réinjecter une chaîne vide et interrompre la saisie, notamment sur le segment année.
+
+Chaque changement de précision remonte un contrôle distinct grâce à une `key`, afin que la valeur initiale correspondant au mode sélectionné soit correctement réappliquée.
+
+Le mode **Année** reste un input texte contrôlé : il conserve les valeurs numériques partielles (`2`, `20`, `202`, `2027`) pendant la frappe, mais seule une année complète à quatre chiffres passe la validation finale.
+
 ## Statut entièrement dérivé
 
 Le statut n'est plus stocké dans `Book`. Les anciens champs `status` et `statusOverride` disparaissent du modèle.
