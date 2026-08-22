@@ -47,6 +47,8 @@ npm run build
 
 - Le statut est dérivé de `releaseDate` à l'affichage.
 - Un override manuel optionnel permet de gérer les sorties avancées ou retardées sans empêcher les statuts automatiques de vieillir correctement.
+- `series` et `volume` sont optionnels : ils permettent de rattacher un livre à une série et à un tome sans imposer cette structure aux ouvrages indépendants.
+- La recherche texte porte sur le titre, l'auteur, la série et le tome.
 - `purchased` prime sur le statut pour le regroupement.
 - Toute mutation locale programme un export Drive après ~5 secondes si Drive est connecté.
 - Aucun backend, aucune API de catalogue de livres, aucune couverture, aucune notification push et aucune Background Sync API.
