@@ -70,7 +70,7 @@ describe("book business rules", () => {
       { ...baseBook, id: "3", author: "Un auteur", series: undefined, publisher: "maison" },
     ];
 
-    expect(getBookAutocompleteOptions(books, "author", "fr")).toEqual(["Une autrice", "Un auteur"]);
+    expect(getBookAutocompleteOptions(books, "author", "fr")).toEqual(["Un auteur", "Une autrice"]);
     expect(getBookAutocompleteOptions(books, "series", "fr")).toEqual(["Autre série", "Les Archives de Brume"]);
     expect(getBookAutocompleteOptions(books, "publisher", "fr")).toEqual(["Deuxième", "Maison"]);
   });
