@@ -1,6 +1,6 @@
 # Livres à paraître / Upcoming Books
 
-PWA mobile-first pour suivre une liste personnelle de livres à paraître, disponibles ou déjà achetés. Les données restent locales dans IndexedDB et peuvent être exportées/importées en JSON ou sauvegardées dans un unique fichier Google Drive créé par l'application.
+PWA mobile-first pour suivre une liste personnelle de livres à paraître, disponibles ou déjà achetés. Les données restent locales dans IndexedDB et peuvent être exportées/importées en JSON ou sauvegardées manuellement dans un unique fichier Google Drive créé par l'application.
 
 ## Stack
 
@@ -20,7 +20,7 @@ cp .env.example .env.local
 npm run dev
 ```
 
-L'application fonctionne entièrement en local sans configuration Google. Pour activer la sauvegarde Drive, renseigner `NEXT_PUBLIC_GOOGLE_CLIENT_ID`.
+L'application fonctionne entièrement en local sans configuration Google. Pour activer les sauvegardes manuelles Drive, renseigner `NEXT_PUBLIC_GOOGLE_CLIENT_ID`.
 
 ## Configuration Google Drive
 
@@ -31,13 +31,15 @@ L'application fonctionne entièrement en local sans configuration Google. Pour a
 5. Ajouter les origines JavaScript autorisées (par exemple `http://localhost:3000` et le domaine Vercel de production).
 6. Définir l'identifiant dans `NEXT_PUBLIC_GOOGLE_CLIENT_ID`.
 
-L'application demande exclusivement le scope `https://www.googleapis.com/auth/drive.file`. Le jeton d'accès reste en mémoire ; aucun refresh token n'est stocké en clair. Le fichier distant s'appelle `book-wishlist-export.json` et est réécrit au lieu d'être dupliqué.
+L'application demande exclusivement le scope `https://www.googleapis.com/auth/drive.file`. Le jeton d'accès reste uniquement en mémoire ; aucun access token ni refresh token n'est persisté dans le navigateur. Le fichier distant s'appelle `book-wishlist-export.json` et est réécrit au lieu d'être dupliqué.
 
-> **Décision OAuth :** la spec initiale mentionne PKCE tout en interdisant tout backend. Google exige aujourd'hui une plateforme backend pour terminer son *Authorization Code flow* (échange du code contre les tokens). La V1 utilise donc le *GIS token model* côté navigateur, qui est le seul modèle GIS compatible avec l'architecture 100 % client imposée. Si un backend est accepté plus tard, ce point devra être migré vers Authorization Code + PKCE.
+Google Drive fonctionne désormais comme une **sauvegarde/restauration manuelle** : aucune création, modification, suppression, bascule d'achat, ouverture de l'application ou reprise d'onglet ne déclenche de requête Drive. L'autorisation Google est demandée uniquement lorsqu'un utilisateur lance explicitement **Exporter vers Google Drive** ou **Importer depuis Google Drive** et qu'aucun token valide n'est encore disponible en mémoire.
+
+> **Décision OAuth :** la spec initiale mentionne PKCE tout en interdisant tout backend. Google exige une plateforme backend pour terminer son *Authorization Code flow* et conserver un refresh token de manière appropriée. Le projet reste volontairement 100 % client et utilise donc le *GIS token model* côté navigateur. Cette contrainte exclut une synchronisation distante silencieuse durable ; le produit assume explicitement un modèle de backup manuel. Si un backend est accepté plus tard, ce point pourra être réévalué.
 
 ## Sauvegardes JSON
 
-Les exports locaux et Google Drive utilisent désormais le même format versionné (`version: 2`) et le même pipeline de validation.
+Les exports locaux et Google Drive utilisent le même format versionné (`version: 2`) et le même pipeline de validation.
 
 Depuis **Réglages → Données locales**, l'utilisateur peut :
 
@@ -48,6 +50,14 @@ Depuis **Réglages → Données locales**, l'utilisateur peut :
 - ou fusionner uniquement les IDs absents.
 
 Les anciens exports V1 restent importables, notamment les enveloppes sans numéro de version, les anciens tableaux bruts et les livres contenant encore `status` / `statusOverride`. Un fichier invalide est rejeté avant toute mutation IndexedDB.
+
+Depuis **Réglages → Google Drive**, l'utilisateur peut :
+
+- voir la date de la dernière sauvegarde Drive réussie ;
+- exporter explicitement la bibliothèque vers Drive ;
+- restaurer explicitement le fichier Drive en mode Remplacer ou Fusionner.
+
+IndexedDB reste toujours la source de vérité locale. Un import Drive modifie la base locale uniquement après validation complète de la sauvegarde et ne provoque aucun export automatique en retour.
 
 ## Internationalisation
 
@@ -94,7 +104,8 @@ npm run build
 - En mode Fusionner, les livres locaux gagnent en cas d'ID déjà existant et le compteur ne rapporte que les nouvelles entrées réellement ajoutées.
 - Les statuts certains restent visibles sur chaque card via les accents `--accent-brass` (`À paraître`) et `--accent-cloth` (`Disponible`) ; le statut indéterminé utilise un rendu neutre.
 - Une organisation **Par statut** reste disponible en option et comporte désormais `À paraître`, `Statut indéterminé` et `Disponibles`.
-- Toute mutation locale programme encore un export Drive après ~5 secondes si Drive est connecté ; cette sauvegarde automatique sera supprimée dans l'itération Drive dédiée afin de rester cohérent avec l'architecture sans backend.
+- IndexedDB est la source de vérité ; Google Drive n'est utilisé que par les deux actions manuelles Exporter/Importer depuis les réglages.
+- Aucun token Google n'est persisté, aucune sauvegarde distante n'est planifiée et aucun retry Drive n'est déclenché par le cycle de vie de l'application.
 - Aucun backend, aucune API de catalogue de livres, aucune couverture, aucune notification push et aucune Background Sync API.
 
 ## PWA / iOS
@@ -107,5 +118,6 @@ Le service worker n'est enregistré qu'en production. Après déploiement HTTPS,
 - `docs/design-system-book-wishlist.md` : identité visuelle et règles UI.
 - `docs/feature-book-model-v2.md` : modèle métier V2, dates partielles et migration IndexedDB.
 - `docs/feature-backup-import.md` : format de sauvegarde, compatibilité V1/V2 et pipeline d'import commun.
+- `docs/feature-manual-drive-backup.md` : décision d'architecture Drive manuel, cycle OAuth et suppression de l'autosync.
 - `docs/feature-month-grouping-i18n.md` : décisions détaillées pour la timeline temporelle, les mois/archives collapsables et l'internationalisation.
 - `docs/feature-purchased-theme-autocomplete.md` : comportement acheté, thème manuel, autocomplete et formulaire.
