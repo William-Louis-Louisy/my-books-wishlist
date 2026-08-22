@@ -19,8 +19,7 @@
   },
   "Sections": {
     "upcoming": "Upcoming",
-    "available": "Available",
-    "purchased": "Purchased"
+    "available": "Available"
   },
   "Filters": {
     "toggle": "Search or filter",
@@ -75,6 +74,11 @@
     "languageLabel": "Application language",
     "french": "Français",
     "english": "English",
+    "appearanceSection": "Appearance",
+    "themeLabel": "Theme",
+    "themeSystem": "System",
+    "themeLight": "Light",
+    "themeDark": "Dark",
     "driveNotConfigured": "Drive connection not configured",
     "driveConfigHelp": "Add NEXT_PUBLIC_GOOGLE_CLIENT_ID to your environment variables to enable Drive backup.",
     "driveIntro": "Back up this list to a file created by the app in your Drive.",
