@@ -1,42 +1,48 @@
-# Feature — Regroupement mensuel & internationalisation
+# Feature — Regroupement temporel & internationalisation
 
-## Regroupement par mois
+## Regroupement par période
 
-L'organisation principale de la liste est désormais **mensuelle**. Les livres `À paraître` et `Disponibles` ne sont plus séparés en deux grandes sections dans l'affichage par défaut : ils cohabitent dans le même groupe `YYYY-MM` selon leur `releaseDate`.
+L'organisation principale reste centrée sur les dates de sortie. Les livres `À paraître`, `Disponibles` et ceux dont le statut est momentanément indéterminé cohabitent dans la timeline par défaut.
 
-Le statut de sortie reste une information métier indépendante et continue d'être visible au niveau de chaque card :
+Avec le modèle V2, `releaseDate` accepte `YYYY`, `YYYY-MM` ou `YYYY-MM-DD` :
+
+- une date mensuelle ou précise rejoint un groupe `YYYY-MM` ;
+- une date annuelle rejoint un groupe `YYYY · Mois non précisé` ;
+- `purchased` reste indépendant du statut et ne déplace pas le livre.
+
+Le statut de sortie reste visible au niveau de chaque card :
 
 - `À paraître` utilise `--accent-brass` ;
 - `Disponible` utilise `--accent-cloth` ;
-- `purchased` reste indépendant du statut de sortie et ne change ni le mois ni la position du livre.
+- `Statut indéterminé` utilise un rendu neutre.
 
-### Ordre de la timeline mensuelle
+### Ordre de la timeline
 
-Le mode mensuel est centré autour du mois courant :
+La timeline est centrée autour de la période courante :
 
 1. mois courant ;
-2. mois futurs dans l'ordre chronologique croissant ;
-3. mois passés du plus récent au plus ancien.
+2. éventuel groupe `année courante · mois non précisé` ;
+3. périodes futures dans l'ordre chronologique croissant ;
+4. périodes passées du plus récent au plus ancien.
 
-À l'intérieur d'un mois courant ou futur, les livres sont triés par date croissante. Dans les mois passés, ils sont triés par date décroissante.
+Les dates précises sont triées chronologiquement dans leur groupe. Une date connue uniquement au mois reste après les dates précises du même mois afin de ne pas lui inventer un jour implicite.
 
-Cette logique vit dans `groupBooksByTimelineMonth` (`lib/books.ts`) et est couverte par Vitest.
+Cette logique vit dans `groupBooksByTimelinePeriod` (`lib/books.ts`) et est couverte par Vitest.
 
 ### Organisation optionnelle par statut
 
-Le panneau de recherche/filtres propose une option d'organisation :
+Le panneau de recherche/filtres propose toujours :
 
 - `Par mois (par défaut)` ;
 - `Par statut`.
 
-Le mode `Par statut` conserve l'ancien comportement :
+Le mode `Par statut` comporte désormais :
 
-- section `À paraître` avec mois croissants ;
-- section `Disponibles` avec mois décroissants.
+- section `À paraître` ;
+- section `Statut indéterminé` ;
+- section `Disponibles`.
 
-Ce mode est volontairement secondaire : il permet de retrouver une lecture par état de sortie sans imposer cette séparation à la timeline principale.
-
-Un groupe mensuel est identifié par une clé stable `YYYY-MM`, mais son libellé est formaté selon la langue active (`Août 2026` / `August 2026`).
+Chaque section conserve ensuite le regroupement par période de sortie.
 
 ## Internationalisation
 
@@ -72,7 +78,7 @@ Le provider met aussi à jour l'attribut `lang` du document et le titre du docum
 - `fr` → `fr-FR`
 - `en` → `en-GB`
 
-Ce mapping s'applique aux dates de sortie, horodatages de sauvegarde et libellés de mois.
+Ce mapping s'applique aux dates de sortie, horodatages de sauvegarde et libellés de mois. Une année seule reste affichée telle quelle et un mois seul est formaté sans inventer de jour.
 
 ### Choix d'architecture
 

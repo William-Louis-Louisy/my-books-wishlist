@@ -41,7 +41,7 @@ export function BookCard({ book }: BookCardProps) {
   const [busy, setBusy] = useState(false);
   const [visualPurchased, setVisualPurchased] = useState(book.purchased);
   const status = resolveBookStatus(book);
-  const hasExplicitTitle = Boolean(book.title.trim());
+  const hasExplicitTitle = Boolean(book.title?.trim());
   const displayTitle = getBookDisplayTitle(book, (volume) =>
     t("volume", { volume }),
   );
@@ -54,8 +54,8 @@ export function BookCard({ book }: BookCardProps) {
         .join(" · ")
     : "";
   const secondaryMeta = [book.author, book.publisher]
-    .map((value) => value.trim())
-    .filter(Boolean)
+    .map((value) => value?.trim())
+    .filter((value): value is string => Boolean(value))
     .join(" · ");
 
   const settleCard = useCallback(
@@ -148,8 +148,18 @@ export function BookCard({ book }: BookCardProps) {
   const dateColor = visualPurchased
     ? "text-ink-muted"
     : status === "upcoming"
-      ? "text-brass"
-      : "text-cloth";
+      ? "text-[var(--accent-brass)]"
+      : status === "available"
+        ? "text-[var(--accent-cloth)]"
+        : "text-ink-muted";
+
+  const statusBorder = visualPurchased
+    ? "border-l-[3px] border-l-ink-muted/40"
+    : status === "upcoming"
+      ? "border-l-[3px] border-l-[var(--accent-brass)]"
+      : status === "available"
+        ? "border-l-[3px] border-l-[var(--accent-cloth)]"
+        : "border-l-[3px] border-l-ink-muted/40";
 
   return (
     <>
@@ -192,13 +202,7 @@ export function BookCard({ book }: BookCardProps) {
           style={{ x, touchAction: "pan-y" }}
           className={`relative border border-line px-4 py-4 pr-14 transition-[background-color] duration-200 ease-out motion-reduce:transition-none ${
             visualPurchased ? "bg-surface-muted" : "bg-paper"
-          } ${
-            visualPurchased
-              ? "border-l-[3px] border-l-ink-muted/40"
-              : status === "upcoming"
-                ? "border-l-[3px] border-l-brass"
-                : "border-l-[3px] border-l-cloth"
-          }`}
+          } ${statusBorder}`}
         >
           <BookmarkToggle
             purchased={visualPurchased}

@@ -80,6 +80,37 @@ button, input, textarea, select { font: inherit; }
 button, a { -webkit-tap-highlight-color: transparent; }
 ::selection { background: color-mix(in srgb, var(--accent-brass) 28%, transparent); }
 
+.book-form-control {
+  font-family: var(--font-inter), sans-serif !important;
+  font-size: 16px !important;
+  font-style: normal !important;
+  font-weight: 400 !important;
+  line-height: 1.5rem !important;
+  letter-spacing: normal !important;
+  text-transform: none !important;
+}
+
+.book-form-control::placeholder {
+  font-family: inherit;
+  font-size: inherit;
+  font-style: inherit;
+  font-weight: inherit;
+  line-height: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+}
+
+.book-form-control::-webkit-date-and-time-value {
+  font-family: inherit;
+  font-size: inherit;
+  font-style: inherit;
+  font-weight: inherit;
+  line-height: inherit;
+  letter-spacing: inherit;
+  text-align: left;
+  text-transform: inherit;
+}
+
 .bookmark-toggle {
   clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 78%, 0 100%);
 }

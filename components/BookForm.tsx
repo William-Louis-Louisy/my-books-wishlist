@@ -13,8 +13,11 @@ import {
   getBookDisplayTitle,
   hasValidBookIdentity,
 } from "@/lib/books";
-import { isValidIsoDate } from "@/lib/date";
-import type { BookDraft } from "@/types/book";
+import {
+  getReleaseDatePrecision,
+  isValidReleaseDate,
+} from "@/lib/date";
+import type { BookDraft, ReleaseDatePrecision } from "@/types/book";
 
 interface BookFormProps {
   bookId?: string;
@@ -27,6 +30,7 @@ interface FormState {
   volume: string;
   publisher: string;
   releaseDate: string;
+  releasePrecision: ReleaseDatePrecision;
   note: string;
   purchased: boolean;
 }
@@ -41,6 +45,7 @@ const EMPTY_FORM: FormState = {
   volume: "",
   publisher: "",
   releaseDate: "",
+  releasePrecision: "day",
   note: "",
   purchased: false,
 };
@@ -60,12 +65,13 @@ export function BookForm({ bookId }: BookFormProps) {
 
   const baseForm: FormState = book
     ? {
-        title: book.title,
-        author: book.author,
+        title: book.title ?? "",
+        author: book.author ?? "",
         series: book.series ?? "",
         volume: book.volume ?? "",
-        publisher: book.publisher,
+        publisher: book.publisher ?? "",
         releaseDate: book.releaseDate,
+        releasePrecision: getReleaseDatePrecision(book.releaseDate) ?? "day",
         note: book.note ?? "",
         purchased: book.purchased,
       }
@@ -95,6 +101,7 @@ export function BookForm({ bookId }: BookFormProps) {
       if (key === "title" || key === "series" || key === "volume") {
         next.identity = undefined;
       }
+      if (key === "releasePrecision") next.releaseDate = undefined;
       return next;
     });
   };
@@ -105,7 +112,10 @@ export function BookForm({ bookId }: BookFormProps) {
     if (!hasValidBookIdentity(form)) {
       next.identity = t("identityRequired");
     }
-    if (!isValidIsoDate(form.releaseDate)) {
+    if (
+      !isValidReleaseDate(form.releaseDate) ||
+      getReleaseDatePrecision(form.releaseDate) !== form.releasePrecision
+    ) {
       next.releaseDate = t("dateRequired");
     }
 
@@ -170,7 +180,7 @@ export function BookForm({ bookId }: BookFormProps) {
   }
 
   const fieldClass =
-    "w-full border-0 border-b border-line bg-transparent py-2 text-base text-ink outline-none transition-[border-color,border-width] focus:border-b-2 focus:border-brass motion-reduce:transition-none";
+    "book-form-control w-full border-0 border-b border-line bg-transparent py-2 text-ink outline-none transition-[border-color,border-width] focus:border-b-2 focus:border-brass motion-reduce:transition-none";
   const labelClass =
     "block text-xs font-medium uppercase tracking-[0.08em] text-ink-muted";
   const optionalLabel = (
@@ -180,6 +190,10 @@ export function BookForm({ bookId }: BookFormProps) {
   const bookDisplayTitle = book
     ? getBookDisplayTitle(book, (volume) => `${t("volume")} ${volume}`)
     : "";
+  const releaseInputValue =
+    getReleaseDatePrecision(form.releaseDate) === form.releasePrecision
+      ? form.releaseDate
+      : "";
 
   return (
     <>
@@ -265,23 +279,75 @@ export function BookForm({ bookId }: BookFormProps) {
             />
           </div>
 
-          <label className={labelClass}>
-            {t("releaseDate")}
-            <input
-              type="date"
-              value={form.releaseDate}
-              onChange={(event) =>
-                updateField("releaseDate", event.target.value)
-              }
-              className={fieldClass}
-              aria-invalid={Boolean(errors.releaseDate)}
-            />
+          <fieldset>
+            <legend className={labelClass}>{t("releaseDate")}</legend>
+            <div className="mt-1 grid gap-3 sm:grid-cols-[minmax(0,0.42fr)_minmax(0,1fr)]">
+              <label>
+                <span className="sr-only">{t("datePrecision")}</span>
+                <select
+                  value={form.releasePrecision}
+                  onChange={(event) =>
+                    updateField(
+                      "releasePrecision",
+                      event.target.value as ReleaseDatePrecision,
+                    )
+                  }
+                  className={fieldClass}
+                >
+                  <option value="day">{t("precisionDay")}</option>
+                  <option value="month">{t("precisionMonth")}</option>
+                  <option value="year">{t("precisionYear")}</option>
+                </select>
+              </label>
+
+              {form.releasePrecision === "day" ? (
+                <input
+                  type="date"
+                  aria-label={t("releaseDate")}
+                  value={releaseInputValue}
+                  onChange={(event) =>
+                    updateField("releaseDate", event.target.value)
+                  }
+                  className={fieldClass}
+                  aria-invalid={Boolean(errors.releaseDate)}
+                />
+              ) : form.releasePrecision === "month" ? (
+                <input
+                  type="month"
+                  aria-label={t("releaseDate")}
+                  value={releaseInputValue}
+                  onChange={(event) =>
+                    updateField("releaseDate", event.target.value)
+                  }
+                  className={fieldClass}
+                  aria-invalid={Boolean(errors.releaseDate)}
+                />
+              ) : (
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]{4}"
+                  maxLength={4}
+                  placeholder={t("yearPlaceholder")}
+                  aria-label={t("releaseDate")}
+                  value={releaseInputValue}
+                  onChange={(event) =>
+                    updateField(
+                      "releaseDate",
+                      event.target.value.replace(/\D/g, "").slice(0, 4),
+                    )
+                  }
+                  className={fieldClass}
+                  aria-invalid={Boolean(errors.releaseDate)}
+                />
+              )}
+            </div>
             {errors.releaseDate ? (
-              <span className="mt-1 block text-xs normal-case tracking-normal text-ink-muted">
+              <span className="mt-1 block text-xs normal-case tracking-normal text-ink-muted" role="alert">
                 {errors.releaseDate}
               </span>
             ) : null}
-          </label>
+          </fieldset>
 
           <label className={labelClass}>
             {t("note")} {optionalLabel}
@@ -289,7 +355,7 @@ export function BookForm({ bookId }: BookFormProps) {
               value={form.note}
               onChange={(event) => updateField("note", event.target.value)}
               rows={4}
-              className={`${fieldClass} resize-y leading-6`}
+              className={`${fieldClass} resize-y`}
             />
           </label>
 

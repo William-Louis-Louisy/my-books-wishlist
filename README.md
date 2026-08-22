@@ -59,19 +59,21 @@ npm run build
 
 ## Règles métier importantes
 
-- La date de sortie reste obligatoire.
+- La date de sortie reste obligatoire et accepte trois précisions réelles : année (`YYYY`), mois (`YYYY-MM`) ou date exacte (`YYYY-MM-DD`).
 - L'identité d'un livre nécessite soit un **titre**, soit une **série + un tome**. Auteur, éditeur et note sont optionnels.
 - Si le titre est absent, l'interface construit le titre d'affichage à partir de la série et du tome (`Saga · Tome 2`) sans dupliquer artificiellement cette valeur dans `title`.
-- Le statut est dérivé de `releaseDate` à l'affichage. Le formulaire ne permet plus de forcer manuellement `À paraître` ou `Disponible` ; les anciens `statusOverride` restent temporairement lus pour compatibilité jusqu'à la migration du modèle V2.
+- Le statut n'est plus persisté : il est dérivé de `releaseDate` à l'affichage et peut être `À paraître`, `Disponible` ou `Indéterminé` lorsque la précision de la date ne permet pas de trancher.
 - Auteur, série et éditeur proposent un autocomplete alimenté par les valeurs déjà enregistrées localement.
-- Les champs de saisie du formulaire utilisent une taille minimale de 16 px afin d'éviter le zoom automatique de Safari iOS ; l'autocorrection et la vérification orthographique sont désactivées pour Auteur et Éditeur.
+- Les contrôles textuels du formulaire utilisent `.book-form-control`, qui impose explicitement Inter, `16px`, poids 400, casse et espacement normaux, y compris pour la valeur interne des champs date/mois WebKit. Cela homogénéise réellement les champs et évite le zoom Safari iOS au focus.
+- L'autocorrection et la vérification orthographique sont désactivées pour Auteur et Éditeur.
 - La recherche texte porte sur le titre, l'auteur, la série et le tome.
-- `purchased` ne modifie plus le regroupement : un livre acheté conserve son mois et sa position chronologique.
-- L'organisation par défaut est une timeline **par mois**, sans séparation globale `À paraître` / `Disponibles`.
-- La timeline commence par le mois courant, poursuit avec les mois futurs dans l'ordre croissant, puis affiche les mois passés du plus récent au plus ancien.
-- Le statut reste visible sur chaque card via les accents `--accent-brass` (`À paraître`) et `--accent-cloth` (`Disponible`).
-- Une organisation **Par statut** reste disponible en option dans le panneau de recherche/filtres et reproduit l'ancien découpage en deux sections.
-- Toute mutation locale programme un export Drive après ~5 secondes si Drive est connecté.
+- `purchased` ne modifie plus le regroupement : un livre acheté conserve son groupe temporel et sa position chronologique.
+- L'organisation par défaut reste une timeline temporelle sans séparation globale `À paraître` / `Disponibles`.
+- Les dates mensuelles et exactes sont groupées par mois ; les dates annuelles utilisent un groupe `YYYY · Mois non précisé`.
+- La timeline commence par le groupe courant, poursuit avec les groupes futurs dans l'ordre croissant, puis affiche les groupes passés du plus récent au plus ancien.
+- Les statuts certains restent visibles sur chaque card via les accents `--accent-brass` (`À paraître`) et `--accent-cloth` (`Disponible`) ; le statut indéterminé utilise un rendu neutre.
+- Une organisation **Par statut** reste disponible en option et comporte désormais `À paraître`, `Statut indéterminé` et `Disponibles`.
+- Toute mutation locale programme encore un export Drive après ~5 secondes si Drive est connecté ; cette sauvegarde automatique sera supprimée dans l'itération Drive dédiée afin de rester cohérent avec l'architecture sans backend.
 - Aucun backend, aucune API de catalogue de livres, aucune couverture, aucune notification push et aucune Background Sync API.
 
 ## PWA / iOS
@@ -82,5 +84,6 @@ Le service worker n'est enregistré qu'en production. Après déploiement HTTPS,
 
 - `docs/spec-book-wishlist.md` : spécification fonctionnelle historique.
 - `docs/design-system-book-wishlist.md` : identité visuelle et règles UI.
-- `docs/feature-month-grouping-i18n.md` : décisions détaillées pour le regroupement mensuel et l'internationalisation.
-- `docs/feature-purchased-theme-autocomplete.md` : évolution du comportement acheté, thème manuel et autocomplete.
+- `docs/feature-book-model-v2.md` : modèle métier V2, dates partielles et migration IndexedDB.
+- `docs/feature-month-grouping-i18n.md` : décisions détaillées pour la timeline temporelle et l'internationalisation.
+- `docs/feature-purchased-theme-autocomplete.md` : comportement acheté, thème manuel, autocomplete et formulaire.

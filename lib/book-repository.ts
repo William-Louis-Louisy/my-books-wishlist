@@ -1,22 +1,22 @@
 import { db } from "@/lib/db";
-import { deriveStatus } from "@/lib/books";
 import { queueDriveExport } from "@/lib/drive-sync";
 import type { Book, BookDraft } from "@/types/book";
 
+function normalizeOptional(value: string | undefined): string | undefined {
+  return value?.trim() || undefined;
+}
+
 export async function createBook(draft: BookDraft): Promise<Book> {
   const now = new Date().toISOString();
-  const status = draft.statusOverride ?? deriveStatus(draft.releaseDate);
   const book: Book = {
     id: crypto.randomUUID(),
-    title: draft.title.trim(),
-    author: draft.author.trim(),
-    series: draft.series?.trim() || undefined,
-    volume: draft.volume?.trim() || undefined,
-    publisher: draft.publisher.trim(),
+    title: normalizeOptional(draft.title),
+    author: normalizeOptional(draft.author),
+    series: normalizeOptional(draft.series),
+    volume: normalizeOptional(draft.volume),
+    publisher: normalizeOptional(draft.publisher),
     releaseDate: draft.releaseDate,
-    note: draft.note?.trim() || undefined,
-    status,
-    statusOverride: draft.statusOverride ?? null,
+    note: normalizeOptional(draft.note),
     purchased: draft.purchased,
     purchasedAt: draft.purchased ? now : undefined,
     createdAt: now,
@@ -36,18 +36,17 @@ export async function updateBook(id: string, draft: BookDraft): Promise<Book> {
     ? current.purchasedAt ?? now
     : undefined;
   const updated: Book = {
-    ...current,
-    title: draft.title.trim(),
-    author: draft.author.trim(),
-    series: draft.series?.trim() || undefined,
-    volume: draft.volume?.trim() || undefined,
-    publisher: draft.publisher.trim(),
+    id: current.id,
+    title: normalizeOptional(draft.title),
+    author: normalizeOptional(draft.author),
+    series: normalizeOptional(draft.series),
+    volume: normalizeOptional(draft.volume),
+    publisher: normalizeOptional(draft.publisher),
     releaseDate: draft.releaseDate,
-    note: draft.note?.trim() || undefined,
-    status: draft.statusOverride ?? deriveStatus(draft.releaseDate),
-    statusOverride: draft.statusOverride ?? null,
+    note: normalizeOptional(draft.note),
     purchased: draft.purchased,
     purchasedAt,
+    createdAt: current.createdAt,
     updatedAt: now,
   };
   await db.books.put(updated);

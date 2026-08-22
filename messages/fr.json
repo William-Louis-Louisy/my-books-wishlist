@@ -37,7 +37,8 @@
     "addTitle": "Ajouter un livre",
     "alreadyPurchased": "Déjà acheté",
     "author": "Auteur",
-    "dateRequired": "Choisissez une date valide.",
+    "datePrecision": "Précision de la date",
+    "dateRequired": "Renseignez une année, un mois ou une date valide.",
     "deleteDescription": "« {title} » sera retiré de votre liste locale.",
     "deleteDescriptionFallback": "Ce livre sera retiré de votre liste locale.",
     "deleteTitle": "Supprimer ce livre ?",
@@ -46,13 +47,17 @@
     "loading": "Chargement…",
     "missing": "Ce livre n’existe plus.",
     "note": "Note",
+    "precisionDay": "Date précise",
+    "precisionMonth": "Mois",
+    "precisionYear": "Année",
     "publisher": "Éditeur",
     "releaseDate": "Date de sortie",
     "save": "Enregistrer",
     "saving": "Enregistrement…",
     "series": "Série",
     "title": "Titre",
-    "volume": "Tome"
+    "volume": "Tome",
+    "yearPlaceholder": "2027"
   },
   "Home": {
     "emptyBody": "Ajoutez le premier titre à surveiller.",
@@ -64,6 +69,8 @@
   },
   "Sections": {
     "available": "Disponibles",
+    "monthUnspecified": "{year} · Mois non précisé",
+    "unknown": "Statut indéterminé",
     "upcoming": "À paraître"
   },
   "Settings": {
