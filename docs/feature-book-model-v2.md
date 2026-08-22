@@ -95,4 +95,4 @@ Les nouveaux exports utilisent une enveloppe `version: 2`. Une sauvegarde explic
 
 Le détail du format, de la validation et des modes `Remplacer` / `Fusionner` est documenté dans `docs/feature-backup-import.md`.
 
-La suppression de la sauvegarde Drive automatique appartient toujours à l'itération suivante afin de conserver une architecture sans backend et un comportement OAuth honnête.
+Google Drive fonctionne désormais uniquement comme sauvegarde/restauration manuelle. Aucune mutation locale ne déclenche d'export distant et aucun retry automatique n'est attaché au cycle de vie de l'application. Le choix OAuth et ce modèle manuel sont documentés dans `docs/feature-manual-drive-backup.md`.
