@@ -2,9 +2,9 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Livres à paraître",
-    short_name: "Mes livres",
-    description: "Suivre les livres à paraître, disponibles et déjà achetés.",
+    name: "Book Wishlist",
+    short_name: "Books",
+    description: "Track upcoming, available and purchased books.",
     start_url: "/",
     display: "standalone",
     background_color: "#F7F6F2",

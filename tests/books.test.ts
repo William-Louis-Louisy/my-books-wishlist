@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { deriveStatus, filterBooks, groupBooks, mergeBooksIgnoringDuplicateIds, resolveBookStatus } from "@/lib/books";
+import {
+  deriveStatus,
+  filterBooks,
+  groupBooks,
+  groupBooksByReleaseMonth,
+  mergeBooksIgnoringDuplicateIds,
+  resolveBookStatus,
+} from "@/lib/books";
 import type { Book } from "@/types/book";
 
 const baseBook: Book = {
@@ -37,6 +44,22 @@ describe("book business rules", () => {
     expect(groups.upcoming.map((book) => book.id)).toEqual(["a"]);
     expect(groups.available.map((book) => book.id)).toEqual(["b"]);
     expect(groups.purchased.map((book) => book.id)).toEqual(["c"]);
+  });
+
+  it("groups releases by month with the requested chronological direction", () => {
+    const books: Book[] = [
+      { ...baseBook, id: "a", title: "A", releaseDate: "2026-10-20" },
+      { ...baseBook, id: "b", title: "B", releaseDate: "2026-09-04" },
+      { ...baseBook, id: "c", title: "C", releaseDate: "2026-10-02" },
+    ];
+
+    const ascending = groupBooksByReleaseMonth(books, "asc");
+    expect(ascending.map((group) => group.month)).toEqual(["2026-09", "2026-10"]);
+    expect(ascending[1].books.map((book) => book.id)).toEqual(["c", "a"]);
+
+    const descending = groupBooksByReleaseMonth(books, "desc");
+    expect(descending.map((group) => group.month)).toEqual(["2026-10", "2026-09"]);
+    expect(descending[0].books.map((book) => book.id)).toEqual(["a", "c"]);
   });
 
   it("filters by publisher, title, author, series or volume", () => {

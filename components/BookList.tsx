@@ -2,10 +2,12 @@
 
 import { useMemo, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { useLocale, useTranslations } from "next-intl";
 import { BookCard } from "@/components/BookCard";
 import { FilterPanel } from "@/components/FilterPanel";
 import { SectionHeader } from "@/components/SectionHeader";
-import { filterBooks, groupBooks } from "@/lib/books";
+import { filterBooks, groupBooks, groupBooksByReleaseMonth } from "@/lib/books";
+import { formatMonthLabel } from "@/lib/date";
 import type { Book } from "@/types/book";
 
 interface BookListProps {
@@ -13,13 +15,19 @@ interface BookListProps {
 }
 
 export function BookList({ books }: BookListProps) {
+  const tHome = useTranslations("Home");
+  const tSections = useTranslations("Sections");
+  const locale = useLocale();
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [publisher, setPublisher] = useState("");
   const [purchasedOpen, setPurchasedOpen] = useState(false);
   const reduceMotion = useReducedMotion();
 
-  const publishers = useMemo(() => [...new Set(books.map((book) => book.publisher))].sort((a, b) => a.localeCompare(b, "fr")), [books]);
+  const publishers = useMemo(
+    () => [...new Set(books.map((book) => book.publisher))].sort((a, b) => a.localeCompare(b, locale)),
+    [books, locale],
+  );
   const groups = useMemo(() => groupBooks(filterBooks(books, query, publisher)), [books, query, publisher]);
   const filteredCount = groups.upcoming.length + groups.available.length + groups.purchased.length;
 
@@ -28,6 +36,19 @@ export function BookList({ books }: BookListProps) {
       <AnimatePresence initial={false}>
         {items.map((book) => <BookCard key={book.id} book={book} />)}
       </AnimatePresence>
+    </div>
+  );
+
+  const renderMonthGroups = (items: Book[], order: "asc" | "desc") => (
+    <div className="space-y-5">
+      {groupBooksByReleaseMonth(items, order).map((group) => (
+        <div key={group.month}>
+          <h3 className="mb-2 font-display text-sm font-semibold text-ink">
+            {formatMonthLabel(group.month, locale)}
+          </h3>
+          {renderCards(group.books)}
+        </div>
+      ))}
     </div>
   );
 
@@ -45,16 +66,16 @@ export function BookList({ books }: BookListProps) {
 
       {filteredCount === 0 ? (
         <div className="py-16 text-center">
-          <p className="font-display text-base italic text-ink">{books.length === 0 ? "Aucun livre en attente pour l'instant." : "Aucun livre ne correspond à cette recherche."}</p>
-          <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-ink-muted">{books.length === 0 ? "Ajoutez le premier titre à surveiller." : "Modifiez vos critères pour retrouver un titre."}</p>
+          <p className="font-display text-base italic text-ink">{books.length === 0 ? tHome("emptyTitle") : tHome("noResultsTitle")}</p>
+          <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-ink-muted">{books.length === 0 ? tHome("emptyBody") : tHome("noResultsBody")}</p>
         </div>
       ) : (
         <div className="pb-28">
-          {groups.upcoming.length ? <section><SectionHeader label="À paraître" />{renderCards(groups.upcoming)}</section> : null}
-          {groups.available.length ? <section className="mt-5"><SectionHeader label="Disponibles" />{renderCards(groups.available)}</section> : null}
+          {groups.upcoming.length ? <section><SectionHeader label={tSections("upcoming")} />{renderMonthGroups(groups.upcoming, "asc")}</section> : null}
+          {groups.available.length ? <section className="mt-5"><SectionHeader label={tSections("available")} />{renderMonthGroups(groups.available, "desc")}</section> : null}
           {groups.purchased.length ? (
             <section className="mt-5">
-              <SectionHeader label="Acheté" count={groups.purchased.length} collapsible expanded={purchasedOpen} onToggle={() => setPurchasedOpen((value) => !value)} />
+              <SectionHeader label={tSections("purchased")} count={groups.purchased.length} collapsible expanded={purchasedOpen} onToggle={() => setPurchasedOpen((value) => !value)} />
               <AnimatePresence initial={false}>
                 {purchasedOpen ? (
                   <motion.div
@@ -64,7 +85,7 @@ export function BookList({ books }: BookListProps) {
                     transition={{ duration: reduceMotion ? 0.1 : 0.2, ease: "easeOut" }}
                     className="overflow-hidden"
                   >
-                    {renderCards(groups.purchased)}
+                    {renderMonthGroups(groups.purchased, "desc")}
                   </motion.div>
                 ) : null}
               </AnimatePresence>

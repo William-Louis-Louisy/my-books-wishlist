@@ -1,6 +1,7 @@
 "use client";
 
 import { motion, useReducedMotion } from "motion/react";
+import { useTranslations } from "next-intl";
 
 interface BookmarkToggleProps {
   purchased: boolean;
@@ -9,12 +10,14 @@ interface BookmarkToggleProps {
 }
 
 export function BookmarkToggle({ purchased, onToggle, disabled }: BookmarkToggleProps) {
+  const t = useTranslations("Bookmark");
   const reduceMotion = useReducedMotion();
+
   return (
     <motion.button
       type="button"
       aria-pressed={purchased}
-      aria-label={purchased ? "Marquer comme non acheté" : "Marquer comme acheté"}
+      aria-label={purchased ? t("markUnpurchased") : t("markPurchased")}
       disabled={disabled}
       onClick={(event) => {
         event.stopPropagation();

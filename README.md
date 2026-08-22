@@ -1,4 +1,4 @@
-# Livres à paraître
+# Livres à paraître / Upcoming Books
 
 PWA mobile-first pour suivre une liste personnelle de livres à paraître, disponibles ou déjà achetés. Les données restent locales dans IndexedDB et peuvent être sauvegardées dans un unique fichier Google Drive créé par l'application.
 
@@ -7,6 +7,7 @@ PWA mobile-first pour suivre une liste personnelle de livres à paraître, dispo
 - Next.js 16 (App Router) + React 19 + TypeScript strict
 - Tailwind CSS 4
 - Motion for React (successeur de Framer Motion)
+- `next-intl` pour l'internationalisation FR/EN
 - Dexie / IndexedDB
 - Google Identity Services + Google Drive API (`drive.file` uniquement)
 - Manifest Next.js + service worker minimal
@@ -34,6 +35,15 @@ L'application demande exclusivement le scope `https://www.googleapis.com/auth/dr
 
 > **Décision OAuth :** la spec initiale mentionne PKCE tout en interdisant tout backend. Google exige aujourd'hui une plateforme backend pour terminer son *Authorization Code flow* (échange du code contre les tokens). La V1 utilise donc le *GIS token model* côté navigateur, qui est le seul modèle GIS compatible avec l'architecture 100 % client imposée. Si un backend est accepté plus tard, ce point devra être migré vers Authorization Code + PKCE.
 
+## Internationalisation
+
+L'interface est disponible en **français** et en **anglais**. La préférence est enregistrée localement dans le navigateur (`book-wishlist:locale`) et peut être changée depuis les réglages sans modifier les URLs ni nécessiter de backend. Les libellés, messages d'erreur, textes d'accessibilité, mois et dates suivent la langue sélectionnée.
+
+Les traductions vivent dans :
+
+- `messages/fr.json`
+- `messages/en.json`
+
 ## Scripts
 
 ```bash
@@ -50,9 +60,17 @@ npm run build
 - `series` et `volume` sont optionnels : ils permettent de rattacher un livre à une série et à un tome sans imposer cette structure aux ouvrages indépendants.
 - La recherche texte porte sur le titre, l'auteur, la série et le tome.
 - `purchased` prime sur le statut pour le regroupement.
+- Les livres restent séparés en `À paraître` / `Disponibles` / `Acheté`, puis sont regroupés par mois de sortie à l'intérieur de chaque section.
+- Dans `À paraître`, les mois sont affichés du plus proche vers le futur ; dans `Disponibles` et `Acheté`, du plus récent vers les plus anciens.
 - Toute mutation locale programme un export Drive après ~5 secondes si Drive est connecté.
 - Aucun backend, aucune API de catalogue de livres, aucune couverture, aucune notification push et aucune Background Sync API.
 
 ## PWA / iOS
 
 Le service worker n'est enregistré qu'en production. Après déploiement HTTPS, Safari iOS peut installer l'application via **Partager → Sur l'écran d'accueil**. Le stockage principal reste IndexedDB ; le service worker ne sert qu'à accélérer le chargement des ressources statiques et à conserver une coque minimale.
+
+## Documentation
+
+- `docs/spec-book-wishlist.md` : spécification fonctionnelle historique.
+- `docs/design-system-book-wishlist.md` : identité visuelle et règles UI.
+- `docs/feature-month-grouping-i18n.md` : décisions détaillées pour le regroupement mensuel et l'internationalisation.
