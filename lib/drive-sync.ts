@@ -1,5 +1,6 @@
 import { db } from "@/lib/db";
-import { mergeBooksIgnoringDuplicateIds } from "@/lib/books";
+import { hasValidBookIdentity, mergeBooksIgnoringDuplicateIds } from "@/lib/books";
+import { isValidReleaseDate } from "@/lib/date";
 import { writeSyncSnapshot } from "@/lib/sync-status";
 import type { Book } from "@/types/book";
 
@@ -30,6 +31,23 @@ interface GoogleOauth2 {
     error_callback?: (error: unknown) => void;
   }) => GoogleTokenClient;
   revoke?: (token: string, callback?: () => void) => void;
+}
+
+interface ImportedBookRecord {
+  id?: unknown;
+  title?: unknown;
+  author?: unknown;
+  series?: unknown;
+  volume?: unknown;
+  publisher?: unknown;
+  releaseDate?: unknown;
+  note?: unknown;
+  purchased?: unknown;
+  purchasedAt?: unknown;
+  createdAt?: unknown;
+  updatedAt?: unknown;
+  status?: unknown;
+  statusOverride?: unknown;
 }
 
 declare global {
@@ -279,20 +297,41 @@ export async function retryDriveExportWhenVisible(): Promise<void> {
   await exportBooksToDrive().catch(() => undefined);
 }
 
-function isBook(value: unknown): value is Book {
-  if (!value || typeof value !== "object") return false;
-  const book = value as Partial<Book>;
-  return (
-    typeof book.id === "string" &&
-    typeof book.title === "string" &&
-    typeof book.author === "string" &&
-    typeof book.publisher === "string" &&
-    /^\d{4}-\d{2}-\d{2}$/.test(book.releaseDate ?? "") &&
-    (book.status === "upcoming" || book.status === "available") &&
-    typeof book.purchased === "boolean" &&
-    typeof book.createdAt === "string" &&
-    typeof book.updatedAt === "string"
-  );
+function optionalImportedString(value: unknown): string | undefined {
+  return typeof value === "string" && value.trim() ? value.trim() : undefined;
+}
+
+function normalizeImportedBook(value: unknown): Book | null {
+  if (!value || typeof value !== "object") return null;
+  const raw = value as ImportedBookRecord;
+
+  if (
+    typeof raw.id !== "string" ||
+    typeof raw.releaseDate !== "string" ||
+    !isValidReleaseDate(raw.releaseDate) ||
+    typeof raw.purchased !== "boolean" ||
+    typeof raw.createdAt !== "string" ||
+    typeof raw.updatedAt !== "string"
+  ) {
+    return null;
+  }
+
+  const book: Book = {
+    id: raw.id,
+    title: optionalImportedString(raw.title),
+    author: optionalImportedString(raw.author),
+    series: optionalImportedString(raw.series),
+    volume: optionalImportedString(raw.volume),
+    publisher: optionalImportedString(raw.publisher),
+    releaseDate: raw.releaseDate,
+    note: optionalImportedString(raw.note),
+    purchased: raw.purchased,
+    purchasedAt: optionalImportedString(raw.purchasedAt),
+    createdAt: raw.createdAt,
+    updatedAt: raw.updatedAt,
+  };
+
+  return hasValidBookIdentity(book) ? book : null;
 }
 
 export async function importBooksFromDrive(mode: "replace" | "merge"): Promise<number> {
@@ -310,7 +349,10 @@ export async function importBooksFromDrive(mode: "replace" | "merge"): Promise<n
   const payload = (await response.json()) as { books?: unknown[] } | unknown[];
   const rawBooks = Array.isArray(payload) ? payload : payload.books;
   if (!Array.isArray(rawBooks)) throw new Error("Le fichier Drive n'a pas le format attendu.");
-  const incoming = rawBooks.filter(isBook);
+
+  const incoming = rawBooks
+    .map(normalizeImportedBook)
+    .filter((book): book is Book => book !== null);
   if (incoming.length !== rawBooks.length) {
     throw new Error("Le fichier Drive contient des entrées invalides.");
   }
