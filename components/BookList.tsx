@@ -37,6 +37,9 @@ export function BookList({ books }: BookListProps) {
   const [expandedArchiveYears, setExpandedArchiveYears] = useState<Set<string>>(
     () => new Set(),
   );
+  const [collapsedCurrentYearMonths, setCollapsedCurrentYearMonths] = useState<
+    Set<string>
+  >(() => new Set());
 
   const publishers = useMemo(
     () =>
@@ -68,6 +71,15 @@ export function BookList({ books }: BookListProps) {
       const next = new Set(current);
       if (next.has(year)) next.delete(year);
       else next.add(year);
+      return next;
+    });
+  };
+
+  const toggleCurrentYearMonth = (monthKey: string) => {
+    setCollapsedCurrentYearMonths((current) => {
+      const next = new Set(current);
+      if (next.has(monthKey)) next.delete(monthKey);
+      else next.add(monthKey);
       return next;
     });
   };
@@ -168,18 +180,62 @@ export function BookList({ books }: BookListProps) {
     );
   };
 
+  const renderActiveGroup = (group: BookReleaseGroup) => {
+    const isCurrentYearMonth =
+      group.year === timeline.currentYear && Boolean(group.month);
+
+    if (!isCurrentYearMonth) {
+      return (
+        <section key={group.key}>
+          <h2 className="my-2 px-page font-display text-sm font-semibold text-ink">
+            {releaseGroupLabel(group)}
+          </h2>
+          {renderCards(group.books)}
+        </section>
+      );
+    }
+
+    const expanded =
+      hasActiveFilter || !collapsedCurrentYearMonths.has(group.key);
+    const panelId = `book-month-${group.key}`;
+    const label = releaseGroupLabel(group);
+
+    return (
+      <section key={group.key}>
+        <button
+          type="button"
+          aria-expanded={expanded}
+          aria-controls={panelId}
+          aria-label={tSections(
+            expanded ? "monthCollapse" : "monthExpand",
+            { month: label },
+          )}
+          disabled={hasActiveFilter}
+          onClick={() => toggleCurrentYearMonth(group.key)}
+          className="my-2 flex w-full items-center gap-3 px-page py-1 text-left focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-brass disabled:cursor-default"
+        >
+          <span className="font-display text-sm font-semibold text-ink">
+            {label}
+          </span>
+          <span className="ml-auto text-xs text-ink-muted">
+            {tSections("monthBooks", { count: group.books.length })}
+          </span>
+          <ChevronIcon
+            className={`size-4 shrink-0 text-ink-muted transition-transform duration-200 motion-reduce:transition-none ${
+              expanded ? "rotate-90" : ""
+            }`}
+          />
+        </button>
+        {expanded ? <div id={panelId}>{renderCards(group.books)}</div> : null}
+      </section>
+    );
+  };
+
   const renderMonthlyTimeline = () => (
     <div className="pb-28">
       {timeline.activeGroups.length ? (
         <div className="space-y-6">
-          {timeline.activeGroups.map((group) => (
-            <section key={group.key}>
-              <h2 className="my-2 px-page font-display text-sm font-semibold text-ink">
-                {releaseGroupLabel(group)}
-              </h2>
-              {renderCards(group.books)}
-            </section>
-          ))}
+          {timeline.activeGroups.map(renderActiveGroup)}
         </div>
       ) : null}
 
