@@ -33,10 +33,10 @@ export function FilterPanel({ open, onToggle, query, onQueryChange, publisher, o
           >
             <div className="grid gap-4 pb-4 sm:grid-cols-2">
               <label className="block">
-                <span className="sr-only">Rechercher par titre ou auteur</span>
+                <span className="sr-only">Rechercher par titre, auteur, série ou tome</span>
                 <span className="flex items-center gap-2 border-b border-line py-2 focus-within:border-b-2 focus-within:border-brass">
                   <SearchIcon className="size-4 text-ink-muted" />
-                  <input value={query} onChange={(event) => onQueryChange(event.target.value)} placeholder="Titre ou auteur" className="min-w-0 flex-1 bg-transparent text-sm text-ink outline-none placeholder:text-ink-muted/70" />
+                  <input value={query} onChange={(event) => onQueryChange(event.target.value)} placeholder="Titre, auteur ou série" className="min-w-0 flex-1 bg-transparent text-sm text-ink outline-none placeholder:text-ink-muted/70" />
                 </span>
               </label>
               <label className="block">
