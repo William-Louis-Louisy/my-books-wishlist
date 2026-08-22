@@ -1,41 +1,28 @@
 "use client";
 
 import {
-  useEffect,
-  useRef,
-  useState,
-  type ChangeEvent,
-} from "react";
-import { useLocale, useTranslations } from "next-intl";
-import { AppHeader } from "@/components/AppHeader";
-import { useThemePreference } from "@/components/ThemeProvider";
-import { useBooks } from "@/hooks/useBooks";
-import { useSyncStatus } from "@/hooks/useSyncStatus";
-import {
-  parseBookBackupJson,
-  serializeBookBackup,
-} from "@/lib/book-backup";
-import {
-  applyBookImport,
-  type BookImportMode,
-} from "@/lib/book-import";
-import { formatDateTime, getTodayIso } from "@/lib/date";
-import {
-  connectGoogleDrive,
-  disconnectGoogleDrive,
-  exportBooksToDrive,
   getDriveEmail,
-  importBooksFromDrive,
-  isDriveConfigured,
   isDriveConnected,
+  isDriveConfigured,
+  connectGoogleDrive,
+  exportBooksToDrive,
+  importBooksFromDrive,
+  disconnectGoogleDrive,
 } from "@/lib/drive-sync";
-import type { AppLocale } from "@/lib/i18n";
-import { setStoredLocale } from "@/lib/locale-store";
-import {
-  setStoredTheme,
-  type ThemePreference,
-} from "@/lib/theme-store";
 import type { Book } from "@/types/book";
+import { useBooks } from "@/hooks/useBooks";
+import type { AppLocale } from "@/lib/i18n";
+import { AppHeader } from "@/components/AppHeader";
+import { setStoredLocale } from "@/lib/locale-store";
+import { useSyncStatus } from "@/hooks/useSyncStatus";
+import { useLocale, useTranslations } from "next-intl";
+import { formatDateTime, getTodayIso } from "@/lib/date";
+import { DriveIcon, ExportIcon, ImportIcon } from "./Icons";
+import { useThemePreference } from "@/components/ThemeProvider";
+import { useEffect, useRef, useState, type ChangeEvent } from "react";
+import { applyBookImport, type BookImportMode } from "@/lib/book-import";
+import { setStoredTheme, type ThemePreference } from "@/lib/theme-store";
+import { parseBookBackupJson, serializeBookBackup } from "@/lib/book-backup";
 
 interface PendingLocalImport {
   fileName: string;
@@ -114,9 +101,7 @@ export function SettingsScreen() {
       setDriveMessage(t("importSuccess", { count }));
     });
 
-  const prepareLocalImport = async (
-    event: ChangeEvent<HTMLInputElement>,
-  ) => {
+  const prepareLocalImport = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     event.target.value = "";
     if (!file) return;
@@ -157,7 +142,7 @@ export function SettingsScreen() {
           : undefined;
 
   const buttonSecondary =
-    "rounded-lg border border-line px-4 py-2.5 text-sm text-ink transition-colors hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brass disabled:opacity-50 motion-reduce:transition-none";
+    "inline-flex items-center justify-center gap-2 rounded-lg border border-line px-4 py-2.5 text-sm text-ink transition-colors hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brass disabled:opacity-50 motion-reduce:transition-none";
   const selectClass =
     "border-0 border-b border-line bg-paper py-2 text-sm text-ink outline-none focus:border-b-2 focus:border-brass";
 
@@ -229,8 +214,9 @@ export function SettingsScreen() {
                   type="button"
                   disabled={Boolean(busy)}
                   onClick={() => void connect()}
-                  className="mt-4 rounded-lg bg-brass px-4 py-2.5 text-sm font-medium text-paper focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brass disabled:opacity-50"
+                  className="mt-4 inline-flex items-center justify-center w-full gap-2 rounded-lg bg-brass px-4 py-2.5 text-sm font-medium text-paper focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brass disabled:opacity-50"
                 >
+                  <DriveIcon />
                   {busy === "connect" ? t("connecting") : t("connectDrive")}
                 </button>
               </div>
@@ -339,13 +325,14 @@ export function SettingsScreen() {
             <p className="mt-2 text-sm leading-6 text-ink-muted">
               {t("localImportHelp")}
             </p>
-            <div className="mt-5 flex flex-wrap gap-2">
+            <div className="mt-5 grid grid-cols-2 gap-2">
               <button
                 type="button"
                 onClick={exportLocal}
                 disabled={Boolean(busy)}
                 className={buttonSecondary}
               >
+                <ExportIcon className="text-ink" />
                 {t("localExport")}
               </button>
               <button
@@ -354,6 +341,7 @@ export function SettingsScreen() {
                 disabled={Boolean(busy)}
                 className={buttonSecondary}
               >
+                <ImportIcon className="text-ink" />
                 {t("localImport")}
               </button>
               <input

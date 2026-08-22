@@ -154,12 +154,12 @@ export function BookCard({ book }: BookCardProps) {
         : "text-ink-muted";
 
   const statusBorder = visualPurchased
-    ? "border-l-[3px] border-l-ink-muted/40"
+    ? "border-l-[6px] border-l-ink-muted/40"
     : status === "upcoming"
-      ? "border-l-[3px] border-l-[var(--accent-brass)]"
+      ? "border-l-[6px] border-l-[var(--accent-brass)]"
       : status === "available"
-        ? "border-l-[3px] border-l-[var(--accent-cloth)]"
-        : "border-l-[3px] border-l-ink-muted/40";
+        ? "border-l-[6px] border-l-[var(--accent-cloth)]"
+        : "border-l-[6px] border-l-ink-muted/40";
 
   return (
     <>
@@ -178,7 +178,7 @@ export function BookCard({ book }: BookCardProps) {
             aria-label={t("editAria", { title: displayTitle })}
             disabled={openAction !== "edit"}
             onClick={() => router.push(`/book/${book.id}/edit`)}
-            className="flex w-1/2 items-center justify-start bg-action-edit pl-6 text-white focus-visible:outline-2 focus-visible:outline-offset-[-3px] focus-visible:outline-white disabled:pointer-events-none"
+            className="flex w-1/2 items-center justify-start bg-action-edit pl-6 text-white focus-visible:outline-2 focus-visible:outline-offset-[-6px] focus-visible:outline-white disabled:pointer-events-none"
           >
             <PencilIcon className="size-6" />
           </button>
@@ -187,7 +187,7 @@ export function BookCard({ book }: BookCardProps) {
             aria-label={t("deleteAria", { title: displayTitle })}
             disabled={openAction !== "delete"}
             onClick={handleDeleteRequest}
-            className="flex w-1/2 items-center justify-end bg-action-delete pr-6 text-white focus-visible:outline-2 focus-visible:outline-offset-[-3px] focus-visible:outline-white disabled:pointer-events-none"
+            className="flex w-1/2 items-center justify-end bg-action-delete pr-6 text-white focus-visible:outline-2 focus-visible:outline-offset-[-6px] focus-visible:outline-white disabled:pointer-events-none"
           >
             <TrashIcon className="size-6" />
           </button>
@@ -210,36 +210,36 @@ export function BookCard({ book }: BookCardProps) {
             disabled={busy}
           />
           <div
-            className={`pointer-events-none relative z-1 flex items-start gap-4 transition-opacity duration-200 ease-out motion-reduce:transition-none ${visualPurchased ? "opacity-[0.55]" : "opacity-100"}`}
+            className={`pointer-events-none relative z-1 grid grid-cols-2 gap-x-4 gap-y-2 transition-opacity duration-200 ease-out motion-reduce:transition-none ${visualPurchased ? "opacity-[0.55]" : "opacity-100"}`}
           >
-            <div className="min-w-0 flex-1">
-              <h3
-                className={`font-display text-lg font-medium leading-[1.3] text-ink ${visualPurchased ? "line-through" : ""}`}
-              >
+            <div className="min-w-0 flex-1 col-span-2">
+              <h3 className="font-display text-lg font-medium leading-[1.3] text-ink">
                 {displayTitle}
               </h3>
+            </div>
+            <time
+              dateTime={book.releaseDate}
+              className={`shrink-0 col-start-3 text-right pt-0.5 font-mono text-[0.8125rem] font-medium uppercase tracking-[0.02em] ${dateColor}`}
+            >
+              {formatReleaseDate(book.releaseDate, locale)}
+            </time>
+            <div className="col-span-3 row-start-2 min-w-0 flex-1">
               {seriesMeta ? (
-                <p className="mt-1 truncate text-[0.8125rem] text-ink-muted">
+                <p className="mt-1 truncate text-[0.8125rem] text-ink-muted capitalize">
                   {seriesMeta}
                 </p>
               ) : null}
               {secondaryMeta ? (
-                <p className="mt-1 truncate text-[0.8125rem] text-ink-muted">
+                <p className="mt-1 truncate text-[0.8125rem] text-ink-muted capitalize">
                   {secondaryMeta}
                 </p>
               ) : null}
               {book.note ? (
-                <p className="mt-2 line-clamp-2 text-sm leading-5 text-ink-muted">
+                <p className="mt-2 line-clamp-2 italic text-sm leading-5 text-ink-muted">
                   {book.note}
                 </p>
               ) : null}
             </div>
-            <time
-              dateTime={book.releaseDate}
-              className={`shrink-0 pt-0.5 font-mono text-[0.8125rem] font-medium uppercase tracking-[0.02em] ${dateColor}`}
-            >
-              {formatReleaseDate(book.releaseDate, locale)}
-            </time>
           </div>
         </motion.article>
       </motion.div>

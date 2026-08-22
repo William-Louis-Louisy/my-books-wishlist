@@ -1,9 +1,9 @@
 "use client";
 
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { useTranslations } from "next-intl";
-import { FilterIcon, SearchIcon } from "@/components/Icons";
 import type { BookOrganizationMode } from "@/lib/books";
+import { FilterIcon, SearchIcon } from "@/components/Icons";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 
 interface FilterPanelProps {
   open: boolean;
@@ -63,7 +63,7 @@ export function FilterPanel({
             }}
             className="overflow-hidden"
           >
-            <div className="grid gap-4 pb-4 sm:grid-cols-2">
+            <div className="px-page grid gap-4 pb-4 sm:grid-cols-2">
               <label className="block">
                 <span className="sr-only">{t("searchLabel")}</span>
                 <span className="flex items-center gap-2 border-b border-line py-2 focus-within:border-b-2 focus-within:border-brass">
