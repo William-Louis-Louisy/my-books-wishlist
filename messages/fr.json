@@ -68,8 +68,12 @@
     "opening": "Ouverture de votre liste…"
   },
   "Sections": {
+    "archiveBooks": "{count, plural, =1 {# livre} other {# livres}}",
+    "archiveCollapse": "Replier les livres de {year}",
+    "archiveExpand": "Afficher les livres de {year}",
     "available": "Disponibles",
     "monthUnspecified": "{year} · Mois non précisé",
+    "monthUnspecifiedShort": "Mois non précisé",
     "unknown": "Statut indéterminé",
     "upcoming": "À paraître"
   },
