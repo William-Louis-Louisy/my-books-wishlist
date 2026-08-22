@@ -29,36 +29,41 @@ Les dates précises sont triées chronologiquement dans leur groupe. Une date co
 
 La logique de tri temporel vit dans `groupBooksByTimelinePeriod` (`lib/books.ts`) et est couverte par Vitest.
 
-### Mois de l'année courante collapsables
+### Tous les groupes mensuels sont collapsables
 
-Les groupes mensuels appartenant à l'année courante restent **ouverts par défaut**, mais leur en-tête devient un contrôle d'accordéon accessible. L'utilisateur peut donc replier ponctuellement un mois sans modifier l'organisation générale de la timeline.
+Tout groupe possédant une clé `YYYY-MM` est **ouvert par défaut** et peut être replié individuellement dans l'organisation principale `Par mois`, quelle que soit sa position temporelle :
 
-Chaque mois affiche :
+- mois de l'année courante ;
+- mois d'une année future ;
+- mois d'une année passée à l'intérieur d'une archive annuelle ouverte.
+
+Chaque en-tête mensuel affiche :
 
 - son libellé localisé ;
 - le nombre de livres du groupe ;
 - un chevron indiquant son état ouvert/fermé.
 
-L'état des mois repliés est local à `BookList` et n'est pas persisté dans IndexedDB. Les groupes des années futures ne sont pas rendus collapsables à ce stade : la demande concerne uniquement l'année courante.
+Les groupes dont seule l'année est connue (`YYYY · Mois non précisé`) ne sont pas collapsables : ils ne représentent pas un mois réel.
 
-Lorsqu'une recherche texte ou un filtre éditeur est actif, les mois de l'année courante sont temporairement forcés ouverts afin qu'aucun résultat ne soit masqué. Lorsque le filtre disparaît, l'état manuel précédent est restauré.
+L'état des mois repliés est local à `BookList` et n'est pas persisté dans IndexedDB. Un unique ensemble `collapsedMonths` identifie les mois par leur clé `YYYY-MM`, afin d'appliquer exactement le même comportement à toute la timeline.
+
+Lorsqu'une recherche texte ou un filtre éditeur est actif, les groupes mensuels concernés sont temporairement forcés ouverts afin qu'aucun résultat ne soit masqué. Lorsque le filtre disparaît, l'état manuel précédent est restauré.
 
 ### Archives annuelles collapsables
 
 Les années strictement antérieures à l'année courante ne sont plus déroulées intégralement dans la timeline par défaut. `buildBookTimeline` sépare désormais :
 
-- `currentYear` : année de référence utilisée par l'interface pour reconnaître les mois collapsables ;
 - `activeGroups` : année courante et années futures ;
 - `archives` : années passées regroupées de la plus récente à la plus ancienne.
 
 Chaque archive annuelle est **repliée par défaut** et affiche son année, son nombre de livres et un chevron. Une fois ouverte, elle retrouve le détail par période :
 
-- mois du plus récent au plus ancien ;
+- mois du plus récent au plus ancien, eux-mêmes collapsables ;
 - éventuel groupe `Mois non précisé` en dernier pour les livres dont seule l'année est connue.
 
-L'état ouvert/fermé est un état d'interface local à `BookList` et n'est pas persisté dans IndexedDB.
+L'état ouvert/fermé des archives est un état d'interface local à `BookList` et n'est pas persisté dans IndexedDB.
 
-Lorsqu'une recherche texte ou un filtre éditeur est actif, les archives concernées sont temporairement forcées ouvertes afin qu'aucun résultat ne soit masqué derrière un groupe fermé. Lorsque les filtres sont retirés, l'interface retrouve l'état manuel des archives.
+Lorsqu'une recherche texte ou un filtre éditeur est actif, les archives concernées sont temporairement forcées ouvertes afin qu'aucun résultat ne soit masqué derrière un groupe fermé. Les mois qu'elles contiennent sont eux aussi forcés ouverts. Lorsque les filtres sont retirés, l'interface retrouve les états manuels précédents.
 
 Les archives annuelles s'appliquent à l'organisation principale `Par mois`. Le mode optionnel `Par statut` conserve son regroupement métier propre.
 
@@ -75,7 +80,7 @@ Le mode `Par statut` comporte désormais :
 - section `Statut indéterminé` ;
 - section `Disponibles`.
 
-Chaque section conserve ensuite le regroupement par période de sortie.
+Chaque section conserve ensuite le regroupement par période de sortie. Le collapse mensuel généralisé concerne l'organisation principale `Par mois` ; le mode `Par statut` reste inchangé.
 
 ## Internationalisation
 
