@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { useMemo, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { AppHeader } from "@/components/AppHeader";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
@@ -39,29 +39,29 @@ export function BookForm({ bookId }: BookFormProps) {
   const router = useRouter();
   const { book, loading } = useBook(bookId);
   const { books } = useBooks();
-  const [form, setForm] = useState<FormState>(EMPTY_FORM);
+  const [formChanges, setFormChanges] = useState<Partial<FormState>>({});
   const [errors, setErrors] = useState<Partial<Record<keyof FormState, string>>>({});
   const [saving, setSaving] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const isEdit = Boolean(bookId);
 
-  useEffect(() => {
-    if (!book) return;
-    setForm({
-      title: book.title,
-      author: book.author,
-      publisher: book.publisher,
-      releaseDate: book.releaseDate,
-      note: book.note ?? "",
-      statusChoice: book.statusOverride ?? "auto",
-      purchased: book.purchased,
-    });
-  }, [book]);
+  const baseForm: FormState = book
+    ? {
+        title: book.title,
+        author: book.author,
+        publisher: book.publisher,
+        releaseDate: book.releaseDate,
+        note: book.note ?? "",
+        statusChoice: book.statusOverride ?? "auto",
+        purchased: book.purchased,
+      }
+    : EMPTY_FORM;
+  const form: FormState = { ...baseForm, ...formChanges };
 
   const publishers = useMemo(() => [...new Set(books.map((item) => item.publisher))].sort((a, b) => a.localeCompare(b, "fr")), [books]);
 
   const updateField = <K extends keyof FormState>(key: K, value: FormState[K]) => {
-    setForm((current) => ({ ...current, [key]: value }));
+    setFormChanges((current) => ({ ...current, [key]: value }));
     setErrors((current) => ({ ...current, [key]: undefined }));
   };
 
@@ -113,7 +113,7 @@ export function BookForm({ bookId }: BookFormProps) {
   }
 
   if (isEdit && !loading && !book) {
-    return <><AppHeader title="Modifier le livre" backHref="/" /><main className="mx-auto max-w-app px-page py-10"><p className="font-display italic text-ink">Ce livre n'existe plus.</p></main></>;
+    return <><AppHeader title="Modifier le livre" backHref="/" /><main className="mx-auto max-w-app px-page py-10"><p className="font-display italic text-ink">Ce livre n’existe plus.</p></main></>;
   }
 
   const fieldClass = "w-full border-0 border-b border-line bg-transparent py-2 text-[0.9375rem] text-ink outline-none transition-[border-color,border-width] focus:border-b-2 focus:border-brass motion-reduce:transition-none";
