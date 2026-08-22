@@ -2,12 +2,12 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Book Wishlist",
-    short_name: "Books",
+    name: "My Book Wishlist",
+    short_name: "MBW",
     description: "Track upcoming, available and purchased books.",
     start_url: "/",
     display: "standalone",
-    background_color: "#F7F6F2",
+    background_color: "#3e6259",
     theme_color: "#F7F6F2",
     icons: [
       { src: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
