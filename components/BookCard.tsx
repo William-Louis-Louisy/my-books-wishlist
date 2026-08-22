@@ -95,8 +95,8 @@ export function BookCard({ book }: BookCardProps) {
   const dateColor = visualPurchased
     ? "text-ink-muted"
     : status === "upcoming"
-      ? "text-brass"
-      : "text-cloth";
+      ? "text-[var(--accent-brass)]"
+      : "text-[var(--accent-cloth)]";
 
   return (
     <>
@@ -139,8 +139,8 @@ export function BookCard({ book }: BookCardProps) {
             visualPurchased
               ? "border-l-[3px] border-l-ink-muted/40"
               : status === "upcoming"
-                ? "border-l-[3px] border-l-brass"
-                : "border-l-[3px] border-l-cloth"
+                ? "border-l-[3px] border-l-[var(--accent-brass)]"
+                : "border-l-[3px] border-l-[var(--accent-cloth)]"
           }`}
         >
           <BookmarkToggle purchased={visualPurchased} onToggle={handleToggle} disabled={busy} />
