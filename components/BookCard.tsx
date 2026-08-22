@@ -15,7 +15,7 @@ import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { PencilIcon, TrashIcon } from "@/components/Icons";
 import { deleteBook, togglePurchased } from "@/lib/book-repository";
 import { formatReleaseDate } from "@/lib/date";
-import { resolveBookStatus } from "@/lib/books";
+import { getBookDisplayTitle, resolveBookStatus } from "@/lib/books";
 import {
   resolveBookCardSwipeAction,
   type BookCardSwipeAction,
@@ -41,11 +41,21 @@ export function BookCard({ book }: BookCardProps) {
   const [busy, setBusy] = useState(false);
   const [visualPurchased, setVisualPurchased] = useState(book.purchased);
   const status = resolveBookStatus(book);
-  const seriesMeta = [
-    book.series,
-    book.volume ? t("volume", { volume: book.volume }) : undefined,
-  ]
-    .filter((value): value is string => Boolean(value))
+  const hasExplicitTitle = Boolean(book.title.trim());
+  const displayTitle = getBookDisplayTitle(book, (volume) =>
+    t("volume", { volume }),
+  );
+  const seriesMeta = hasExplicitTitle
+    ? [
+        book.series,
+        book.volume ? t("volume", { volume: book.volume }) : undefined,
+      ]
+        .filter((value): value is string => Boolean(value))
+        .join(" · ")
+    : "";
+  const secondaryMeta = [book.author, book.publisher]
+    .map((value) => value.trim())
+    .filter(Boolean)
     .join(" · ");
 
   const settleCard = useCallback(
@@ -155,7 +165,7 @@ export function BookCard({ book }: BookCardProps) {
         >
           <button
             type="button"
-            aria-label={t("editAria", { title: book.title })}
+            aria-label={t("editAria", { title: displayTitle })}
             disabled={openAction !== "edit"}
             onClick={() => router.push(`/book/${book.id}/edit`)}
             className="flex w-1/2 items-center justify-start bg-action-edit pl-6 text-white focus-visible:outline-2 focus-visible:outline-offset-[-3px] focus-visible:outline-white disabled:pointer-events-none"
@@ -164,7 +174,7 @@ export function BookCard({ book }: BookCardProps) {
           </button>
           <button
             type="button"
-            aria-label={t("deleteAria", { title: book.title })}
+            aria-label={t("deleteAria", { title: displayTitle })}
             disabled={openAction !== "delete"}
             onClick={handleDeleteRequest}
             className="flex w-1/2 items-center justify-end bg-action-delete pr-6 text-white focus-visible:outline-2 focus-visible:outline-offset-[-3px] focus-visible:outline-white disabled:pointer-events-none"
@@ -202,16 +212,18 @@ export function BookCard({ book }: BookCardProps) {
               <h3
                 className={`font-display text-lg font-medium leading-[1.3] text-ink ${visualPurchased ? "line-through" : ""}`}
               >
-                {book.title}
+                {displayTitle}
               </h3>
               {seriesMeta ? (
                 <p className="mt-1 truncate text-[0.8125rem] text-ink-muted">
                   {seriesMeta}
                 </p>
               ) : null}
-              <p className="mt-1 truncate text-[0.8125rem] text-ink-muted">
-                {book.author} · {book.publisher}
-              </p>
+              {secondaryMeta ? (
+                <p className="mt-1 truncate text-[0.8125rem] text-ink-muted">
+                  {secondaryMeta}
+                </p>
+              ) : null}
               {book.note ? (
                 <p className="mt-2 line-clamp-2 text-sm leading-5 text-ink-muted">
                   {book.note}
@@ -230,7 +242,7 @@ export function BookCard({ book }: BookCardProps) {
       <ConfirmDialog
         open={confirmDelete}
         title={t("deleteTitle")}
-        description={t("deleteDescription", { title: book.title })}
+        description={t("deleteDescription", { title: displayTitle })}
         onCancel={() => setConfirmDelete(false)}
         onConfirm={() => void handleDelete()}
       />
