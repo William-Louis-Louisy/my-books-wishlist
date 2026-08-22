@@ -4,6 +4,7 @@ import { useMemo, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { AppHeader } from "@/components/AppHeader";
+import { AutocompleteInput } from "@/components/AutocompleteInput";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { useBook, useBooks } from "@/hooks/useBooks";
 import { createBook, deleteBook, updateBook } from "@/lib/book-repository";
@@ -148,28 +149,33 @@ export function BookForm({ bookId }: BookFormProps) {
     <>
       <AppHeader title={isEdit ? t("editTitle") : t("addTitle")} backHref="/" />
       <main className="mx-auto max-w-app px-page pb-[max(32px,env(safe-area-inset-bottom))] pt-7">
-        <form onSubmit={onSubmit} noValidate className="space-y-6">
+        <form onSubmit={onSubmit} noValidate autoComplete="off" className="space-y-6">
           <label className={labelClass}>{t("title")}
             <input autoFocus={!isEdit} value={form.title} onChange={(event) => updateField("title", event.target.value)} className={`${fieldClass} font-display text-lg`} aria-invalid={Boolean(errors.title)} />
             {errors.title ? <span className="mt-1 block text-xs text-ink-muted">{errors.title}</span> : null}
           </label>
-          <label className={labelClass}>{t("author")}
-            <input list="author-options" value={form.author} onChange={(event) => updateField("author", event.target.value)} className={fieldClass} aria-invalid={Boolean(errors.author)} autoComplete="off" />
-            <datalist id="author-options">{authorOptions.map((author) => <option key={author} value={author} />)}</datalist>
+
+          <div>
+            <label htmlFor="book-author" className={labelClass}>{t("author")}</label>
+            <AutocompleteInput id="book-author" value={form.author} options={authorOptions} onChange={(value) => updateField("author", value)} className={fieldClass} invalid={Boolean(errors.author)} />
             {errors.author ? <span className="mt-1 block text-xs text-ink-muted">{errors.author}</span> : null}
-          </label>
-          <label className={labelClass}>{t("series")} {optionalLabel}
-            <input list="series-options" value={form.series} onChange={(event) => updateField("series", event.target.value)} className={fieldClass} autoComplete="off" />
-            <datalist id="series-options">{seriesOptions.map((series) => <option key={series} value={series} />)}</datalist>
-          </label>
+          </div>
+
+          <div>
+            <label htmlFor="book-series" className={labelClass}>{t("series")} {optionalLabel}</label>
+            <AutocompleteInput id="book-series" value={form.series} options={seriesOptions} onChange={(value) => updateField("series", value)} className={fieldClass} />
+          </div>
+
           <label className={labelClass}>{t("volume")} {optionalLabel}
             <input value={form.volume} onChange={(event) => updateField("volume", event.target.value)} className={`${fieldClass} font-mono text-[0.8125rem]`} inputMode="text" />
           </label>
-          <label className={labelClass}>{t("publisher")}
-            <input list="publisher-options" value={form.publisher} onChange={(event) => updateField("publisher", event.target.value)} className={fieldClass} aria-invalid={Boolean(errors.publisher)} autoComplete="off" />
-            <datalist id="publisher-options">{publisherOptions.map((publisher) => <option key={publisher} value={publisher} />)}</datalist>
+
+          <div>
+            <label htmlFor="book-publisher" className={labelClass}>{t("publisher")}</label>
+            <AutocompleteInput id="book-publisher" value={form.publisher} options={publisherOptions} onChange={(value) => updateField("publisher", value)} className={fieldClass} invalid={Boolean(errors.publisher)} />
             {errors.publisher ? <span className="mt-1 block text-xs text-ink-muted">{errors.publisher}</span> : null}
-          </label>
+          </div>
+
           <label className={labelClass}>{t("releaseDate")}
             <input type="date" value={form.releaseDate} onChange={(event) => updateField("releaseDate", event.target.value)} className={`${fieldClass} font-mono text-[0.8125rem] uppercase tracking-[0.02em]`} aria-invalid={Boolean(errors.releaseDate)} />
             {errors.releaseDate ? <span className="mt-1 block text-xs text-ink-muted">{errors.releaseDate}</span> : null}
