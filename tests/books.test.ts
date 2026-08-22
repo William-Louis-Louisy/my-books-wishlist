@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  buildBookTimeline,
   deriveStatus,
   filterBooks,
   getBookAutocompleteOptions,
@@ -149,6 +150,36 @@ describe("book business rules", () => {
       "current-available",
       "current-upcoming",
       "current-month",
+    ]);
+  });
+
+  it("keeps the current year and future visible while archiving older years", () => {
+    const books: Book[] = [
+      { ...baseBook, id: "current", releaseDate: "2026-08-20" },
+      { ...baseBook, id: "current-past", releaseDate: "2026-04" },
+      { ...baseBook, id: "future", releaseDate: "2027" },
+      { ...baseBook, id: "2025-dec", releaseDate: "2025-12-10" },
+      { ...baseBook, id: "2025-jan", releaseDate: "2025-01" },
+      { ...baseBook, id: "2025-year", releaseDate: "2025" },
+      { ...baseBook, id: "2024", releaseDate: "2024-06-01" },
+    ];
+
+    const timeline = buildBookTimeline(books, "2026-08-22");
+
+    expect(timeline.activeGroups.map((group) => group.key)).toEqual([
+      "2026-08",
+      "2027",
+      "2026-04",
+    ]);
+    expect(timeline.archives.map((archive) => archive.year)).toEqual([
+      "2025",
+      "2024",
+    ]);
+    expect(timeline.archives[0].bookCount).toBe(3);
+    expect(timeline.archives[0].groups.map((group) => group.key)).toEqual([
+      "2025-12",
+      "2025-01",
+      "2025",
     ]);
   });
 
