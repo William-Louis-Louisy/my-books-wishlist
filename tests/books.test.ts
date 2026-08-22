@@ -3,6 +3,7 @@ import {
   deriveStatus,
   filterBooks,
   getBookAutocompleteOptions,
+  getBookDisplayTitle,
   groupBooks,
   groupBooksByReleaseMonth,
   groupBooksByTimelineMonth,
@@ -30,6 +31,16 @@ describe("book business rules", () => {
   it("derives availability from the local ISO date", () => {
     expect(deriveStatus("2026-08-22", "2026-08-22")).toBe("available");
     expect(deriveStatus("2026-08-23", "2026-08-22")).toBe("upcoming");
+  });
+
+  it("uses the explicit title or falls back to series and volume", () => {
+    expect(getBookDisplayTitle(baseBook, (volume) => `Tome ${volume}`)).toBe("Le livre");
+    expect(
+      getBookDisplayTitle(
+        { ...baseBook, title: "" },
+        (volume) => `Tome ${volume}`,
+      ),
+    ).toBe("Les Archives de Brume · Tome 2");
   });
 
   it("keeps an explicit status override", () => {
