@@ -11,10 +11,10 @@ import {
 const GOOGLE_SCRIPT_ID = "google-identity-services";
 const DRIVE_SCOPE = "https://www.googleapis.com/auth/drive.file";
 const DRIVE_FILE_NAME = "book-wishlist-export.json";
-const DRIVE_FILE_ID_KEY = "book-wishlist:drive-file-id";
 const DRIVE_LAST_BACKUP_KEY = "book-wishlist:drive-last-backup";
 const LEGACY_DRIVE_CONNECTED_KEY = "book-wishlist:drive-connected";
 const LEGACY_DRIVE_EMAIL_KEY = "book-wishlist:drive-email";
+const LEGACY_DRIVE_FILE_ID_KEY = "book-wishlist:drive-file-id";
 const LEGACY_SYNC_STATUS_KEY = "book-wishlist:sync-status";
 
 interface GoogleTokenResponse {
@@ -48,6 +48,7 @@ declare global {
 }
 
 let accessToken: string | null = null;
+let driveFileId: string | null | undefined;
 let exportInFlight: Promise<string> | null = null;
 
 function getClientId(): string | undefined {
@@ -143,6 +144,7 @@ async function driveFetch(
   if (response.status !== 401) return response;
 
   accessToken = null;
+  driveFileId = undefined;
   const refreshed = await requestAccessToken();
   headers.set("Authorization", `Bearer ${refreshed}`);
   response = await fetch(path, { ...init, headers });
@@ -150,9 +152,7 @@ async function driveFetch(
 }
 
 async function findDriveFileId(): Promise<string | null> {
-  ensureBrowser();
-  const cached = window.localStorage.getItem(DRIVE_FILE_ID_KEY);
-  if (cached) return cached;
+  if (driveFileId !== undefined) return driveFileId;
 
   const query = encodeURIComponent(
     `name='${DRIVE_FILE_NAME}' and trashed=false`,
@@ -166,9 +166,8 @@ async function findDriveFileId(): Promise<string | null> {
   const data = (await response.json()) as {
     files?: Array<{ id: string }>;
   };
-  const id = data.files?.[0]?.id ?? null;
-  if (id) window.localStorage.setItem(DRIVE_FILE_ID_KEY, id);
-  return id;
+  driveFileId = data.files?.[0]?.id ?? null;
+  return driveFileId;
 }
 
 async function createDriveFile(content: string): Promise<string> {
@@ -200,7 +199,7 @@ async function createDriveFile(content: string): Promise<string> {
     throw new Error("La première sauvegarde Drive a échoué.");
   }
   const data = (await response.json()) as { id: string };
-  window.localStorage.setItem(DRIVE_FILE_ID_KEY, data.id);
+  driveFileId = data.id;
   return data.id;
 }
 
@@ -222,26 +221,28 @@ async function updateDriveFile(
 function migrateLegacyDriveMetadata(): string | undefined {
   ensureBrowser();
   const current = window.localStorage.getItem(DRIVE_LAST_BACKUP_KEY) ?? undefined;
-  if (current) return current;
+  let lastBackup = current;
 
-  const legacyRaw = window.localStorage.getItem(LEGACY_SYNC_STATUS_KEY);
-  let legacyLastBackup: string | undefined;
-  if (legacyRaw) {
-    try {
-      const legacy = JSON.parse(legacyRaw) as { lastExportAt?: unknown };
-      if (typeof legacy.lastExportAt === "string") {
-        legacyLastBackup = legacy.lastExportAt;
-        window.localStorage.setItem(DRIVE_LAST_BACKUP_KEY, legacyLastBackup);
+  if (!lastBackup) {
+    const legacyRaw = window.localStorage.getItem(LEGACY_SYNC_STATUS_KEY);
+    if (legacyRaw) {
+      try {
+        const legacy = JSON.parse(legacyRaw) as { lastExportAt?: unknown };
+        if (typeof legacy.lastExportAt === "string") {
+          lastBackup = legacy.lastExportAt;
+          window.localStorage.setItem(DRIVE_LAST_BACKUP_KEY, lastBackup);
+        }
+      } catch {
+        // Legacy metadata is optional; invalid data can simply be discarded.
       }
-    } catch {
-      // Legacy metadata is optional; invalid data can simply be discarded.
     }
   }
 
   window.localStorage.removeItem(LEGACY_DRIVE_CONNECTED_KEY);
   window.localStorage.removeItem(LEGACY_DRIVE_EMAIL_KEY);
+  window.localStorage.removeItem(LEGACY_DRIVE_FILE_ID_KEY);
   window.localStorage.removeItem(LEGACY_SYNC_STATUS_KEY);
-  return legacyLastBackup;
+  return lastBackup;
 }
 
 export function isDriveConfigured(): boolean {
