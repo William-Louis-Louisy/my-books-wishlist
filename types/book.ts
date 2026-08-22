@@ -4,6 +4,8 @@ export interface Book {
   id: string;
   title: string;
   author: string;
+  series?: string;
+  volume?: string;
   publisher: string;
   releaseDate: string;
   note?: string;
@@ -22,6 +24,8 @@ export interface Book {
 export interface BookDraft {
   title: string;
   author: string;
+  series?: string;
+  volume?: string;
   publisher: string;
   releaseDate: string;
   note?: string;
