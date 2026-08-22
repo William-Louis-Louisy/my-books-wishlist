@@ -1,8 +1,13 @@
 import { db } from "@/lib/db";
-import { hasValidBookIdentity, mergeBooksIgnoringDuplicateIds } from "@/lib/books";
-import { isValidReleaseDate } from "@/lib/date";
+import {
+  parseBookBackup,
+  serializeBookBackup,
+} from "@/lib/book-backup";
+import {
+  applyBookImport,
+  type BookImportMode,
+} from "@/lib/book-import";
 import { writeSyncSnapshot } from "@/lib/sync-status";
-import type { Book } from "@/types/book";
 
 const GOOGLE_SCRIPT_ID = "google-identity-services";
 const DRIVE_SCOPE = "https://www.googleapis.com/auth/drive.file";
@@ -31,23 +36,6 @@ interface GoogleOauth2 {
     error_callback?: (error: unknown) => void;
   }) => GoogleTokenClient;
   revoke?: (token: string, callback?: () => void) => void;
-}
-
-interface ImportedBookRecord {
-  id?: unknown;
-  title?: unknown;
-  author?: unknown;
-  series?: unknown;
-  volume?: unknown;
-  publisher?: unknown;
-  releaseDate?: unknown;
-  note?: unknown;
-  purchased?: unknown;
-  purchasedAt?: unknown;
-  createdAt?: unknown;
-  updatedAt?: unknown;
-  status?: unknown;
-  statusOverride?: unknown;
 }
 
 declare global {
@@ -79,12 +67,16 @@ async function loadGoogleIdentityServices(): Promise<void> {
   if (window.google?.accounts.oauth2) return;
 
   await new Promise<void>((resolve, reject) => {
-    const existing = document.getElementById(GOOGLE_SCRIPT_ID) as HTMLScriptElement | null;
+    const existing = document.getElementById(
+      GOOGLE_SCRIPT_ID,
+    ) as HTMLScriptElement | null;
     if (existing) {
       existing.addEventListener("load", () => resolve(), { once: true });
-      existing.addEventListener("error", () => reject(new Error("Google Identity Services indisponible.")), {
-        once: true,
-      });
+      existing.addEventListener(
+        "error",
+        () => reject(new Error("Google Identity Services indisponible.")),
+        { once: true },
+      );
       return;
     }
 
@@ -94,7 +86,8 @@ async function loadGoogleIdentityServices(): Promise<void> {
     script.async = true;
     script.defer = true;
     script.onload = () => resolve();
-    script.onerror = () => reject(new Error("Google Identity Services indisponible."));
+    script.onerror = () =>
+      reject(new Error("Google Identity Services indisponible."));
     document.head.appendChild(script);
   });
 }
@@ -120,20 +113,31 @@ async function requestAccessToken(interactive: boolean): Promise<string> {
       scope: DRIVE_SCOPE,
       callback: (response) => {
         if (!response.access_token) {
-          reject(new Error(response.error_description ?? response.error ?? "Connexion Google refusée."));
+          reject(
+            new Error(
+              response.error_description ??
+                response.error ??
+                "Connexion Google refusée.",
+            ),
+          );
           return;
         }
         accessToken = response.access_token;
         resolve(response.access_token);
       },
-      error_callback: () => reject(new Error("Connexion Google interrompue.")),
+      error_callback: () =>
+        reject(new Error("Connexion Google interrompue.")),
     });
 
     client.requestAccessToken({ prompt: interactive ? "consent" : "" });
   });
 }
 
-async function driveFetch(path: string, init: RequestInit = {}, interactive = false): Promise<Response> {
+async function driveFetch(
+  path: string,
+  init: RequestInit = {},
+  interactive = false,
+): Promise<Response> {
   const token = await requestAccessToken(interactive);
   const headers = new Headers(init.headers);
   headers.set("Authorization", `Bearer ${token}`);
@@ -153,7 +157,9 @@ async function getDriveAccountEmail(): Promise<string | undefined> {
     "https://www.googleapis.com/drive/v3/about?fields=user(emailAddress)",
   );
   if (!response.ok) return undefined;
-  const data = (await response.json()) as { user?: { emailAddress?: string } };
+  const data = (await response.json()) as {
+    user?: { emailAddress?: string };
+  };
   return data.user?.emailAddress;
 }
 
@@ -162,12 +168,18 @@ async function findDriveFileId(): Promise<string | null> {
   const cached = window.localStorage.getItem(DRIVE_FILE_ID_KEY);
   if (cached) return cached;
 
-  const query = encodeURIComponent(`name='${DRIVE_FILE_NAME}' and trashed=false`);
+  const query = encodeURIComponent(
+    `name='${DRIVE_FILE_NAME}' and trashed=false`,
+  );
   const response = await driveFetch(
     `https://www.googleapis.com/drive/v3/files?q=${query}&fields=files(id,name)&pageSize=1`,
   );
-  if (!response.ok) throw new Error("Impossible de retrouver la sauvegarde Drive.");
-  const data = (await response.json()) as { files?: Array<{ id: string }> };
+  if (!response.ok) {
+    throw new Error("Impossible de retrouver la sauvegarde Drive.");
+  }
+  const data = (await response.json()) as {
+    files?: Array<{ id: string }>;
+  };
   const id = data.files?.[0]?.id ?? null;
   if (id) window.localStorage.setItem(DRIVE_FILE_ID_KEY, id);
   return id;
@@ -178,7 +190,10 @@ async function createDriveFile(content: string): Promise<string> {
   const multipartBody = [
     `--${boundary}\r\n`,
     "Content-Type: application/json; charset=UTF-8\r\n\r\n",
-    JSON.stringify({ name: DRIVE_FILE_NAME, mimeType: "application/json" }),
+    JSON.stringify({
+      name: DRIVE_FILE_NAME,
+      mimeType: "application/json",
+    }),
     `\r\n--${boundary}\r\n`,
     "Content-Type: application/json\r\n\r\n",
     content,
@@ -189,17 +204,24 @@ async function createDriveFile(content: string): Promise<string> {
     "https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id",
     {
       method: "POST",
-      headers: { "Content-Type": `multipart/related; boundary=${boundary}` },
+      headers: {
+        "Content-Type": `multipart/related; boundary=${boundary}`,
+      },
       body: multipartBody,
     },
   );
-  if (!response.ok) throw new Error("La première sauvegarde Drive a échoué.");
+  if (!response.ok) {
+    throw new Error("La première sauvegarde Drive a échoué.");
+  }
   const data = (await response.json()) as { id: string };
   window.localStorage.setItem(DRIVE_FILE_ID_KEY, data.id);
   return data.id;
 }
 
-async function updateDriveFile(fileId: string, content: string): Promise<void> {
+async function updateDriveFile(
+  fileId: string,
+  content: string,
+): Promise<void> {
   const response = await driveFetch(
     `https://www.googleapis.com/upload/drive/v3/files/${encodeURIComponent(fileId)}?uploadType=media`,
     {
@@ -209,10 +231,6 @@ async function updateDriveFile(fileId: string, content: string): Promise<void> {
     },
   );
   if (!response.ok) throw new Error("La sauvegarde Drive a échoué.");
-}
-
-function toExportPayload(books: Book[]): string {
-  return JSON.stringify({ exportedAt: new Date().toISOString(), books }, null, 2);
 }
 
 export function isDriveConfigured(): boolean {
@@ -235,7 +253,10 @@ export async function connectGoogleDrive(): Promise<void> {
   window.localStorage.setItem(DRIVE_CONNECTED_KEY, "true");
   const email = await getDriveAccountEmail();
   if (email) window.localStorage.setItem(DRIVE_EMAIL_KEY, email);
-  writeSyncSnapshot({ state: "pending", message: "Sauvegarde en attente." });
+  writeSyncSnapshot({
+    state: "pending",
+    message: "Sauvegarde en attente.",
+  });
   await exportBooksToDrive({ interactive: false }).catch(() => undefined);
 }
 
@@ -251,17 +272,22 @@ export async function disconnectGoogleDrive(): Promise<void> {
   writeSyncSnapshot({ state: "disconnected" });
 }
 
-export async function exportBooksToDrive(options: { interactive?: boolean } = {}): Promise<void> {
+export async function exportBooksToDrive(
+  options: { interactive?: boolean } = {},
+): Promise<void> {
   ensureBrowser();
   if (!isDriveConfigured() || !isDriveConnected()) return;
   if (exportInFlight) return exportInFlight;
 
   exportInFlight = (async () => {
-    writeSyncSnapshot({ state: "pending", message: "Sauvegarde en cours." });
+    writeSyncSnapshot({
+      state: "pending",
+      message: "Sauvegarde en cours.",
+    });
     try {
       if (options.interactive) await requestAccessToken(true);
       const books = await db.books.toArray();
-      const content = toExportPayload(books);
+      const content = serializeBookBackup(books);
       const fileId = await findDriveFileId();
       if (fileId) await updateDriveFile(fileId, content);
       else await createDriveFile(content);
@@ -271,7 +297,8 @@ export async function exportBooksToDrive(options: { interactive?: boolean } = {}
       accessToken = null;
       writeSyncSnapshot({
         state: "error",
-        message: "Dernière sauvegarde impossible. Nouvel essai à la prochaine ouverture.",
+        message:
+          "Dernière sauvegarde impossible. Nouvel essai à la prochaine ouverture.",
       });
       throw error;
     } finally {
@@ -283,8 +310,17 @@ export async function exportBooksToDrive(options: { interactive?: boolean } = {}
 }
 
 export function queueDriveExport(): void {
-  if (typeof window === "undefined" || !isDriveConnected() || !isDriveConfigured()) return;
-  writeSyncSnapshot({ state: "pending", message: "Modifications à sauvegarder." });
+  if (
+    typeof window === "undefined" ||
+    !isDriveConnected() ||
+    !isDriveConfigured()
+  ) {
+    return;
+  }
+  writeSyncSnapshot({
+    state: "pending",
+    message: "Modifications à sauvegarder.",
+  });
   if (debounceTimer) clearTimeout(debounceTimer);
   debounceTimer = setTimeout(() => {
     void exportBooksToDrive().catch(() => undefined);
@@ -292,49 +328,19 @@ export function queueDriveExport(): void {
 }
 
 export async function retryDriveExportWhenVisible(): Promise<void> {
-  if (typeof document === "undefined" || document.visibilityState !== "visible") return;
+  if (
+    typeof document === "undefined" ||
+    document.visibilityState !== "visible"
+  ) {
+    return;
+  }
   if (!isDriveConnected() || !isDriveConfigured()) return;
   await exportBooksToDrive().catch(() => undefined);
 }
 
-function optionalImportedString(value: unknown): string | undefined {
-  return typeof value === "string" && value.trim() ? value.trim() : undefined;
-}
-
-function normalizeImportedBook(value: unknown): Book | null {
-  if (!value || typeof value !== "object") return null;
-  const raw = value as ImportedBookRecord;
-
-  if (
-    typeof raw.id !== "string" ||
-    typeof raw.releaseDate !== "string" ||
-    !isValidReleaseDate(raw.releaseDate) ||
-    typeof raw.purchased !== "boolean" ||
-    typeof raw.createdAt !== "string" ||
-    typeof raw.updatedAt !== "string"
-  ) {
-    return null;
-  }
-
-  const book: Book = {
-    id: raw.id,
-    title: optionalImportedString(raw.title),
-    author: optionalImportedString(raw.author),
-    series: optionalImportedString(raw.series),
-    volume: optionalImportedString(raw.volume),
-    publisher: optionalImportedString(raw.publisher),
-    releaseDate: raw.releaseDate,
-    note: optionalImportedString(raw.note),
-    purchased: raw.purchased,
-    purchasedAt: optionalImportedString(raw.purchasedAt),
-    createdAt: raw.createdAt,
-    updatedAt: raw.updatedAt,
-  };
-
-  return hasValidBookIdentity(book) ? book : null;
-}
-
-export async function importBooksFromDrive(mode: "replace" | "merge"): Promise<number> {
+export async function importBooksFromDrive(
+  mode: BookImportMode,
+): Promise<number> {
   ensureBrowser();
   const fileId = await findDriveFileId();
   if (!fileId) throw new Error("Aucune sauvegarde Drive trouvée.");
@@ -344,30 +350,14 @@ export async function importBooksFromDrive(mode: "replace" | "merge"): Promise<n
     {},
     true,
   );
-  if (!response.ok) throw new Error("Impossible de lire la sauvegarde Drive.");
-
-  const payload = (await response.json()) as { books?: unknown[] } | unknown[];
-  const rawBooks = Array.isArray(payload) ? payload : payload.books;
-  if (!Array.isArray(rawBooks)) throw new Error("Le fichier Drive n'a pas le format attendu.");
-
-  const incoming = rawBooks
-    .map(normalizeImportedBook)
-    .filter((book): book is Book => book !== null);
-  if (incoming.length !== rawBooks.length) {
-    throw new Error("Le fichier Drive contient des entrées invalides.");
+  if (!response.ok) {
+    throw new Error("Impossible de lire la sauvegarde Drive.");
   }
 
-  if (mode === "replace") {
-    await db.transaction("rw", db.books, async () => {
-      await db.books.clear();
-      await db.books.bulkPut(incoming);
-    });
-  } else {
-    const local = await db.books.toArray();
-    const merged = mergeBooksIgnoringDuplicateIds(local, incoming);
-    await db.books.bulkPut(merged);
-  }
+  const payload = (await response.json()) as unknown;
+  const incoming = parseBookBackup(payload);
+  const importedCount = await applyBookImport(incoming, mode);
 
   queueDriveExport();
-  return incoming.length;
+  return importedCount;
 }
