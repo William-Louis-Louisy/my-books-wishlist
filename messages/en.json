@@ -1,0 +1,109 @@
+{
+  "Common": {
+    "appName": "Upcoming Books",
+    "back": "Back",
+    "settings": "Open settings",
+    "addBook": "Add a book",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "optional": "(optional)",
+    "never": "Never"
+  },
+  "Home": {
+    "opening": "Opening your list…",
+    "error": "The local list could not be opened.",
+    "emptyTitle": "No books to watch yet.",
+    "emptyBody": "Add your first title to keep an eye on.",
+    "noResultsTitle": "No books match this search.",
+    "noResultsBody": "Adjust your criteria to find a title."
+  },
+  "Sections": {
+    "upcoming": "Upcoming",
+    "available": "Available",
+    "purchased": "Purchased"
+  },
+  "Filters": {
+    "toggle": "Search or filter",
+    "active": "Filters active",
+    "searchLabel": "Search by title, author, series or volume",
+    "placeholder": "Title, author or series",
+    "publisherLabel": "Filter by publisher",
+    "allPublishers": "All publishers"
+  },
+  "BookCard": {
+    "edit": "Edit",
+    "delete": "Delete",
+    "editAria": "Edit “{title}”",
+    "volume": "Volume {volume}",
+    "deleteTitle": "Delete this book?",
+    "deleteDescription": "“{title}” will be removed from your local list."
+  },
+  "Bookmark": {
+    "markPurchased": "Mark as purchased",
+    "markUnpurchased": "Mark as not purchased"
+  },
+  "Form": {
+    "addTitle": "Add a book",
+    "editTitle": "Edit book",
+    "loading": "Loading…",
+    "missing": "This book no longer exists.",
+    "title": "Title",
+    "author": "Author",
+    "series": "Series",
+    "volume": "Volume",
+    "publisher": "Publisher",
+    "releaseDate": "Release date",
+    "releaseStatus": "Release status",
+    "note": "Note",
+    "automaticStatus": "Automatic from release date",
+    "forceUpcoming": "Force “Upcoming”",
+    "forceAvailable": "Force “Available”",
+    "alreadyPurchased": "Already purchased",
+    "saving": "Saving…",
+    "save": "Save",
+    "titleRequired": "Enter a title.",
+    "authorRequired": "Enter an author.",
+    "publisherRequired": "Enter a publisher.",
+    "dateRequired": "Choose a valid date.",
+    "deleteTitle": "Delete this book?",
+    "deleteDescription": "“{title}” will be removed from your local list.",
+    "deleteDescriptionFallback": "This book will be removed from your local list."
+  },
+  "Settings": {
+    "title": "Settings",
+    "languageSection": "Language",
+    "languageLabel": "Application language",
+    "french": "Français",
+    "english": "English",
+    "driveNotConfigured": "Drive connection not configured",
+    "driveConfigHelp": "Add NEXT_PUBLIC_GOOGLE_CLIENT_ID to your environment variables to enable Drive backup.",
+    "driveIntro": "Back up this list to a file created by the app in your Drive.",
+    "connecting": "Connecting…",
+    "connectDrive": "Connect Google Drive",
+    "driveConnected": "Google Drive connected",
+    "lastBackup": "Last backup · {date}",
+    "disconnect": "Disconnect",
+    "syncSynced": "Drive backup is up to date.",
+    "syncPending": "Backup pending.",
+    "syncError": "Last backup failed. It will retry the next time the app opens.",
+    "saving": "Backing up…",
+    "exportNow": "Export now",
+    "importFromDrive": "Import from Drive",
+    "restoreQuestion": "How would you like to restore the backup?",
+    "replaceLocal": "Replace local list",
+    "mergeWithoutDuplicates": "Merge without duplicates",
+    "importSuccess": "{count, plural, =0 {No books imported from Drive.} =1 {# book imported from Drive.} other {# books imported from Drive.}}",
+    "actionError": "The action could not be completed.",
+    "localData": "Local data",
+    "booksSaved": "Books saved",
+    "localExport": "Local JSON export"
+  },
+  "Sync": {
+    "viewAria": "View backup status",
+    "synced": "Drive backup is up to date",
+    "disconnected": "Drive backup not connected",
+    "pending": "Backup pending",
+    "error": "Last backup failed",
+    "lastBackup": "Last backup · {date}"
+  }
+}
