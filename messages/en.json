@@ -89,7 +89,7 @@
     "driveIntro": "Google Drive is used only when you explicitly request it. Adding, editing, or deleting a book never sends data automatically. Google authorization may be requested when you start an action.",
     "driveNotConfigured": "Google Drive not configured",
     "english": "English",
-    "exportNow": "Export",
+    "exportToDrive": "Export",
     "french": "Français",
     "importFromDrive": "Import",
     "importSuccess": "{count, plural, =0 {No books imported from Drive.} =1 {# book imported from Drive.} other {# books imported from Drive.}}",
