@@ -4,7 +4,7 @@
 
 L'application est volontairement **sans backend**. Google Drive est intégré via Google Identity Services (GIS) avec le token model et le scope restreint `https://www.googleapis.com/auth/drive.file`.
 
-Dans ce modèle, l'access token est court-lived et reste uniquement en mémoire. Aucun refresh token n'est conservé par l'application. Il n'est donc pas cohérent de présenter Drive comme une connexion persistante ou de tenter une synchronisation silencieuse durable après expiration du token.
+Dans ce modèle, l'access token est **short-lived** et reste uniquement en mémoire. Aucun refresh token n'est conservé par l'application. Il n'est donc pas cohérent de présenter Drive comme une connexion persistante ou de tenter une synchronisation silencieuse durable après expiration du token.
 
 ## Décision produit
 
@@ -49,16 +49,19 @@ Une réponse HTTP `401` invalide le token en mémoire et provoque une nouvelle d
 
 Aucun token ni refresh token n'est écrit dans `localStorage`, IndexedDB ou un fichier de sauvegarde.
 
-## Métadonnées persistées
+## Identité du fichier Drive
 
-Deux informations non sensibles peuvent rester dans `localStorage` :
+L'ID de `book-wishlist-export.json` n'est plus persisté entre les sessions. Il est mémorisé uniquement pendant la session JavaScript courante.
 
-- l'ID du fichier Drive créé par l'application (`book-wishlist-export.json`) afin d'éviter de le rechercher à chaque opération ;
-- l'horodatage de la dernière sauvegarde Drive réussie, uniquement pour l'affichage dans les réglages.
+Au premier export/import après un chargement de page, l'application recherche donc le fichier dans le compte réellement autorisé à ce moment-là. Cela évite de conserver un ID appartenant à un ancien compte Google si l'utilisateur change de compte entre deux sessions.
+
+## Métadonnée persistée
+
+La seule métadonnée Drive conservée dans `localStorage` est l'horodatage de la dernière sauvegarde Drive réussie, uniquement pour l'affichage dans les réglages.
 
 L'ancien horodatage contenu dans `book-wishlist:sync-status` est migré au premier passage vers la nouvelle clé afin de ne pas perdre l'information visible pour l'utilisateur.
 
-Les anciennes clés représentant un faux état de connexion/synchronisation ne sont plus utilisées.
+Les anciennes clés `drive-connected`, `drive-email`, `drive-file-id` et `sync-status` sont supprimées lors de cette migration et ne participent plus au comportement de l'application.
 
 ## Export manuel
 
@@ -68,7 +71,7 @@ Les anciennes clés représentant un faux état de connexion/synchronisation ne 
 2. obtient un token depuis l'action utilisateur si nécessaire ;
 3. lit la bibliothèque depuis IndexedDB ;
 4. sérialise le backup avec `serializeBookBackup` ;
-5. met à jour le fichier Drive existant ou le crée ;
+5. recherche puis met à jour le fichier Drive existant, ou le crée ;
 6. enregistre localement la date de réussite.
 
 Aucune mutation locale ne lance cette fonction automatiquement.
@@ -78,7 +81,7 @@ Aucune mutation locale ne lance cette fonction automatiquement.
 `importBooksFromDrive(mode)` :
 
 1. obtient l'autorisation Google si nécessaire ;
-2. récupère le fichier Drive ;
+2. recherche et récupère le fichier Drive ;
 3. le valide entièrement avec `parseBookBackup` ;
 4. applique `replace` ou `merge` via `applyBookImport`.
 
