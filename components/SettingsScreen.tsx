@@ -26,8 +26,12 @@ export function SettingsScreen() {
   const configured = isDriveConfigured();
 
   useEffect(() => {
-    setConnected(isDriveConnected());
-    setEmail(getDriveEmail());
+    const timer = window.setTimeout(() => {
+      setConnected(isDriveConnected());
+      setEmail(getDriveEmail());
+    }, 0);
+
+    return () => window.clearTimeout(timer);
   }, []);
 
   const run = async (name: string, action: () => Promise<void>) => {
@@ -36,7 +40,7 @@ export function SettingsScreen() {
     try {
       await action();
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "L'action n'a pas pu aboutir.");
+      setMessage(error instanceof Error ? error.message : "L’action n’a pas pu aboutir.");
     } finally {
       setBusy(undefined);
     }
@@ -83,11 +87,11 @@ export function SettingsScreen() {
             {!configured ? (
               <div>
                 <p className="text-sm font-medium text-ink">Connexion Drive non configurée</p>
-                <p className="mt-1 text-sm leading-6 text-ink-muted">Ajoutez <code className="font-mono text-xs">NEXT_PUBLIC_GOOGLE_CLIENT_ID</code> dans les variables d'environnement pour activer la sauvegarde Drive.</p>
+                <p className="mt-1 text-sm leading-6 text-ink-muted">Ajoutez <code className="font-mono text-xs">NEXT_PUBLIC_GOOGLE_CLIENT_ID</code> dans les variables d’environnement pour activer la sauvegarde Drive.</p>
               </div>
             ) : !connected ? (
               <div>
-                <p className="text-sm text-ink">Sauvegardez cette liste dans un fichier créé par l'application sur votre Drive.</p>
+                <p className="text-sm text-ink">Sauvegardez cette liste dans un fichier créé par l’application sur votre Drive.</p>
                 <button type="button" disabled={Boolean(busy)} onClick={() => void connect()} className="mt-4 rounded-lg bg-brass px-4 py-2.5 text-sm font-medium text-paper focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brass disabled:opacity-50">{busy === "connect" ? "Connexion…" : "Connecter Google Drive"}</button>
               </div>
             ) : (
