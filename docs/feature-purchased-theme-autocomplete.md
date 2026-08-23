@@ -19,11 +19,15 @@ Le tap/clic simple sur une card n'ouvre plus l'édition et ne déclenche aucune 
 
 - swipe vers la droite → révèle l'action **Modifier** à gauche ;
 - swipe vers la gauche → révèle l'action **Supprimer** à droite ;
-- le relâchement du swipe ne déclenche pas directement l'action : il laisse apparaître le bouton iconographique, qui doit ensuite être activé volontairement ;
+- un geste intermédiaire se stabilise à `±76px` et laisse l'action visible ;
+- la décision de fin de geste repose sur la position horizontale finale réelle de la card, et non sur le delta du dernier drag : une action déjà révélée peut donc être ramenée naturellement vers `0` sans devoir cliquer à l'extérieur ;
+- pousser la card presque jusqu'à la butée (`±96px` pour une contrainte de `±104px`) puis relâcher déclenche directement l'action correspondante ;
+- un flick court peut révéler une action mais ne peut pas la déclencher directement ;
+- les boutons iconographiques restent disponibles comme fallback accessible lorsque l'action est révélée ;
 - l'édition utilise une surface bleue fonctionnelle et une icône crayon ;
 - la suppression utilise une surface rouge fonctionnelle et une icône corbeille, puis conserve la confirmation avant suppression réelle.
 
-Le geste mobile est volontairement souple : la card peut se déplacer librement dans une plage horizontale courte, un déplacement modéré suffit à révéler l'action et un flick rapide est également reconnu. `touch-action: pan-y` préserve le scroll vertical de la page.
+Le geste mobile reste volontairement souple : la card peut se déplacer librement dans une plage horizontale courte, un déplacement modéré suffit à révéler l'action et `touch-action: pan-y` préserve le scroll vertical de la page. La zone de déclenchement direct est volontairement distincte de la zone de révélation afin d'éviter les actions accidentelles.
 
 Les couleurs bleue/rouge sont des **couleurs fonctionnelles d'action**, pas de nouveaux accents de marque. `accent-brass` et `accent-cloth` restent les accents identitaires de l'application.
 
