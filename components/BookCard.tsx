@@ -17,7 +17,7 @@ import { deleteBook, togglePurchased } from "@/lib/book-repository";
 import { formatReleaseDate } from "@/lib/date";
 import { getBookDisplayTitle, resolveBookStatus } from "@/lib/books";
 import {
-  resolveBookCardSwipeAction,
+  resolveBookCardSwipeRelease,
   type BookCardSwipeAction,
 } from "@/lib/swipe";
 import type { Book } from "@/types/book";
@@ -99,15 +99,30 @@ export function BookCard({ book }: BookCardProps) {
     _: PointerEvent | MouseEvent | TouchEvent,
     info: PanInfo,
   ) => {
-    const action = resolveBookCardSwipeAction(info.offset.x, info.velocity.x);
-    setOpenAction(action);
+    const resolution = resolveBookCardSwipeRelease(x.get(), info.velocity.x);
 
-    if (action === "edit") {
+    if (resolution.mode === "trigger") {
+      setOpenAction(null);
+
+      if (resolution.action === "edit") {
+        settleCard(DRAG_LIMIT);
+        router.push(`/book/${book.id}/edit`);
+        return;
+      }
+
+      settleCard(0);
+      setConfirmDelete(true);
+      return;
+    }
+
+    setOpenAction(resolution.action);
+
+    if (resolution.action === "edit") {
       settleCard(ACTION_REVEAL_WIDTH);
       return;
     }
 
-    if (action === "delete") {
+    if (resolution.action === "delete") {
       settleCard(-ACTION_REVEAL_WIDTH);
       return;
     }
