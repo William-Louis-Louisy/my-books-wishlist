@@ -294,30 +294,51 @@ export function BookForm({ bookId }: BookFormProps) {
               />
 
               {form.releasePrecision === "day" ? (
-                <input
-                  key="release-day"
-                  type="date"
-                  aria-label={t("releaseDate")}
-                  defaultValue={releaseInputValue}
-                  placeholder={t("datePlaceholder")}
-                  onChange={(event) =>
-                    updateField("releaseDate", event.target.value)
-                  }
-                  className={fieldClass}
-                  aria-invalid={Boolean(errors.releaseDate)}
-                />
+                <div className="relative">
+                  <input
+                    key="release-day"
+                    type="date"
+                    aria-label={t("releaseDate")}
+                    defaultValue={releaseInputValue}
+                    placeholder={t("datePlaceholder")}
+                    onChange={(event) =>
+                      updateField("releaseDate", event.target.value)
+                    }
+                    className={`${fieldClass} peer`}
+                    aria-invalid={Boolean(errors.releaseDate)}
+                  />
+                  {!releaseInputValue ? (
+                    <span
+                      aria-hidden="true"
+                      className="pointer-events-none absolute bottom-px left-0 right-10 top-0 flex items-center bg-paper text-base font-normal normal-case tracking-normal text-ink-muted peer-focus:hidden"
+                    >
+                      {t("datePlaceholder")}
+                    </span>
+                  ) : null}
+                </div>
               ) : form.releasePrecision === "month" ? (
-                <input
-                  key="release-month"
-                  type="month"
-                  aria-label={t("releaseDate")}
-                  defaultValue={releaseInputValue}
-                  onChange={(event) =>
-                    updateField("releaseDate", event.target.value)
-                  }
-                  className={fieldClass}
-                  aria-invalid={Boolean(errors.releaseDate)}
-                />
+                <div className="relative">
+                  <input
+                    key="release-month"
+                    type="month"
+                    aria-label={t("releaseDate")}
+                    defaultValue={releaseInputValue}
+                    placeholder={t("monthPlaceholder")}
+                    onChange={(event) =>
+                      updateField("releaseDate", event.target.value)
+                    }
+                    className={`${fieldClass} peer`}
+                    aria-invalid={Boolean(errors.releaseDate)}
+                  />
+                  {!releaseInputValue ? (
+                    <span
+                      aria-hidden="true"
+                      className="pointer-events-none absolute bottom-px left-0 right-10 top-0 flex items-center bg-paper text-base font-normal normal-case tracking-normal text-ink-muted peer-focus:hidden"
+                    >
+                      {t("monthPlaceholder")}
+                    </span>
+                  ) : null}
+                </div>
               ) : (
                 <input
                   key="release-year"
