@@ -114,6 +114,8 @@ Le service worker n'est enregistré qu'en production. Après déploiement HTTPS,
 
 ## Documentation
 
+- `docs/v1-product-finish-plan.md` : feuille de route de finition produit à terminer avant l'entrée en Release Candidate.
+- `docs/v1-release-candidate-review.md` : plan de QA, audits et critères Go/No-Go pour valider la V1.0.0.
 - `docs/spec-book-wishlist.md` : spécification fonctionnelle historique.
 - `docs/design-system-book-wishlist.md` : identité visuelle et règles UI.
 - `docs/feature-book-model-v2.md` : modèle métier V2, dates partielles et migration IndexedDB.
