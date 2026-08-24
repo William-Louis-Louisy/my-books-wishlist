@@ -2,7 +2,12 @@
 
 import { useEffect, useSyncExternalStore, type ReactNode } from "react";
 import { NextIntlClientProvider } from "next-intl";
-import { getLocaleSnapshot, getServerLocaleSnapshot, subscribeToLocale } from "@/lib/locale-store";
+import { APP_TIME_ZONE } from "@/lib/i18n";
+import {
+  getLocaleSnapshot,
+  getServerLocaleSnapshot,
+  subscribeToLocale,
+} from "@/lib/locale-store";
 import enMessages from "@/messages/en.json";
 import frMessages from "@/messages/fr.json";
 
@@ -20,7 +25,11 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
   }, [locale, messages.Common.appName]);
 
   return (
-    <NextIntlClientProvider locale={locale} messages={messages}>
+    <NextIntlClientProvider
+      locale={locale}
+      messages={messages}
+      timeZone={APP_TIME_ZONE}
+    >
       {children}
     </NextIntlClientProvider>
   );
