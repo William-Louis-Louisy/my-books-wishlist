@@ -7,6 +7,7 @@ import {
 import {
   motion,
   animate,
+  AnimatePresence,
   useMotionValue,
   useReducedMotion,
   type PanInfo,
@@ -256,14 +257,32 @@ export function BookCard({ book }: BookCardProps) {
               ) : null}
             </div>
           </div>
-          {visualPurchased ? (
-            <span
-              aria-hidden="true"
-              className="pointer-events-none absolute bottom-3 right-4 text-[0.6875rem] font-medium uppercase tracking-[0.08em] text-ink-muted"
-            >
-              {t("purchased")}
-            </span>
-          ) : null}
+          <AnimatePresence initial={false}>
+            {visualPurchased ? (
+              <motion.span
+                key="purchased-label"
+                aria-hidden="true"
+                initial={
+                  reduceMotion
+                    ? { opacity: 0 }
+                    : { opacity: 0, y: 4, scale: 0.96 }
+                }
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={
+                  reduceMotion
+                    ? { opacity: 0 }
+                    : { opacity: 0, y: 2, scale: 0.98 }
+                }
+                transition={{
+                  duration: reduceMotion ? 0.1 : 0.2,
+                  ease: "easeOut",
+                }}
+                className="pointer-events-none absolute bottom-3 right-4 origin-bottom-right text-[0.6875rem] font-medium uppercase tracking-[0.08em] text-ink-muted"
+              >
+                {t("purchased")}
+              </motion.span>
+            ) : null}
+          </AnimatePresence>
         </motion.article>
       </motion.div>
       <ConfirmDialog
