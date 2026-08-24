@@ -79,6 +79,7 @@
     "monthExpand": "Show books from {month}",
     "monthUnspecified": "{year} · Month unspecified",
     "monthUnspecifiedShort": "Month unspecified",
+    "pastReleases": "Past releases",
     "unknown": "Status undetermined",
     "upcoming": "Upcoming"
   },

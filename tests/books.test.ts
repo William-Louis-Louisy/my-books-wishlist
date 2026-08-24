@@ -6,6 +6,7 @@ import {
   resolveBookStatus,
   getBookDisplayTitle,
   hasValidBookIdentity,
+  isPastReleaseGroup,
   groupBooksByReleasePeriod,
   getBookAutocompleteOptions,
   groupBooksByTimelinePeriod,
@@ -132,6 +133,22 @@ describe("book business rules", () => {
       "2027",
     ]);
     expect(descending[0].books.map((book) => book.id)).toEqual(["a", "c"]);
+  });
+
+  it("classifies past timeline groups by month without splitting the current month", () => {
+    const today = "2026-08-24";
+    const group = (key: string, month?: string) => ({
+      key,
+      year: key.slice(0, 4),
+      month,
+      books: [],
+    });
+
+    expect(isPastReleaseGroup(group("2026-07", "07"), today)).toBe(true);
+    expect(isPastReleaseGroup(group("2026-08", "08"), today)).toBe(false);
+    expect(isPastReleaseGroup(group("2026-09", "09"), today)).toBe(false);
+    expect(isPastReleaseGroup(group("2026"), today)).toBe(false);
+    expect(isPastReleaseGroup(group("2025"), today)).toBe(true);
   });
 
   it("builds a timeline around the current month with coarse year groups", () => {
