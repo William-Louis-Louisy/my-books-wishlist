@@ -6,6 +6,7 @@
     "deleteTitle": "Supprimer ce livre ?",
     "edit": "Modifier",
     "editAria": "Modifier « {title} »",
+    "purchased": "Acheté",
     "volume": "Tome {volume}"
   },
   "Bookmark": {
