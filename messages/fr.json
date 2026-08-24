@@ -47,7 +47,7 @@
     "identityRequired": "Renseignez un titre, ou une saga accompagnée d’un tome.",
     "loading": "Chargement…",
     "missing": "Ce livre n’existe plus.",
-    "monthPlaceholder": "décembre 2028",
+    "monthPlaceholder": "mois / années",
     "note": "Note",
     "precisionDay": "Date précise",
     "precisionMonth": "Mois",
