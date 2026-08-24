@@ -37,6 +37,7 @@
     "addTitle": "Ajouter un livre",
     "alreadyPurchased": "Déjà acheté",
     "author": "Auteur",
+    "datePlaceholder": "jj/mm/aaaa",
     "datePrecision": "Précision de la date",
     "dateRequired": "Renseignez une année, un mois ou une date valide.",
     "deleteDescription": "« {title} » sera retiré de votre liste locale.",
@@ -46,6 +47,7 @@
     "identityRequired": "Renseignez un titre, ou une saga accompagnée d’un tome.",
     "loading": "Chargement…",
     "missing": "Ce livre n’existe plus.",
+    "monthPlaceholder": "décembre 2028",
     "note": "Note",
     "precisionDay": "Date précise",
     "precisionMonth": "Mois",
@@ -57,7 +59,7 @@
     "series": "Série",
     "title": "Titre",
     "volume": "Tome",
-    "yearPlaceholder": "2027"
+    "yearPlaceholder": "2028"
   },
   "Home": {
     "emptyBody": "Ajoutez le premier titre à surveiller.",

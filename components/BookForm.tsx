@@ -11,11 +11,12 @@ import {
   getBookAutocompleteOptions,
 } from "@/lib/books";
 import { TrashIcon } from "./Icons";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import DatePrecision from "./DatePrecision";
 import { AppHeader } from "@/components/AppHeader";
 import { useBook, useBooks } from "@/hooks/useBooks";
 import { useLocale, useTranslations } from "next-intl";
-import { useMemo, useState, type FormEvent } from "react";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { AutocompleteInput } from "@/components/AutocompleteInput";
 import type { BookDraft, ReleaseDatePrecision } from "@/types/book";
@@ -286,24 +287,11 @@ export function BookForm({ bookId }: BookFormProps) {
 
           <fieldset>
             <legend className={labelClass}>{t("releaseDate")}</legend>
-            <div className="mt-1 grid gap-3 sm:grid-cols-[minmax(0,0.42fr)_minmax(0,1fr)]">
-              <label>
-                <span className="sr-only">{t("datePrecision")}</span>
-                <select
-                  value={form.releasePrecision}
-                  onChange={(event) =>
-                    updateField(
-                      "releasePrecision",
-                      event.target.value as ReleaseDatePrecision,
-                    )
-                  }
-                  className={fieldClass}
-                >
-                  <option value="day">{t("precisionDay")}</option>
-                  <option value="month">{t("precisionMonth")}</option>
-                  <option value="year">{t("precisionYear")}</option>
-                </select>
-              </label>
+            <div className="mt-2 flex flex-col gap-2">
+              <DatePrecision
+                value={form.releasePrecision}
+                onChange={(value) => updateField("releasePrecision", value)}
+              />
 
               {form.releasePrecision === "day" ? (
                 <input
@@ -311,6 +299,7 @@ export function BookForm({ bookId }: BookFormProps) {
                   type="date"
                   aria-label={t("releaseDate")}
                   defaultValue={releaseInputValue}
+                  placeholder={t("datePlaceholder")}
                   onChange={(event) =>
                     updateField("releaseDate", event.target.value)
                   }

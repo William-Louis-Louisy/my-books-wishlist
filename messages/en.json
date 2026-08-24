@@ -37,6 +37,7 @@
     "addTitle": "Add a book",
     "alreadyPurchased": "Already purchased",
     "author": "Author",
+    "datePlaceholder": "mm/dd/yyyy",
     "datePrecision": "Date precision",
     "dateRequired": "Enter a valid year, month or exact date.",
     "deleteDescription": "“{title}” will be removed from your local list.",
@@ -46,6 +47,7 @@
     "identityRequired": "Enter a title, or a series together with a volume.",
     "loading": "Loading…",
     "missing": "This book no longer exists.",
+    "monthPlaceholder": "december 2028",
     "note": "Note",
     "precisionDay": "Exact date",
     "precisionMonth": "Month",
@@ -57,7 +59,7 @@
     "series": "Series",
     "title": "Title",
     "volume": "Volume",
-    "yearPlaceholder": "2027"
+    "yearPlaceholder": "2028"
   },
   "Home": {
     "emptyBody": "Add your first title to keep an eye on.",
