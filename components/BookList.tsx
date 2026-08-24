@@ -1,23 +1,23 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { AnimatePresence } from "motion/react";
-import { useLocale, useTranslations } from "next-intl";
-import { BookCard } from "@/components/BookCard";
-import { FilterPanel } from "@/components/FilterPanel";
-import { ChevronIcon } from "@/components/Icons";
-import { SectionHeader } from "@/components/SectionHeader";
 import {
-  buildBookTimeline,
-  filterBooks,
   groupBooks,
+  filterBooks,
+  buildBookTimeline,
   groupBooksByReleasePeriod,
-  type BookOrganizationMode,
-  type BookReleaseGroup,
   type BookYearArchive,
+  type BookReleaseGroup,
+  type BookOrganizationMode,
 } from "@/lib/books";
-import { formatMonthLabel } from "@/lib/date";
 import type { Book } from "@/types/book";
+import { useMemo, useState } from "react";
+import { formatMonthLabel } from "@/lib/date";
+import { AnimatePresence } from "motion/react";
+import { BookCard } from "@/components/BookCard";
+import { ChevronIcon } from "@/components/Icons";
+import { useLocale, useTranslations } from "next-intl";
+import { FilterPanel } from "@/components/FilterPanel";
+import { SectionHeader } from "@/components/SectionHeader";
 
 interface BookListProps {
   books: Book[];

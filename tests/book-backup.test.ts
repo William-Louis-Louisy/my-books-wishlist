@@ -1,11 +1,11 @@
-import { describe, expect, it } from "vitest";
 import {
-  BOOK_BACKUP_VERSION,
   parseBookBackup,
+  BOOK_BACKUP_VERSION,
   parseBookBackupJson,
   serializeBookBackup,
 } from "@/lib/book-backup";
 import type { Book } from "@/types/book";
+import { describe, expect, it } from "vitest";
 
 const baseBook: Book = {
   id: "book-1",
@@ -113,8 +113,8 @@ describe("book backup pipeline", () => {
   });
 
   it("rejects backup versions newer than the app understands", () => {
-    expect(() =>
-      parseBookBackup({ version: 99, books: [baseBook] }),
-    ).toThrow(/version/);
+    expect(() => parseBookBackup({ version: 99, books: [baseBook] })).toThrow(
+      /version/,
+    );
   });
 });

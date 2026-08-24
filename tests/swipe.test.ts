@@ -1,12 +1,12 @@
-import { describe, expect, it } from "vitest";
 import {
-  BOOK_CARD_SWIPE_FLICK_MIN_OFFSET,
-  BOOK_CARD_SWIPE_FLICK_VELOCITY,
-  BOOK_CARD_SWIPE_REVEAL_THRESHOLD,
-  BOOK_CARD_SWIPE_TRIGGER_THRESHOLD,
   resolveBookCardSwipeAction,
   resolveBookCardSwipeRelease,
+  BOOK_CARD_SWIPE_FLICK_VELOCITY,
+  BOOK_CARD_SWIPE_FLICK_MIN_OFFSET,
+  BOOK_CARD_SWIPE_REVEAL_THRESHOLD,
+  BOOK_CARD_SWIPE_TRIGGER_THRESHOLD,
 } from "@/lib/swipe";
+import { describe, expect, it } from "vitest";
 
 describe("book card swipe gestures", () => {
   it("reveals deletion for a deliberate left drag", () => {

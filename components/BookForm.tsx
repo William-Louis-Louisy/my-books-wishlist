@@ -1,25 +1,25 @@
 "use client";
 
-import { useMemo, useState, type FormEvent } from "react";
-import { useRouter } from "next/navigation";
-import { useLocale, useTranslations } from "next-intl";
-import { AppHeader } from "@/components/AppHeader";
-import { AutocompleteInput } from "@/components/AutocompleteInput";
-import { ConfirmDialog } from "@/components/ConfirmDialog";
-import { useBook, useBooks } from "@/hooks/useBooks";
-import { createBook, deleteBook, updateBook } from "@/lib/book-repository";
 import {
-  getBookAutocompleteOptions,
+  isValidReleaseDate,
+  getReleaseDatePrecision,
+  getReleaseDateInputValue,
+} from "@/lib/date";
+import {
   getBookDisplayTitle,
   hasValidBookIdentity,
+  getBookAutocompleteOptions,
 } from "@/lib/books";
-import {
-  getReleaseDateInputValue,
-  getReleaseDatePrecision,
-  isValidReleaseDate,
-} from "@/lib/date";
-import type { BookDraft, ReleaseDatePrecision } from "@/types/book";
 import { TrashIcon } from "./Icons";
+import { useRouter } from "next/navigation";
+import { AppHeader } from "@/components/AppHeader";
+import { useBook, useBooks } from "@/hooks/useBooks";
+import { useLocale, useTranslations } from "next-intl";
+import { useMemo, useState, type FormEvent } from "react";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { AutocompleteInput } from "@/components/AutocompleteInput";
+import type { BookDraft, ReleaseDatePrecision } from "@/types/book";
+import { createBook, deleteBook, updateBook } from "@/lib/book-repository";
 
 interface BookFormProps {
   bookId?: string;

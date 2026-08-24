@@ -1,7 +1,7 @@
 "use client";
 
-import { motion, useReducedMotion } from "motion/react";
 import { useTranslations } from "next-intl";
+import { motion, useReducedMotion } from "motion/react";
 
 interface BookmarkToggleProps {
   purchased: boolean;
@@ -9,7 +9,11 @@ interface BookmarkToggleProps {
   disabled?: boolean;
 }
 
-export function BookmarkToggle({ purchased, onToggle, disabled }: BookmarkToggleProps) {
+export function BookmarkToggle({
+  purchased,
+  onToggle,
+  disabled,
+}: BookmarkToggleProps) {
   const t = useTranslations("Bookmark");
   const reduceMotion = useReducedMotion();
 

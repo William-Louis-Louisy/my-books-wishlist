@@ -1,9 +1,9 @@
 "use client";
 
-import { liveQuery } from "dexie";
-import { useEffect, useState } from "react";
 import { db } from "@/lib/db";
+import { liveQuery } from "dexie";
 import type { Book } from "@/types/book";
+import { useEffect, useState } from "react";
 
 export function useBooks(): { books: Book[]; loading: boolean; error?: Error } {
   const [books, setBooks] = useState<Book[]>([]);
@@ -17,7 +17,11 @@ export function useBooks(): { books: Book[]; loading: boolean; error?: Error } {
         setLoading(false);
       },
       error: (reason: unknown) => {
-        setError(reason instanceof Error ? reason : new Error("Lecture locale impossible."));
+        setError(
+          reason instanceof Error
+            ? reason
+            : new Error("Lecture locale impossible."),
+        );
         setLoading(false);
       },
     });

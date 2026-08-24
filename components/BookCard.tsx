@@ -1,26 +1,26 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
-import {
-  animate,
-  motion,
-  useMotionValue,
-  useReducedMotion,
-  type PanInfo,
-} from "motion/react";
-import { useLocale, useTranslations } from "next-intl";
-import { BookmarkToggle } from "@/components/BookmarkToggle";
-import { ConfirmDialog } from "@/components/ConfirmDialog";
-import { PencilIcon, TrashIcon } from "@/components/Icons";
-import { deleteBook, togglePurchased } from "@/lib/book-repository";
-import { formatReleaseDate } from "@/lib/date";
-import { getBookDisplayTitle, resolveBookStatus } from "@/lib/books";
 import {
   resolveBookCardSwipeRelease,
   type BookCardSwipeAction,
 } from "@/lib/swipe";
+import {
+  motion,
+  animate,
+  useMotionValue,
+  useReducedMotion,
+  type PanInfo,
+} from "motion/react";
 import type { Book } from "@/types/book";
+import { useRouter } from "next/navigation";
+import { formatReleaseDate } from "@/lib/date";
+import { useLocale, useTranslations } from "next-intl";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { PencilIcon, TrashIcon } from "@/components/Icons";
+import { BookmarkToggle } from "@/components/BookmarkToggle";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { deleteBook, togglePurchased } from "@/lib/book-repository";
+import { getBookDisplayTitle, resolveBookStatus } from "@/lib/books";
 
 interface BookCardProps {
   book: Book;
