@@ -4,13 +4,14 @@ import {
   groupBooks,
   filterBooks,
   buildBookTimeline,
+  isPastReleaseGroup,
   groupBooksByReleasePeriod,
   type BookYearArchive,
   type BookReleaseGroup,
   type BookOrganizationMode,
 } from "@/lib/books";
 import type { Book } from "@/types/book";
-import { useMemo, useState } from "react";
+import { Fragment, useMemo, useState } from "react";
 import { formatMonthLabel } from "@/lib/date";
 import { AnimatePresence } from "motion/react";
 import { BookCard } from "@/components/BookCard";
@@ -65,6 +66,15 @@ export function BookList({ books }: BookListProps) {
     [filteredBooks],
   );
   const hasActiveFilter = Boolean(query.trim() || publisher);
+  const pastActiveGroupIndex = timeline.activeGroups.findIndex((group) =>
+    isPastReleaseGroup(group),
+  );
+  const hasCurrentOrFutureGroups = timeline.activeGroups.some(
+    (group) => !isPastReleaseGroup(group),
+  );
+  const hasPastGroups =
+    pastActiveGroupIndex >= 0 || timeline.archives.length > 0;
+  const showPastDivider = hasCurrentOrFutureGroups && hasPastGroups;
 
   const toggleArchiveYear = (year: string) => {
     setExpandedArchiveYears((current) => {
@@ -180,6 +190,16 @@ export function BookList({ books }: BookListProps) {
     );
   };
 
+  const renderPastDivider = () => (
+    <div className="flex items-center gap-3 px-page" aria-label={tSections("pastReleases")}>
+      <span aria-hidden="true" className="h-px flex-1 bg-line" />
+      <span className="text-xs font-medium uppercase tracking-[0.08em] text-ink-muted">
+        {tSections("pastReleases")}
+      </span>
+      <span aria-hidden="true" className="h-px flex-1 bg-line" />
+    </div>
+  );
+
   const renderArchive = (archive: BookYearArchive) => {
     const expanded = hasActiveFilter || expandedArchiveYears.has(archive.year);
     const panelId = `book-archive-${archive.year}`;
@@ -223,21 +243,35 @@ export function BookList({ books }: BookListProps) {
     );
   };
 
-  const renderMonthlyTimeline = () => (
-    <div className="pb-28">
-      {timeline.activeGroups.length ? (
-        <div className="space-y-6">
-          {timeline.activeGroups.map((group) => renderTimelineGroup(group))}
-        </div>
-      ) : null}
+  const renderMonthlyTimeline = () => {
+    const dividerBeforeArchives = showPastDivider && pastActiveGroupIndex < 0;
 
-      {timeline.archives.length ? (
-        <div className={timeline.activeGroups.length ? "mt-6" : ""}>
-          {timeline.archives.map(renderArchive)}
-        </div>
-      ) : null}
-    </div>
-  );
+    return (
+      <div className="pb-28">
+        {timeline.activeGroups.length ? (
+          <div className="space-y-6">
+            {timeline.activeGroups.map((group, index) => (
+              <Fragment key={group.key}>
+                {showPastDivider && index === pastActiveGroupIndex
+                  ? renderPastDivider()
+                  : null}
+                {renderTimelineGroup(group)}
+              </Fragment>
+            ))}
+          </div>
+        ) : null}
+
+        {timeline.archives.length ? (
+          <div className={timeline.activeGroups.length ? "mt-6" : ""}>
+            {dividerBeforeArchives ? (
+              <div className="mb-6">{renderPastDivider()}</div>
+            ) : null}
+            {timeline.archives.map(renderArchive)}
+          </div>
+        ) : null}
+      </div>
+    );
+  };
 
   const renderStatusOrganization = () => (
     <div className="pb-28">
