@@ -215,8 +215,8 @@ export function BookCard({ book }: BookCardProps) {
           dragMomentum={false}
           onDragEnd={onDragEnd}
           style={{ x, touchAction: "pan-y" }}
-          className={`relative border border-line px-4 py-4 pr-14 transition-[background-color] duration-200 ease-out motion-reduce:transition-none ${
-            visualPurchased ? "bg-surface-muted" : "bg-paper"
+          className={`relative border border-line px-4 pt-4 pr-14 transition-[background-color] duration-200 ease-out motion-reduce:transition-none ${
+            visualPurchased ? "bg-surface-muted pb-8" : "bg-paper pb-4"
           } ${statusBorder}`}
         >
           <BookmarkToggle
@@ -256,6 +256,14 @@ export function BookCard({ book }: BookCardProps) {
               ) : null}
             </div>
           </div>
+          {visualPurchased ? (
+            <span
+              aria-hidden="true"
+              className="pointer-events-none absolute bottom-3 right-4 text-[0.6875rem] font-medium uppercase tracking-[0.08em] text-ink-muted"
+            >
+              {t("purchased")}
+            </span>
+          ) : null}
         </motion.article>
       </motion.div>
       <ConfirmDialog
