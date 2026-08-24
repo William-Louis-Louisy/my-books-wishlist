@@ -1,10 +1,10 @@
-import { describe, expect, it } from "vitest";
 import {
   formatReleaseDate,
-  getReleaseDateInputValue,
-  getReleaseDatePrecision,
   isValidReleaseDate,
+  getReleaseDatePrecision,
+  getReleaseDateInputValue,
 } from "@/lib/date";
+import { describe, expect, it } from "vitest";
 
 describe("release date helpers", () => {
   it("accepts year, month and exact date precision", () => {

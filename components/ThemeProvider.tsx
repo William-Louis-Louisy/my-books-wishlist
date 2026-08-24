@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useSyncExternalStore, type ReactNode } from "react";
 import {
-  getServerThemeSnapshot,
   getThemeSnapshot,
   subscribeToTheme,
+  getServerThemeSnapshot,
   type ThemePreference,
 } from "@/lib/theme-store";
+import { useEffect, useSyncExternalStore, type ReactNode } from "react";
 
 export function useThemePreference(): ThemePreference {
   return useSyncExternalStore(

@@ -1,6 +1,6 @@
-import { hasValidBookIdentity } from "@/lib/books";
-import { isValidReleaseDate } from "@/lib/date";
 import type { Book } from "@/types/book";
+import { isValidReleaseDate } from "@/lib/date";
+import { hasValidBookIdentity } from "@/lib/books";
 
 export const BOOK_BACKUP_VERSION = 2 as const;
 
@@ -43,7 +43,9 @@ export class BookBackupValidationError extends Error {
 function optionalString(value: unknown, field: string): string | undefined {
   if (value === undefined || value === null || value === "") return undefined;
   if (typeof value !== "string") {
-    throw new BookBackupValidationError(`Le champ ${field} doit être une chaîne.`);
+    throw new BookBackupValidationError(
+      `Le champ ${field} doit être une chaîne.`,
+    );
   }
   return value.trim() || undefined;
 }
@@ -62,7 +64,9 @@ function isValidTimestamp(value: string): boolean {
 function requiredTimestamp(value: unknown, field: string): string {
   const normalized = requiredString(value, field);
   if (!isValidTimestamp(normalized)) {
-    throw new BookBackupValidationError(`Le champ ${field} doit être une date valide.`);
+    throw new BookBackupValidationError(
+      `Le champ ${field} doit être une date valide.`,
+    );
   }
   return normalized;
 }
@@ -71,14 +75,18 @@ function optionalTimestamp(value: unknown, field: string): string | undefined {
   const normalized = optionalString(value, field);
   if (!normalized) return undefined;
   if (!isValidTimestamp(normalized)) {
-    throw new BookBackupValidationError(`Le champ ${field} doit être une date valide.`);
+    throw new BookBackupValidationError(
+      `Le champ ${field} doit être une date valide.`,
+    );
   }
   return normalized;
 }
 
 function normalizeImportedBook(value: unknown, index: number): Book {
   if (!value || typeof value !== "object" || Array.isArray(value)) {
-    throw new BookBackupValidationError(`L'entrée ${index + 1} n'est pas un livre valide.`);
+    throw new BookBackupValidationError(
+      `L'entrée ${index + 1} n'est pas un livre valide.`,
+    );
   }
 
   const raw = value as ImportedBookRecord;
@@ -128,7 +136,9 @@ function normalizeImportedBook(value: unknown, index: number): Book {
 function getRawBooks(payload: unknown): unknown[] {
   if (Array.isArray(payload)) return payload;
   if (!payload || typeof payload !== "object") {
-    throw new BookBackupValidationError("Le fichier n'a pas le format attendu.");
+    throw new BookBackupValidationError(
+      "Le fichier n'a pas le format attendu.",
+    );
   }
 
   const envelope = payload as BookBackupEnvelope;
@@ -142,7 +152,9 @@ function getRawBooks(payload: unknown): unknown[] {
     );
   }
   if (!Array.isArray(envelope.books)) {
-    throw new BookBackupValidationError("Le fichier ne contient pas de liste de livres.");
+    throw new BookBackupValidationError(
+      "Le fichier ne contient pas de liste de livres.",
+    );
   }
 
   return envelope.books;
@@ -181,7 +193,9 @@ export function parseBookBackupJson(content: string): Book[] {
   try {
     payload = JSON.parse(content) as unknown;
   } catch {
-    throw new BookBackupValidationError("Le fichier ne contient pas un JSON valide.");
+    throw new BookBackupValidationError(
+      "Le fichier ne contient pas un JSON valide.",
+    );
   }
   return parseBookBackup(payload);
 }

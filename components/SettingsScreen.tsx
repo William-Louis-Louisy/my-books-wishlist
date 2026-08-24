@@ -1,38 +1,24 @@
 "use client";
 
+import { useRef, useState, useEffect, type ChangeEvent } from "react";
 import {
-  useEffect,
-  useRef,
-  useState,
-  type ChangeEvent,
-} from "react";
-import { useLocale, useTranslations } from "next-intl";
-import { AppHeader } from "@/components/AppHeader";
-import { DriveIcon, ExportIcon, ImportIcon } from "@/components/Icons";
-import { useThemePreference } from "@/components/ThemeProvider";
-import { useBooks } from "@/hooks/useBooks";
-import {
-  parseBookBackupJson,
-  serializeBookBackup,
-} from "@/lib/book-backup";
-import {
-  applyBookImport,
-  type BookImportMode,
-} from "@/lib/book-import";
-import { formatDateTime, getTodayIso } from "@/lib/date";
-import {
+  isDriveConfigured,
   exportBooksToDrive,
   getDriveLastBackupAt,
   importBooksFromDrive,
-  isDriveConfigured,
 } from "@/lib/drive-sync";
-import type { AppLocale } from "@/lib/i18n";
-import { setStoredLocale } from "@/lib/locale-store";
-import {
-  setStoredTheme,
-  type ThemePreference,
-} from "@/lib/theme-store";
+import { parseBookBackupJson, serializeBookBackup } from "@/lib/book-backup";
+import { applyBookImport, type BookImportMode } from "@/lib/book-import";
+import { setStoredTheme, type ThemePreference } from "@/lib/theme-store";
 import type { Book } from "@/types/book";
+import { useBooks } from "@/hooks/useBooks";
+import type { AppLocale } from "@/lib/i18n";
+import { AppHeader } from "@/components/AppHeader";
+import { setStoredLocale } from "@/lib/locale-store";
+import { useLocale, useTranslations } from "next-intl";
+import { formatDateTime, getTodayIso } from "@/lib/date";
+import { useThemePreference } from "@/components/ThemeProvider";
+import { DriveIcon, ExportIcon, ImportIcon } from "@/components/Icons";
 
 interface PendingLocalImport {
   fileName: string;
@@ -101,9 +87,7 @@ export function SettingsScreen() {
     URL.revokeObjectURL(url);
   };
 
-  const prepareLocalImport = async (
-    event: ChangeEvent<HTMLInputElement>,
-  ) => {
+  const prepareLocalImport = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     event.target.value = "";
     if (!file) return;
@@ -223,16 +207,12 @@ export function SettingsScreen() {
                     className={buttonSecondary}
                   >
                     <ExportIcon className="text-ink" />
-                    {busy === "drive-export"
-                      ? t("saving")
-                      : t("exportToDrive")}
+                    {busy === "drive-export" ? t("saving") : t("exportToDrive")}
                   </button>
                   <button
                     type="button"
                     disabled={Boolean(busy)}
-                    onClick={() =>
-                      setDriveImportChoice((value) => !value)
-                    }
+                    onClick={() => setDriveImportChoice((value) => !value)}
                     className={buttonSecondary}
                   >
                     <ImportIcon className="text-ink" />

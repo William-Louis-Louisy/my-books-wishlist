@@ -1,25 +1,26 @@
 "use client";
 
-import { useMemo, useState, type FormEvent } from "react";
-import { useRouter } from "next/navigation";
-import { useLocale, useTranslations } from "next-intl";
-import { AppHeader } from "@/components/AppHeader";
-import { AutocompleteInput } from "@/components/AutocompleteInput";
-import { ConfirmDialog } from "@/components/ConfirmDialog";
-import { useBook, useBooks } from "@/hooks/useBooks";
-import { createBook, deleteBook, updateBook } from "@/lib/book-repository";
 import {
-  getBookAutocompleteOptions,
+  isValidReleaseDate,
+  getReleaseDatePrecision,
+  getReleaseDateInputValue,
+} from "@/lib/date";
+import {
   getBookDisplayTitle,
   hasValidBookIdentity,
+  getBookAutocompleteOptions,
 } from "@/lib/books";
-import {
-  getReleaseDateInputValue,
-  getReleaseDatePrecision,
-  isValidReleaseDate,
-} from "@/lib/date";
-import type { BookDraft, ReleaseDatePrecision } from "@/types/book";
 import { TrashIcon } from "./Icons";
+import { useRouter } from "next/navigation";
+import DatePrecision from "./DatePrecision";
+import { AppHeader } from "@/components/AppHeader";
+import { useBook, useBooks } from "@/hooks/useBooks";
+import { useLocale, useTranslations } from "next-intl";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { useMemo, useState, type SubmitEvent } from "react";
+import { AutocompleteInput } from "@/components/AutocompleteInput";
+import type { BookDraft, ReleaseDatePrecision } from "@/types/book";
+import { createBook, deleteBook, updateBook } from "@/lib/book-repository";
 
 interface BookFormProps {
   bookId?: string;
@@ -125,7 +126,7 @@ export function BookForm({ bookId }: BookFormProps) {
     return Object.keys(next).length === 0;
   };
 
-  const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
+  const onSubmit = async (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!validate()) return;
     setSaving(true);
@@ -286,24 +287,11 @@ export function BookForm({ bookId }: BookFormProps) {
 
           <fieldset>
             <legend className={labelClass}>{t("releaseDate")}</legend>
-            <div className="mt-1 grid gap-3 sm:grid-cols-[minmax(0,0.42fr)_minmax(0,1fr)]">
-              <label>
-                <span className="sr-only">{t("datePrecision")}</span>
-                <select
-                  value={form.releasePrecision}
-                  onChange={(event) =>
-                    updateField(
-                      "releasePrecision",
-                      event.target.value as ReleaseDatePrecision,
-                    )
-                  }
-                  className={fieldClass}
-                >
-                  <option value="day">{t("precisionDay")}</option>
-                  <option value="month">{t("precisionMonth")}</option>
-                  <option value="year">{t("precisionYear")}</option>
-                </select>
-              </label>
+            <div className="mt-2 flex flex-col gap-2">
+              <DatePrecision
+                value={form.releasePrecision}
+                onChange={(value) => updateField("releasePrecision", value)}
+              />
 
               {form.releasePrecision === "day" ? (
                 <input
@@ -311,6 +299,7 @@ export function BookForm({ bookId }: BookFormProps) {
                   type="date"
                   aria-label={t("releaseDate")}
                   defaultValue={releaseInputValue}
+                  placeholder={t("datePlaceholder")}
                   onChange={(event) =>
                     updateField("releaseDate", event.target.value)
                   }

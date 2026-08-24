@@ -1,18 +1,18 @@
-import { describe, expect, it } from "vitest";
 import {
-  buildBookTimeline,
-  deriveStatus,
-  filterBooks,
-  getBookAutocompleteOptions,
-  getBookDisplayTitle,
   groupBooks,
-  groupBooksByReleasePeriod,
-  groupBooksByTimelinePeriod,
-  hasValidBookIdentity,
-  mergeBooksIgnoringDuplicateIds,
+  filterBooks,
+  deriveStatus,
+  buildBookTimeline,
   resolveBookStatus,
+  getBookDisplayTitle,
+  hasValidBookIdentity,
+  groupBooksByReleasePeriod,
+  getBookAutocompleteOptions,
+  groupBooksByTimelinePeriod,
+  mergeBooksIgnoringDuplicateIds,
 } from "@/lib/books";
 import type { Book } from "@/types/book";
+import { describe, expect, it } from "vitest";
 
 const baseBook: Book = {
   id: "1",
@@ -47,15 +47,25 @@ describe("book business rules", () => {
     expect(hasValidBookIdentity(baseBook)).toBe(true);
     expect(hasValidBookIdentity({ ...baseBook, title: undefined })).toBe(true);
     expect(
-      hasValidBookIdentity({ ...baseBook, title: undefined, volume: undefined }),
+      hasValidBookIdentity({
+        ...baseBook,
+        title: undefined,
+        volume: undefined,
+      }),
     ).toBe(false);
     expect(
-      hasValidBookIdentity({ ...baseBook, title: undefined, series: undefined }),
+      hasValidBookIdentity({
+        ...baseBook,
+        title: undefined,
+        series: undefined,
+      }),
     ).toBe(false);
   });
 
   it("uses the explicit title or falls back to series and volume", () => {
-    expect(getBookDisplayTitle(baseBook, (volume) => `Tome ${volume}`)).toBe("Le livre");
+    expect(getBookDisplayTitle(baseBook, (volume) => `Tome ${volume}`)).toBe(
+      "Le livre",
+    );
     expect(
       getBookDisplayTitle(
         { ...baseBook, title: undefined },
@@ -65,12 +75,12 @@ describe("book business rules", () => {
   });
 
   it("resolves status entirely from releaseDate", () => {
-    expect(resolveBookStatus({ ...baseBook, releaseDate: "2025" }, "2026-08-22")).toBe(
-      "available",
-    );
-    expect(resolveBookStatus({ ...baseBook, releaseDate: "2027" }, "2026-08-22")).toBe(
-      "upcoming",
-    );
+    expect(
+      resolveBookStatus({ ...baseBook, releaseDate: "2025" }, "2026-08-22"),
+    ).toBe("available");
+    expect(
+      resolveBookStatus({ ...baseBook, releaseDate: "2027" }, "2026-08-22"),
+    ).toBe("upcoming");
   });
 
   it("keeps purchased books in their derived release-status group", () => {

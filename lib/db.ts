@@ -1,5 +1,5 @@
-import Dexie, { type EntityTable } from "dexie";
 import type { Book } from "@/types/book";
+import Dexie, { type EntityTable } from "dexie";
 
 interface LegacyBookRecord extends Book {
   status?: unknown;

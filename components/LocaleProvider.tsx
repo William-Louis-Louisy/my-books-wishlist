@@ -1,15 +1,15 @@
 "use client";
 
-import { useEffect, useSyncExternalStore, type ReactNode } from "react";
-import { NextIntlClientProvider } from "next-intl";
-import { APP_TIME_ZONE } from "@/lib/i18n";
 import {
   getLocaleSnapshot,
-  getServerLocaleSnapshot,
   subscribeToLocale,
+  getServerLocaleSnapshot,
 } from "@/lib/locale-store";
+import { APP_TIME_ZONE } from "@/lib/i18n";
 import enMessages from "@/messages/en.json";
 import frMessages from "@/messages/fr.json";
+import { NextIntlClientProvider } from "next-intl";
+import { useEffect, useSyncExternalStore, type ReactNode } from "react";
 
 export function LocaleProvider({ children }: { children: ReactNode }) {
   const locale = useSyncExternalStore(

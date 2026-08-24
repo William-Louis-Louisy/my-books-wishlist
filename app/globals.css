@@ -11,9 +11,11 @@
   --color-sync-error: var(--sync-error);
   --color-action-edit: var(--action-edit);
   --color-action-delete: var(--action-delete);
+
   --font-display: var(--font-literata);
   --font-sans: var(--font-inter);
   --font-mono: var(--font-plex-mono);
+
   --radius-card: 12px;
   --spacing-page: 20px;
   --container-app: 640px;
@@ -31,6 +33,7 @@
   --sync-error: #b4543f;
   --action-edit: #2f6f9f;
   --action-delete: #a6493d;
+
   color-scheme: light;
 }
 
@@ -45,6 +48,7 @@
   --sync-error: #b4543f;
   --action-edit: #2b648f;
   --action-delete: #9e3f35;
+
   color-scheme: dark;
 }
 
@@ -61,24 +65,46 @@
     --sync-error: #b4543f;
     --action-edit: #2b648f;
     --action-delete: #9e3f35;
+
     color-scheme: dark;
   }
 }
 
-* { box-sizing: border-box; }
-html { background: var(--paper); }
-body {
-  margin: 0;
-  min-height: 100dvh;
-  background: var(--paper);
-  color: var(--ink);
-  font-family: var(--font-inter), sans-serif;
-  -webkit-font-smoothing: antialiased;
-  text-rendering: optimizeLegibility;
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    background: var(--paper);
+  }
+
+  body {
+    margin: 0;
+    min-height: 100dvh;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-inter), sans-serif;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  button,
+  input,
+  textarea,
+  select {
+    font: inherit;
+  }
+
+  button,
+  a {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  ::selection {
+    background: color-mix(in srgb, var(--accent-brass) 28%, transparent);
+  }
 }
-button, input, textarea, select { font: inherit; }
-button, a { -webkit-tap-highlight-color: transparent; }
-::selection { background: color-mix(in srgb, var(--accent-brass) 28%, transparent); }
 
 .book-form-control {
   font-family: var(--font-inter), sans-serif !important;
@@ -116,7 +142,9 @@ button, a { -webkit-tap-highlight-color: transparent; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
+  *,
+  *::before,
+  *::after {
     scroll-behavior: auto !important;
   }
 }

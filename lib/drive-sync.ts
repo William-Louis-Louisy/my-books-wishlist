@@ -1,12 +1,6 @@
+import { parseBookBackup, serializeBookBackup } from "@/lib/book-backup";
+import { applyBookImport, type BookImportMode } from "@/lib/book-import";
 import { db } from "@/lib/db";
-import {
-  parseBookBackup,
-  serializeBookBackup,
-} from "@/lib/book-backup";
-import {
-  applyBookImport,
-  type BookImportMode,
-} from "@/lib/book-import";
 
 const GOOGLE_SCRIPT_ID = "google-identity-services";
 const DRIVE_SCOPE = "https://www.googleapis.com/auth/drive.file";
@@ -57,7 +51,9 @@ function getClientId(): string | undefined {
 
 function ensureBrowser(): void {
   if (typeof window === "undefined") {
-    throw new Error("Google Drive est disponible uniquement dans le navigateur.");
+    throw new Error(
+      "Google Drive est disponible uniquement dans le navigateur.",
+    );
   }
 }
 
@@ -124,8 +120,7 @@ async function requestAccessToken(): Promise<string> {
         accessToken = response.access_token;
         resolve(response.access_token);
       },
-      error_callback: () =>
-        reject(new Error("Connexion Google interrompue.")),
+      error_callback: () => reject(new Error("Connexion Google interrompue.")),
     });
 
     client.requestAccessToken();
@@ -203,10 +198,7 @@ async function createDriveFile(content: string): Promise<string> {
   return data.id;
 }
 
-async function updateDriveFile(
-  fileId: string,
-  content: string,
-): Promise<void> {
+async function updateDriveFile(fileId: string, content: string): Promise<void> {
   const response = await driveFetch(
     `https://www.googleapis.com/upload/drive/v3/files/${encodeURIComponent(fileId)}?uploadType=media`,
     {
@@ -220,7 +212,8 @@ async function updateDriveFile(
 
 function migrateLegacyDriveMetadata(): string | undefined {
   ensureBrowser();
-  const current = window.localStorage.getItem(DRIVE_LAST_BACKUP_KEY) ?? undefined;
+  const current =
+    window.localStorage.getItem(DRIVE_LAST_BACKUP_KEY) ?? undefined;
   let lastBackup = current;
 
   if (!lastBackup) {
