@@ -164,6 +164,14 @@ export function groupBooksByReleasePeriod(
     }));
 }
 
+export function isPastReleaseGroup(
+  group: BookReleaseGroup,
+  today = getTodayIso(),
+): boolean {
+  if (group.month) return group.key < today.slice(0, 7);
+  return group.year < today.slice(0, 4);
+}
+
 export function groupBooksByTimelinePeriod(
   books: Book[],
   today = getTodayIso(),
