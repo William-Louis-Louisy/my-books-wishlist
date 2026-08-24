@@ -11,11 +11,11 @@ import {
   type BookOrganizationMode,
 } from "@/lib/books";
 import type { Book } from "@/types/book";
-import { Fragment, useMemo, useState } from "react";
 import { formatMonthLabel } from "@/lib/date";
 import { AnimatePresence } from "motion/react";
 import { BookCard } from "@/components/BookCard";
 import { ChevronIcon } from "@/components/Icons";
+import { Fragment, useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { FilterPanel } from "@/components/FilterPanel";
 import { SectionHeader } from "@/components/SectionHeader";
@@ -191,7 +191,10 @@ export function BookList({ books }: BookListProps) {
   };
 
   const renderPastDivider = () => (
-    <div className="flex items-center gap-3 px-page" aria-label={tSections("pastReleases")}>
+    <div
+      className="flex items-center gap-3 px-page pt-5"
+      aria-label={tSections("pastReleases")}
+    >
       <span aria-hidden="true" className="h-px flex-1 bg-line" />
       <span className="text-xs font-medium uppercase tracking-[0.08em] text-ink-muted">
         {tSections("pastReleases")}
