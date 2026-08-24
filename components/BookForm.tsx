@@ -11,13 +11,13 @@ import {
   getBookAutocompleteOptions,
 } from "@/lib/books";
 import { TrashIcon } from "./Icons";
-import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import DatePrecision from "./DatePrecision";
 import { AppHeader } from "@/components/AppHeader";
 import { useBook, useBooks } from "@/hooks/useBooks";
 import { useLocale, useTranslations } from "next-intl";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { useMemo, useState, type SubmitEvent } from "react";
 import { AutocompleteInput } from "@/components/AutocompleteInput";
 import type { BookDraft, ReleaseDatePrecision } from "@/types/book";
 import { createBook, deleteBook, updateBook } from "@/lib/book-repository";
@@ -126,7 +126,7 @@ export function BookForm({ bookId }: BookFormProps) {
     return Object.keys(next).length === 0;
   };
 
-  const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
+  const onSubmit = async (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!validate()) return;
     setSaving(true);
