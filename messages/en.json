@@ -70,6 +70,19 @@
     "noResultsTitle": "No books match this search.",
     "opening": "Opening your list…"
   },
+  "Install": {
+    "backupFirst": "Back up first",
+    "body": "Install the app for a more direct, full-screen experience that opens from your home screen like any other app.",
+    "bodyWithBooks": "Your library is stored in this browser. Back it up before installing: the installed Web App may use separate local storage.",
+    "eyebrow": "Installable app",
+    "install": "Install",
+    "installing": "Opening install…",
+    "iosStepHome": "Choose Add to Home Screen and keep Open as Web App enabled when the option is shown.",
+    "iosStepShare": "Open your browser's Share menu.",
+    "iosTitle": "Add the app to your Home Screen",
+    "later": "Later",
+    "title": "Install My Books Wishlist"
+  },
   "Sections": {
     "archiveBooks": "{count, plural, =1 {# book} other {# books}}",
     "archiveCollapse": "Collapse books from {year}",
