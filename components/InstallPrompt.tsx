@@ -27,13 +27,17 @@ export function InstallPrompt({ bookCount }: InstallPromptProps) {
   const [installing, setInstalling] = useState(false);
 
   useEffect(() => {
-    try {
-      setEligible(
-        shouldOfferPwaInstall(localStorage.getItem(PWA_INSTALL_SNOOZE_KEY)),
-      );
-    } catch {
-      setEligible(true);
-    }
+    const timer = window.setTimeout(() => {
+      try {
+        setEligible(
+          shouldOfferPwaInstall(localStorage.getItem(PWA_INSTALL_SNOOZE_KEY)),
+        );
+      } catch {
+        setEligible(true);
+      }
+    }, 0);
+
+    return () => window.clearTimeout(timer);
   }, []);
 
   const snooze = () => {
