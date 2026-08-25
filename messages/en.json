@@ -106,7 +106,7 @@
     "localImportHelp": "Export your library or restore a local backup. Older exports created by the app remain compatible.",
     "localImportInvalid": "This JSON file is invalid or incompatible. No local data was changed.",
     "localImportReady": "“{file}” · {count, plural, =0 {no books detected} =1 {# book detected} other {# books detected}}",
-    "localImportSuccess": "{count, plural, =0 {Import complete: no books imported.} =1 {Import complete: # book imported.} other {# books imported.}}",
+    "localImportSuccess": "{count, plural, =0 {Import complete: no books imported.} =1 {Import complete: # book imported.} other {Import complete: # books imported.}}",
     "mergeWithoutDuplicates": "Merge without duplicates",
     "replaceLocal": "Replace local list",
     "restoreQuestion": "How would you like to restore the backup?",
