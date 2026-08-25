@@ -4,6 +4,7 @@ import type { Metadata, Viewport } from "next";
 import { AppLifecycle } from "@/components/AppLifecycle";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { LocaleProvider } from "@/components/LocaleProvider";
+import { PwaInstallProvider } from "@/components/PwaInstallProvider";
 import { IBM_Plex_Mono, Inter, Literata } from "next/font/google";
 
 const inter = Inter({
@@ -63,8 +64,10 @@ export default function RootLayout({
       <body>
         <LocaleProvider>
           <ThemeProvider>
-            <AppLifecycle />
-            {children}
+            <PwaInstallProvider>
+              <AppLifecycle />
+              {children}
+            </PwaInstallProvider>
           </ThemeProvider>
         </LocaleProvider>
       </body>
