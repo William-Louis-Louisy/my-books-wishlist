@@ -106,14 +106,15 @@
   }
 }
 
-@media (hover: none) and (pointer: coarse) {
-  @supports (-webkit-touch-callout: none) {
-    input,
-    textarea,
-    select {
-      font-size: max(16px, 1em) !important;
-    }
-  }
+/*
+ * iOS Safari zooms the viewport when a focused form control computes below
+ * 16px. Keep this unconditional so the guarantee does not depend on pointer,
+ * hover or WebKit feature-detection media queries.
+ */
+input,
+textarea,
+select {
+  font-size: 16px !important;
 }
 
 .book-form-control {
