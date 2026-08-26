@@ -94,6 +94,7 @@
   textarea,
   select {
     font: inherit;
+    font-size: 1rem;
   }
 
   button,
@@ -108,7 +109,7 @@
 
 .book-form-control {
   font-family: var(--font-inter), sans-serif !important;
-  font-size: 16px !important;
+  font-size: 1rem !important;
   font-style: normal !important;
   font-weight: 400 !important;
   line-height: 1.5rem !important;
