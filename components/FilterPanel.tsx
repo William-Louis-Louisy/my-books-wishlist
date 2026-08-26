@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef } from "react";
 import { useTranslations } from "next-intl";
 import type { BookOrganizationMode } from "@/lib/books";
 import { FilterIcon, SearchIcon } from "@/components/Icons";
@@ -30,9 +31,15 @@ export function FilterPanel({
 }: FilterPanelProps) {
   const t = useTranslations("Filters");
   const reduceMotion = useReducedMotion();
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const hasActiveOptions = Boolean(
     query || publisher || organization !== "month",
   );
+
+  const clearSearch = () => {
+    onQueryChange("");
+    searchInputRef.current?.focus();
+  };
 
   return (
     <div className="border-b border-line/80">
@@ -64,18 +71,44 @@ export function FilterPanel({
             className="overflow-hidden"
           >
             <div className="px-page grid gap-4 pb-4 sm:grid-cols-2">
-              <label className="block">
-                <span className="sr-only">{t("searchLabel")}</span>
+              <div className="block">
+                <label htmlFor="book-search" className="sr-only">
+                  {t("searchLabel")}
+                </label>
                 <span className="flex items-center gap-2 border-b border-line py-2 focus-within:border-b-2 focus-within:border-brass">
-                  <SearchIcon className="size-4 text-ink-muted" />
+                  <SearchIcon className="size-4 shrink-0 text-ink-muted" />
                   <input
+                    ref={searchInputRef}
+                    id="book-search"
                     value={query}
                     onChange={(event) => onQueryChange(event.target.value)}
                     placeholder={t("placeholder")}
+                    enterKeyHint="search"
                     className="min-w-0 flex-1 bg-transparent text-sm text-ink outline-none placeholder:text-ink-muted/70"
                   />
+                  {query ? (
+                    <button
+                      type="button"
+                      onClick={clearSearch}
+                      aria-label={t("clearSearch")}
+                      className="grid size-8 shrink-0 place-items-center rounded-full text-ink-muted transition-colors hover:bg-surface-muted hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brass motion-reduce:transition-none"
+                    >
+                      <svg
+                        width="18"
+                        height="18"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.8"
+                        strokeLinecap="round"
+                        aria-hidden="true"
+                      >
+                        <path d="m7 7 10 10M17 7 7 17" />
+                      </svg>
+                    </button>
+                  ) : null}
                 </span>
-              </label>
+              </div>
               <label className="block">
                 <span className="sr-only">{t("publisherLabel")}</span>
                 <select
