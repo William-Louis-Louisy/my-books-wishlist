@@ -121,7 +121,7 @@ export function SettingsScreen() {
   const buttonSecondary =
     "inline-flex items-center justify-center gap-2 rounded-lg border border-line px-4 py-2.5 text-sm text-ink transition-colors hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brass disabled:opacity-50 motion-reduce:transition-none";
   const selectClass =
-    "border-0 border-b border-line bg-paper py-2 text-sm text-ink outline-none focus:border-b-2 focus:border-brass";
+    "border-0 border-b border-line bg-paper py-2 text-base text-ink outline-none focus:border-b-2 focus:border-brass";
 
   return (
     <>
