@@ -26,6 +26,7 @@
   "Filters": {
     "active": "Filtres ou organisation actifs",
     "allPublishers": "Tous les éditeurs",
+    "clearSearch": "Effacer la recherche",
     "organizationLabel": "Organisation de la liste",
     "organizationMonth": "Par mois (par défaut)",
     "organizationStatus": "Par statut",
