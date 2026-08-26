@@ -5,6 +5,7 @@ import { AppLifecycle } from "@/components/AppLifecycle";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { LocaleProvider } from "@/components/LocaleProvider";
 import { PwaInstallProvider } from "@/components/PwaInstallProvider";
+import { IOS_WEBKIT_FOCUS_ZOOM_GUARD_SCRIPT } from "@/lib/ios-focus-zoom";
 import { IBM_Plex_Mono, Inter, Literata } from "next/font/google";
 
 const inter = Inter({
@@ -59,6 +60,11 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: IOS_WEBKIT_FOCUS_ZOOM_GUARD_SCRIPT,
+          }}
+        />
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>
       <body>
