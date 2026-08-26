@@ -70,6 +70,19 @@
     "noResultsTitle": "Aucun livre ne correspond à cette recherche.",
     "opening": "Ouverture de votre liste…"
   },
+  "Install": {
+    "backupFirst": "Sauvegarder d’abord",
+    "body": "Installez l’application pour une expérience plus directe, en plein écran, accessible depuis votre écran d’accueil comme n’importe quelle app.",
+    "bodyWithBooks": "Votre bibliothèque est stockée dans ce navigateur. Sauvegardez-la avant l’installation : la Web App installée peut utiliser un stockage local distinct.",
+    "eyebrow": "Application installable",
+    "install": "Installer",
+    "installing": "Ouverture de l’installation…",
+    "iosStepHome": "Choisissez l’ajout à l’écran d’accueil et gardez « Ouvrir comme app web » activé si cette option est proposée.",
+    "iosStepShare": "Ouvrez le menu Partager de votre navigateur.",
+    "iosTitle": "Ajoutez l’app à votre écran d’accueil",
+    "later": "Plus tard",
+    "title": "Installez My Books Wishlist"
+  },
   "Sections": {
     "archiveBooks": "{count, plural, =1 {# livre} other {# livres}}",
     "archiveCollapse": "Replier les livres de {year}",

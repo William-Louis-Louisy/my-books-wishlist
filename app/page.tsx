@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 import { useBooks } from "@/hooks/useBooks";
 import { BookList } from "@/components/BookList";
 import { AppHeader } from "@/components/AppHeader";
+import { InstallPrompt } from "@/components/InstallPrompt";
 import { FloatingActionButton } from "@/components/FloatingActionButton";
 
 export default function HomePage() {
@@ -24,7 +25,12 @@ export default function HomePage() {
             {t("error")}
           </p>
         ) : null}
-        {!loading && !error ? <BookList books={books} /> : null}
+        {!loading && !error ? (
+          <>
+            <InstallPrompt bookCount={books.length} />
+            <BookList books={books} />
+          </>
+        ) : null}
       </main>
       <FloatingActionButton />
     </>
