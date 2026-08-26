@@ -27,14 +27,14 @@ const plexMono = IBM_Plex_Mono({
 const themeInitScript = `(function(){try{var t=localStorage.getItem("book-wishlist:theme");if(t==="light"||t==="dark"||t==="system"){document.documentElement.dataset.theme=t}}catch(_){}})();`;
 
 export const metadata: Metadata = {
-  title: "Book Wishlist",
+  title: "My Books Wishlist",
   description:
     "A personal wishlist for tracking upcoming, available and purchased books.",
-  applicationName: "Book Wishlist",
+  applicationName: "My Books Wishlist",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Book Wishlist",
+    title: "My Books Wishlist",
   },
   icons: { apple: "/icons/apple-touch-icon.png" },
 };
