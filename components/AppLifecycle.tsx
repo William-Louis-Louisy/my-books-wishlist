@@ -5,7 +5,12 @@ import { useEffect } from "react";
 export function AppLifecycle() {
   useEffect(() => {
     if ("serviceWorker" in navigator && process.env.NODE_ENV === "production") {
-      void navigator.serviceWorker.register("/sw.js");
+      void navigator.serviceWorker
+        .register("/sw.js", {
+          scope: "/",
+          updateViaCache: "none",
+        })
+        .catch(() => undefined);
     }
   }, []);
 
