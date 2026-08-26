@@ -35,8 +35,13 @@ describe("PWA shell safety", () => {
 });
 
 describe("iOS form focus", () => {
-  it("keeps touch WebKit form controls at a non-zooming font size", () => {
-    expect(globalCssSource).toContain("-webkit-touch-callout: none");
-    expect(globalCssSource).toContain("font-size: max(16px, 1em) !important;");
+  it("keeps every form control at 16px without device-detection gates", () => {
+    expect(globalCssSource).toContain(
+      "input,\ntextarea,\nselect {\n  font-size: 16px !important;\n}",
+    );
+    expect(globalCssSource).not.toContain(
+      "@media (hover: none) and (pointer: coarse)",
+    );
+    expect(globalCssSource).not.toContain("-webkit-touch-callout: none");
   });
 });
