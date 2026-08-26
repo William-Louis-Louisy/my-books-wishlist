@@ -84,7 +84,7 @@ export function FilterPanel({
                     onChange={(event) => onQueryChange(event.target.value)}
                     placeholder={t("placeholder")}
                     enterKeyHint="search"
-                    className="min-w-0 flex-1 bg-transparent text-base text-ink outline-none placeholder:text-ink-muted/70"
+                    className="min-w-0 flex-1 bg-transparent text-sm text-ink outline-none placeholder:text-ink-muted/70"
                   />
                   {query ? (
                     <button
@@ -114,7 +114,7 @@ export function FilterPanel({
                 <select
                   value={publisher}
                   onChange={(event) => onPublisherChange(event.target.value)}
-                  className="w-full border-0 border-b border-line bg-paper py-2 text-base text-ink outline-none focus:border-b-2 focus:border-brass"
+                  className="w-full border-0 border-b border-line bg-paper py-2 text-sm text-ink outline-none focus:border-b-2 focus:border-brass"
                 >
                   <option value="">{t("allPublishers")}</option>
                   {publishers.map((value) => (
@@ -133,7 +133,7 @@ export function FilterPanel({
                       event.target.value as BookOrganizationMode,
                     )
                   }
-                  className="w-full border-0 border-b border-line bg-paper py-2 text-base text-ink outline-none focus:border-b-2 focus:border-brass"
+                  className="w-full border-0 border-b border-line bg-paper py-2 text-sm text-ink outline-none focus:border-b-2 focus:border-brass"
                 >
                   <option value="month">{t("organizationMonth")}</option>
                   <option value="status">{t("organizationStatus")}</option>
