@@ -53,7 +53,10 @@ async function networkFirstAsset(request) {
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL)));
-  self.skipWaiting();
+
+  if (!self.registration.active) {
+    self.skipWaiting();
+  }
 });
 
 self.addEventListener("activate", (event) => {
