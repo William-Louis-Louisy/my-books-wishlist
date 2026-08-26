@@ -77,6 +77,8 @@
 
   html {
     background: var(--paper);
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
   }
 
   body {
