@@ -26,6 +26,7 @@
   "Filters": {
     "active": "Filters or organization active",
     "allPublishers": "All publishers",
+    "clearSearch": "Clear search",
     "organizationLabel": "List organization",
     "organizationMonth": "By month (default)",
     "organizationStatus": "By status",
