@@ -211,7 +211,6 @@ export function BookForm({ bookId }: BookFormProps) {
           <label className={labelClass}>
             {t("title")} {optionalLabel}
             <input
-              autoFocus={!isEdit}
               value={form.title}
               onChange={(event) => updateField("title", event.target.value)}
               className={fieldClass}
